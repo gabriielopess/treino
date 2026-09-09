@@ -249,7 +249,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .set-row{margin-bottom:7px}
 .set-index{height:42px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);font-size:11.5px;font-weight:800}
 .set-prev{font-size:9.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.set-input{width:100%;height:42px;border:1px solid var(--line-strong);background:var(--surface-2);border-radius:10px;text-align:center;outline:0;font-size:13.5px;font-weight:700;padding:0 3px}
+.set-input{width:100%;height:42px;border:1px solid var(--line-strong);background:var(--surface-2);border-radius:10px;text-align:center;outline:0;font-size:13.5px;font-weight:760;padding:0 3px}
+.set-input::placeholder{color:var(--faint);font-weight:560;opacity:.72}
 .set-check{width:40px;height:42px;border-radius:10px;background:var(--surface-2);color:var(--faint);display:grid;place-items:center}
 .set-check svg{width:17px;height:17px}
 .set-row.is-done .set-index,.set-row.is-done .set-check{background:var(--green);color:#092116}
@@ -267,7 +268,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .active-workout-copy strong{display:block;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .active-workout-clock{font-size:14px;font-weight:800;color:var(--green)}
 
-.rest-timer{position:fixed;left:50%;transform:translateX(-50%);z-index:70;bottom:calc(145px + var(--safe-bottom));width:calc(min(600px,100%) - 24px);max-width:576px;border-radius:18px;background:#1B2230;border:1px solid #34415A;box-shadow:0 18px 55px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;padding:10px 11px 10px 14px}
+.rest-timer{position:fixed;left:50%;transform:translateX(-50%);z-index:70;bottom:calc(145px + var(--safe-bottom));width:calc(min(600px,100%) - 24px);max-width:576px;border-radius:18px;background:#1B2230;border:1px solid #34415A;box-shadow:0 18px 55px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;padding:10px 11px 10px 14px;cursor:pointer}
+.rest-timer.on-workout{bottom:calc(80px + var(--safe-bottom))}
 .rest-timer-main{min-width:68px}
 .rest-timer-main small{display:block;font-size:8px;letter-spacing:.08em;color:var(--faint);font-weight:800}
 .rest-timer-main strong{display:block;font-size:20px;margin-top:2px}
@@ -399,6 +401,86 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .trend-highlight.good>span{background:var(--green-soft);color:var(--green)}
 .trend-highlight.warn>span{background:var(--amber-soft);color:var(--amber)}
 
+
+/* Review 2: builder, history, evolution and home. */
+.home-recent-section{margin-top:22px}
+.recent-session-card{width:100%;display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;color:var(--text);text-align:left}
+.recent-session-card:active{background:var(--surface-2)}
+.recent-session-top{display:flex;align-items:center;gap:11px}
+.recent-session-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.recent-session-stats div{min-width:0}
+.recent-session-stats small{display:block;color:var(--faint);font-size:8px;font-weight:850;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.recent-session-stats strong{display:block;font-size:11.5px;font-weight:820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.builder-quick-create,.picker-create-top{width:100%;display:grid;grid-template-columns:34px minmax(0,1fr) 18px;gap:10px;align-items:center;background:var(--blue-soft);border:1px solid rgba(91,124,255,.28);border-radius:15px;color:var(--text);text-align:left;padding:12px;margin-bottom:18px}
+.builder-quick-create>svg,.picker-create-top>svg{width:19px;height:19px;color:var(--blue-2);justify-self:center}
+.builder-quick-create strong,.picker-create-top strong{display:block;font-size:12.5px;font-weight:850}
+.builder-quick-create small,.picker-create-top small{display:block;color:var(--muted);font-size:9.5px;margin-top:3px}
+.builder-default-rest{display:flex;align-items:center;gap:10px}
+.builder-default-rest .select-pill{flex:1}
+.form-help{color:var(--faint);font-size:9.5px;line-height:1.45;margin-top:7px}
+.select-pill{width:100%;min-height:43px;border:1px solid var(--line-strong);background:var(--surface-2);border-radius:12px;display:grid;grid-template-columns:minmax(0,1fr) auto 18px;gap:8px;align-items:center;padding:8px 10px;color:var(--text);text-align:left}
+.select-pill span{font-size:9.5px;color:var(--faint);font-weight:760}
+.select-pill strong{font-size:12px;font-weight:850}
+.select-pill.compact{height:40px;min-height:40px;padding:5px 9px}
+.builder-section-title{margin-top:14px!important}
+.builder-order-controls{display:flex;gap:4px;flex:0 0 auto}
+.builder-order-controls button{width:28px;height:30px;border-radius:9px;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:850}
+.builder-order-controls button:disabled{opacity:.28}
+.builder-tags{margin-top:8px}
+.builder-reps-field{margin-top:10px}
+
+.picker-filter-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 12px;padding:1px 1px 3px}
+.picker-filter-row::-webkit-scrollbar{display:none}
+.filter-chip{flex:0 0 auto;height:34px;border:1px solid var(--line-strong);background:var(--surface);border-radius:11px;padding:0 12px;color:var(--muted);font-size:10.5px;font-weight:760}
+.filter-chip.is-active{background:var(--blue);border-color:var(--blue);color:#fff}
+.picker-toolbar{margin:0 0 14px}
+
+.rest-choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rest-choice{min-height:68px;border:1px solid var(--line-strong);background:var(--surface);border-radius:14px;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.rest-choice small{font-size:8px;color:var(--faint);font-weight:850;letter-spacing:.06em}
+.rest-choice strong{font-size:15px;font-weight:900}
+.rest-choice.is-selected{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-2)}
+
+.live-base-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.live-base-strip>span{display:block;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:8px 10px;min-width:0}
+.live-base-strip small{display:block;color:var(--faint);font-size:7.5px;font-weight:850;letter-spacing:.06em;margin-bottom:3px}
+.live-base-strip strong{display:block;font-size:10.5px;font-weight:720;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.history-session-side{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.history-delete-btn{width:32px;height:32px;border-radius:10px;background:var(--red-soft);color:var(--red);display:grid;place-items:center}
+.history-delete-btn svg{width:15px;height:15px}
+
+.evolution-summary{margin-bottom:18px}
+.program-volume-card{margin-top:0}
+.evo-program-select{width:100%;display:grid;grid-template-columns:minmax(0,1fr) 18px;gap:10px;align-items:center;margin-top:14px;padding:12px 13px;border:1px solid var(--line-strong);background:var(--surface-2);border-radius:14px;color:var(--text);text-align:left}
+.evo-program-select small{display:block;color:var(--faint);font-size:8px;font-weight:850;letter-spacing:.07em;margin-bottom:4px}
+.evo-program-select strong{display:block;font-size:12.5px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-select-help{color:var(--muted);font-size:10.5px;line-height:1.5;margin-top:12px}
+
+.print-area{display:none}
+@media print{
+  @page{margin:14mm;background:#fff}
+  html,body{background:#fff!important;color:#111!important}
+  body>*{display:none!important}
+  #printArea{display:block!important;color:#111!important;background:#fff!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .print-brand{font-size:9px;font-weight:900;letter-spacing:.16em;color:#315CF5}
+  #printArea h1{font-size:24px;margin:6px 0 3px}
+  .print-student{font-size:15px;font-weight:800}
+  .print-meta{font-size:10px;color:#666;margin-top:3px}
+  .print-rule{height:1px;background:#ddd;margin:14px 0}
+  .print-exercise{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid #e6e6e6;break-inside:avoid}
+  .print-index{font-size:10px;font-weight:900;color:#999}
+  .print-exercise strong{font-size:13px}
+  .print-exercise small{display:block;font-size:9px;color:#777;margin-top:2px}
+  .print-prescription{display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;font-size:10px}
+  .print-last{margin-top:8px}
+  .print-last>small{font-size:8px;font-weight:800;letter-spacing:.06em;color:#777;margin-bottom:4px}
+  .print-last>span{display:inline-block;margin:3px 9px 0 0;font-size:10px}
+  .print-muted{color:#999}
+  .print-footer{font-size:8.5px;color:#999;text-align:center;margin-top:18px}
+}
+
 /* True light mode. */
 html[data-theme="light"]{color-scheme:light;--bg:#F5F6F8;--bg-elev:#FFFFFF;--surface:#FFFFFF;--surface-2:#F0F2F5;--surface-3:#E7EAF0;--line:#E3E6EB;--line-strong:#D5DAE2;--text:#12151A;--muted:#5F6875;--faint:#8B94A0;--blue:#315CF5;--blue-2:#244FD9;--blue-soft:rgba(49,92,245,.10);--green:#159D69;--green-soft:rgba(21,157,105,.11);--red:#D64258;--red-soft:rgba(214,66,88,.10);--amber:#B96C10;--amber-soft:rgba(185,108,16,.10);--shadow:0 24px 70px rgba(22,30,42,.14)}
 html[data-theme="light"] .topbar{background:rgba(245,246,248,.92)}
@@ -483,6 +565,7 @@ html[data-theme="light"] .toast{background:#12151A;color:#fff}
     </div>
   </div>
 
+  <div id="printArea" class="print-area" aria-hidden="true"></div>
   <input id="backupImportInput" class="is-hidden" type="file" accept="application/json,.json">
   <script>
 'use strict';
@@ -500,6 +583,7 @@ const MUSCLE_GROUPS = [
   'Peito','Costas','Ombros','Bíceps','Tríceps','Quadríceps',
   'Posteriores','Glúteos','Panturrilhas','Abdômen','Outro'
 ];
+const REST_OPTIONS = Array.from({length:9}, (_,i) => 60 + i*15);
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -535,6 +619,7 @@ let state = {
   historyStudentId: null,
   evolutionStudentId: null,
   evolutionPeriod: '90d',
+  evolutionProgramId: null,
   studentSearch: '',
   exerciseSearch: ''
 };
@@ -745,6 +830,7 @@ function normalizeDatabase(raw) {
     name: String(s.name || 'Aluno').trim(),
     goal: String(s.goal || ''),
     notes: String(s.notes || ''),
+    defaultRestSec: clamp(parseInteger(s.defaultRestSec) || 120, 60, 180),
     createdAt: Number(s.createdAt || Date.now())
   })) : [];
   clean.exercises = Array.isArray(raw.exercises) ? raw.exercises.map(e => ({
@@ -823,7 +909,7 @@ function migrateLegacy(legacy) {
   out.students = legacy.students.map(st => ({
     id: String(st.id || uid('student')),
     name: String(st.name || 'Aluno'),
-    goal: '', notes: '', createdAt: Date.now()
+    goal: '', notes: '', defaultRestSec:120, createdAt: Date.now()
   }));
   legacy.students.forEach(st => {
     (st.workouts || []).forEach(w => {
@@ -1046,35 +1132,34 @@ function renderHome(main) {
   const h = new Date().getHours();
   const greeting = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
   const dash = dashboardData();
-  const latest = db.sessions.slice().sort((a,b)=>sessionTimestamp(b)-sessionTimestamp(a)).slice(0,5);
+  const latest = db.sessions.slice().sort((a,b)=>sessionTimestamp(b)-sessionTimestamp(a)).slice(0,4);
   const top = findTopImprovementAcrossStudents('90d');
   setHeader({ title:'Início', action:'more', actionFn:openSettingsMenu });
   main.innerHTML = `
     <section class="screen">
       <div class="hero home-hero">
         <div><span class="hero-kicker">PERSONAL TRAINER</span><h1>${greeting}, ${esc(db.trainer.name.split(' ')[0] || 'Professor')}</h1></div>
-        <p>Controle a sessão, acompanhe cargas e enxergue a evolução sem perder tempo durante o treino.</p>
+        <p>Controle a sessão, acompanhe as últimas cargas e enxergue a evolução sem perder tempo durante o treino.</p>
       </div>
       <div class="section home-metrics" style="margin-top:5px">
         <div class="grid-2">
+          <div class="metric-card"><div><small>Alunos</small><strong>${db.students.length}</strong></div><p>cadastrados no app</p></div>
           <div class="metric-card"><div><small>Treinos · 7 dias</small><strong>${dash.sessions.length}</strong></div><p>${dash.active} aluno${dash.active===1?' ativo':'s ativos'}</p></div>
-          <div class="metric-card"><div><small>Volume · 7 dias</small><strong>${compactNumber(dash.volume)} kg</strong></div><p>carga × repetições</p></div>
           <div class="metric-card"><div><small>Séries · 7 dias</small><strong>${dash.sets}</strong></div><p>séries concluídas</p></div>
           <div class="metric-card highlight"><div><small>Maior evolução</small><strong>${top ? esc(top.student.name.split(' ')[0]) : '—'}</strong></div><p>${top ? `${esc(top.exerciseName)} · +${round(top.deltaKg)} kg` : 'precisa de mais histórico'}</p></div>
         </div>
       </div>
-      ${weeklyVolumeChartHtml(dash.sessions)}
+      <div class="section home-recent-section">
+        <div class="section-title"><h2>Últimos treinos</h2><span>${latest.length}</span></div>
+        <div id="homeLatest">
+          ${latest.length ? latest.map(recentSessionCardHtml).join('') : emptyHtml('Ainda não há treinos registrados.','Seu histórico aparecerá aqui depois da primeira sessão.')}
+        </div>
+      </div>
       <div class="section">
         <div class="section-title"><h2>Ações rápidas</h2></div>
         <div class="quick-actions">
           <button class="quick-action" data-quick="student" type="button">${icons.users}<strong>Novo aluno</strong><small>Cadastrar e montar treinos</small></button>
           <button class="quick-action" data-quick="exercise" type="button">${icons.dumbbell}<strong>Novo exercício</strong><small>Adicionar à biblioteca</small></button>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title"><h2>Últimos treinos</h2><span>${latest.length}</span></div>
-        <div id="homeLatest">
-          ${latest.length ? latest.map(sessionRowHtml).join('') : emptyHtml('Ainda não há treinos registrados.','Seu histórico aparecerá aqui depois da primeira sessão.')}
         </div>
       </div>
       <div class="section">
@@ -1087,19 +1172,22 @@ function renderHome(main) {
   $$('[data-session-student]', main).forEach(el => el.onclick = () => navigate('student', { studentId:el.dataset.sessionStudent }));
 }
 
-function weeklyVolumeChartHtml(sessions) {
-  const days = Array.from({length:7}, (_,i) => {
-    const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-(6-i));
-    return { ts:d.getTime(), iso:localDateISO(d.getTime()), volume:0, count:0 };
-  });
-  const byIso = new Map(days.map(d=>[d.iso,d]));
-  sessions.forEach(session=>{
-    const day=byIso.get(localDateISO(sessionTimestamp(session)));
-    if(day){day.volume+=sessionVolume(session);day.count++;}
-  });
-  const max=Math.max(...days.map(d=>d.volume),1);
-  const total=days.reduce((a,d)=>a+d.volume,0);
-  return `<div class="chart-card home-volume-card"><div class="chart-card-head"><div><strong>Volume da semana</strong><small>Volume total por dia · sem números espremidos</small></div><div class="chart-value">${compactNumber(total)} kg</div></div><div class="weekly-chart" role="img" aria-label="Volume dos últimos sete dias">${days.map(d=>`<div class="week-column"><span class="week-value">${d.volume?compactNumber(d.volume):'—'}</span><div class="week-track"><i style="height:${d.volume?Math.max(8,(d.volume/max)*100):3}%"></i></div><b>${weekdayShort(d.ts)}</b><small>${dateShort(d.ts)}</small></div>`).join('')}</div></div>`;
+function recentSessionCardHtml(session) {
+  const first = session.participants[0];
+  const names = session.participants.map(p => studentById(p.studentId)?.name || 'Aluno').join(' + ');
+  const programs = session.participants.map(p => p.programName || 'Treino').join(' + ');
+  return `<button class="recent-session-card" type="button" data-session-student="${esc(first?.studentId || '')}">
+    <div class="recent-session-top">
+      <div class="avatar round">${esc(initials(names))}</div>
+      <div class="row-main"><strong>${esc(names)}</strong><small>${esc(programs)} · ${fmtDate(session.endedAt)}</small></div>
+      ${chev()}
+    </div>
+    <div class="recent-session-stats">
+      <div><small>Volume</small><strong>${kgText(sessionVolume(session))}</strong></div>
+      <div><small>Séries</small><strong>${sessionSetCount(session)}</strong></div>
+      <div><small>Duração</small><strong>${fmtClock(session.durationSec || 0)}</strong></div>
+    </div>
+  </button>`;
 }
 
 function sessionRowHtml(session) {
@@ -1181,7 +1269,7 @@ function openStudentForm(studentId = null) {
       existing.goal = $('#studentGoal').value.trim();
       existing.notes = $('#studentNotes').value.trim();
     } else {
-      const st = { id:uid('student'), name, goal:$('#studentGoal').value.trim(), notes:$('#studentNotes').value.trim(), createdAt:Date.now() };
+      const st = { id:uid('student'), name, goal:$('#studentGoal').value.trim(), notes:$('#studentNotes').value.trim(), defaultRestSec:120, createdAt:Date.now() };
       db.students.push(st);
       state.studentId = st.id;
     }
@@ -1278,13 +1366,17 @@ function renderStudentHistory(main, studentId) {
       <div class="hero"><h1>Histórico</h1><p>${sessions.length} sessões · ${kgText(totalVol)} · ${totalSets} séries concluídas.</p></div>
       <div class="section" style="margin-top:4px">${sessions.length ? sessions.map(s=>historySessionHtml(s,st.id,true)).join('') : emptyHtml('Sem histórico.','Os treinos concluídos aparecem aqui.')}</div>
     </section>`;
+  $$('[data-history-delete]',main).forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();confirmDeleteHistorySession(btn.dataset.historyDelete,btn.dataset.historyStudent);});
 }
 
 function historySessionHtml(session, studentId, expanded=true) {
   const p = participantForStudent(session, studentId); if (!p) return '';
   const vol = participantVolume(p), sets = participantSetCount(p);
   return `<div class="history-session">
-    <div class="history-session-head"><div><strong>${esc(p.programName || 'Treino')}</strong><small>${fmtDate(session.endedAt)} · ${fmtClock(session.durationSec || 0)} · ${sets} séries</small></div><span>${kgText(vol)}</span></div>
+    <div class="history-session-head">
+      <div><strong>${esc(p.programName || 'Treino')}</strong><small>${fmtDate(session.endedAt)} · ${fmtClock(session.durationSec || 0)} · ${sets} séries</small></div>
+      <div class="history-session-side"><span>${kgText(vol)}</span>${expanded?`<button class="history-delete-btn" type="button" data-history-delete="${esc(session.id)}" data-history-student="${esc(studentId)}" aria-label="Apagar este treino do histórico">${icons.trash}</button>`:''}</div>
+    </div>
     ${expanded ? (p.exercises || []).map(ex => `<button class="history-exercise" type="button" data-ex-history data-ex-history-student="${esc(studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div><strong>${esc(ex.name)}</strong><small>${completedSets(ex).map((s,i)=>`S${i+1}: ${parseDecimal(s.weight)} kg × ${parseInteger(s.reps)}`).join(' · ') || 'Sem séries concluídas'}</small></div>${icons.history}</button>`).join('') : ''}
     ${p.feedback ? `<div class="feedback-box"><b>Observação do treinador:</b> ${esc(p.feedback)}</div>` : ''}
   </div>`;
@@ -1361,28 +1453,44 @@ function openProgramBuilder(studentId, programId=null) {
   const draft={
     id:existing?.id||null, studentId,
     name:existing?.name||'', startDate:existing?.startDate||'', endDate:existing?.endDate||'',
+    defaultRestSec:clamp(parseInteger(student.defaultRestSec)||120,60,180),
     exercises:(existing?.exercises||[]).map(pe=>({...pe}))
   };
   const renderBuilder = () => {
     openModal(`
       <div class="builder-head"><button class="icon-btn" id="builderClose">${icons.back}</button><h2>${existing?'Editar treino':'Criar treino'}</h2></div>
       <div class="builder-body">
+        <button class="builder-quick-create" id="builderQuickCreate" type="button">${icons.plus}<div><strong>Criar exercício</strong><small>Cadastre rapidamente sem sair da montagem</small></div>${chev()}</button>
         <div class="form-row"><label class="form-label">Nome do treino</label><input id="programName" class="form-input" value="${esc(draft.name)}" placeholder="Ex.: Treino A — Peito e tríceps"></div>
+        <div class="form-row">
+          <label class="form-label">Descanso padrão deste aluno</label>
+          <div class="builder-default-rest">
+            <button class="select-pill" id="builderDefaultRest" type="button"><span>Descanso padrão</span><strong>${fmtRest(draft.defaultRestSec)}</strong>${chev()}</button>
+            ${draft.exercises.length?'<button class="btn btn-ghost btn-sm" id="applyDefaultRest" type="button">Aplicar a todos</button>':''}
+          </div>
+          <div class="form-help">Novos exercícios usam este tempo. Você ainda pode alterar cada exercício individualmente.</div>
+        </div>
         <div class="form-grid"><div class="form-row"><label class="form-label">Início opcional</label><input id="programStart" type="date" class="form-input" value="${esc(draft.startDate)}"></div><div class="form-row"><label class="form-label">Término opcional</label><input id="programEnd" type="date" class="form-input" value="${esc(draft.endDate)}"></div></div>
-        <div class="section-title" style="margin-top:7px"><h2>Exercícios</h2><span>${draft.exercises.length}</span></div>
-        <div id="builderExercises">${draft.exercises.map((pe,i)=>builderExerciseHtml(pe,i)).join('')}</div>
-        <button class="add-dashed" id="builderAddExercise" type="button">+ Adicionar exercício</button>
+        <div class="section-title builder-section-title"><h2>Exercícios</h2><span>${draft.exercises.length}</span></div>
+        <div id="builderExercises">${draft.exercises.map((pe,i)=>builderExerciseHtml(pe,i,draft.exercises.length)).join('')}</div>
+        <button class="add-dashed" id="builderAddExercise" type="button">+ Adicionar exercício da biblioteca</button>
       </div>
       <div class="builder-foot"><div class="modal-actions" style="margin-top:0"><button class="btn btn-secondary" id="builderCancel">Cancelar</button><button class="btn btn-primary" id="builderSave">${existing?'Salvar alterações':'Criar treino'}</button></div></div>
     `,{fullscreen:true,onClose:()=>{}});
     const syncFields=()=>{draft.name=$('#programName')?.value||draft.name;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';};
+    const addPickedExercise=(exId)=>{draft.exercises.push({exerciseId:exId,sets:3,restSec:draft.defaultRestSec,targetReps:'',note:''});renderBuilder();};
     $('#builderClose').onclick=closeModal; $('#builderCancel').onclick=closeModal;
     $('#programName').oninput=e=>draft.name=e.target.value; $('#programStart').onchange=e=>draft.startDate=e.target.value; $('#programEnd').onchange=e=>draft.endDate=e.target.value;
-    $('#builderAddExercise').onclick=()=>{syncFields();openExercisePicker(exId=>{draft.exercises.push({exerciseId:exId,sets:3,restSec:120,targetReps:'',note:''});renderBuilder();}, renderBuilder);};
+    $('#builderQuickCreate').onclick=()=>{syncFields();openExerciseForm(null,id=>addPickedExercise(id),renderBuilder);};
+    $('#builderAddExercise').onclick=()=>{syncFields();openExercisePicker(addPickedExercise, renderBuilder);};
+    $('#builderDefaultRest').onclick=()=>{syncFields();openRestPicker(draft.defaultRestSec,sec=>{draft.defaultRestSec=sec;student.defaultRestSec=sec;persist();renderBuilder();},renderBuilder,'Descanso padrão');};
+    if($('#applyDefaultRest'))$('#applyDefaultRest').onclick=()=>{syncFields();draft.exercises.forEach(pe=>pe.restSec=draft.defaultRestSec);renderBuilder();toast('Descanso padrão aplicado aos exercícios.');};
     $$('[data-builder-remove]').forEach(btn=>btn.onclick=()=>{syncFields();draft.exercises.splice(+btn.dataset.builderRemove,1);renderBuilder();});
+    $$('[data-builder-up]').forEach(btn=>btn.onclick=()=>{syncFields();const i=+btn.dataset.builderUp;if(i<=0)return;[draft.exercises[i-1],draft.exercises[i]]=[draft.exercises[i],draft.exercises[i-1]];renderBuilder();});
+    $$('[data-builder-down]').forEach(btn=>btn.onclick=()=>{syncFields();const i=+btn.dataset.builderDown;if(i>=draft.exercises.length-1)return;[draft.exercises[i+1],draft.exercises[i]]=[draft.exercises[i],draft.exercises[i+1]];renderBuilder();});
     $$('[data-builder-minus]').forEach(btn=>btn.onclick=()=>{syncFields();const pe=draft.exercises[+btn.dataset.builderMinus];pe.sets=Math.max(1,pe.sets-1);renderBuilder();});
     $$('[data-builder-plus]').forEach(btn=>btn.onclick=()=>{syncFields();draft.exercises[+btn.dataset.builderPlus].sets=Math.min(50,peNumber(draft.exercises[+btn.dataset.builderPlus].sets)+1);renderBuilder();});
-    $$('[data-builder-rest]').forEach(inp=>inp.onchange=()=>{draft.exercises[+inp.dataset.builderRest].restSec=clamp(parseRest(inp.value),0,3600);});
+    $$('[data-builder-rest]').forEach(btn=>btn.onclick=()=>{syncFields();const i=+btn.dataset.builderRest;openRestPicker(draft.exercises[i].restSec,sec=>{draft.exercises[i].restSec=sec;renderBuilder();},renderBuilder,'Descanso do exercício');});
     $$('[data-builder-reps]').forEach(inp=>inp.oninput=()=>{draft.exercises[+inp.dataset.builderReps].targetReps=inp.value;});
     $$('[data-builder-exercise]').forEach(btn=>btn.onclick=()=>{syncFields();const idx=+btn.dataset.builderExercise;openExercisePicker(exId=>{draft.exercises[idx].exerciseId=exId;renderBuilder();}, renderBuilder);});
     $('#builderSave').onclick=()=>{
@@ -1390,8 +1498,10 @@ function openProgramBuilder(studentId, programId=null) {
       const name=draft.name.trim()||'Novo treino';
       if(!draft.exercises.length)return toast('Adicione pelo menos um exercício.');
       if(draft.exercises.some(pe=>!exerciseById(pe.exerciseId)))return toast('Há um exercício inválido no treino.');
-      if(existing){existing.name=name;existing.startDate=draft.startDate;existing.endDate=draft.endDate;existing.exercises=draft.exercises.map(pe=>({...pe}));existing.updatedAt=Date.now();}
-      else db.programs.push({id:uid('program'),studentId,name,startDate:draft.startDate,endDate:draft.endDate,exercises:draft.exercises.map(pe=>({...pe})),createdAt:Date.now(),updatedAt:Date.now()});
+      if(draft.exercises.some(pe=>!String(pe.targetReps||'').trim()))return toast('Informe a faixa de repetições de todos os exercícios.');
+      student.defaultRestSec=draft.defaultRestSec;
+      if(existing){existing.name=name;existing.startDate=draft.startDate;existing.endDate=draft.endDate;existing.exercises=draft.exercises.map(pe=>({...pe,targetReps:String(pe.targetReps).trim()}));existing.updatedAt=Date.now();}
+      else db.programs.push({id:uid('program'),studentId,name,startDate:draft.startDate,endDate:draft.endDate,exercises:draft.exercises.map(pe=>({...pe,targetReps:String(pe.targetReps).trim()})),createdAt:Date.now(),updatedAt:Date.now()});
       persist();closeModal();navigate('student',{studentId});toast(existing?'Treino atualizado.':'Treino criado.');
     };
   };
@@ -1399,42 +1509,107 @@ function openProgramBuilder(studentId, programId=null) {
 }
 
 function peNumber(n){return Math.max(1,parseInteger(n)||1);}
-function builderExerciseHtml(pe,index){
+function builderExerciseHtml(pe,index,total=1){
   const ex=exerciseById(pe.exerciseId);
   return `<div class="builder-exercise">
-    <div class="builder-exercise-head"><button class="builder-exercise-name" type="button" data-builder-exercise="${index}">${esc(ex?.name||'Selecionar exercício')}</button><button class="builder-remove" type="button" data-builder-remove="${index}">×</button></div>
-    ${ex?`<div class="tag-list" style="margin-top:7px">${ex.muscleGroups.map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div>`:''}
+    <div class="builder-exercise-head">
+      <div class="builder-order-controls">
+        <button type="button" data-builder-up="${index}" ${index===0?'disabled':''} aria-label="Mover exercício para cima">↑</button>
+        <button type="button" data-builder-down="${index}" ${index===total-1?'disabled':''} aria-label="Mover exercício para baixo">↓</button>
+      </div>
+      <button class="builder-exercise-name" type="button" data-builder-exercise="${index}">${esc(ex?.name||'Selecionar exercício')}</button>
+      <button class="builder-remove" type="button" data-builder-remove="${index}" aria-label="Remover exercício">×</button>
+    </div>
+    ${ex?`<div class="tag-list builder-tags">${ex.muscleGroups.map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div>`:''}
     <div class="builder-controls">
       <div><span class="control-label">Séries</span><div class="stepper"><button type="button" data-builder-minus="${index}">−</button><span>${pe.sets}</span><button type="button" data-builder-plus="${index}">+</button></div></div>
-      <div><span class="control-label">Descanso</span><input class="builder-rest" data-builder-rest="${index}" value="${fmtRest(pe.restSec)}"></div>
+      <div><span class="control-label">Descanso</span><button class="select-pill compact" type="button" data-builder-rest="${index}"><span>Intervalo</span><strong>${fmtRest(pe.restSec)}</strong>${chev()}</button></div>
     </div>
-    <div style="margin-top:9px"><span class="control-label">Faixa de repetições (opcional)</span><input class="form-input" data-builder-reps="${index}" value="${esc(pe.targetReps||'')}" placeholder="Ex.: 8–12"></div>
+    <div class="builder-reps-field"><span class="control-label">Faixa de repetições</span><input class="form-input" data-builder-reps="${index}" value="${esc(pe.targetReps||'')}" placeholder="Ex.: 8–10"></div>
   </div>`;
 }
 
 function openExercisePicker(onPick, onCancel = null) {
+  let activeGroup='all';
   const picker=()=>{
     const list=db.exercises.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
-    openModal(`<h2>Selecionar exercício</h2><div class="toolbar" style="margin:12px 0"><div class="search-field">${icons.search}<input id="pickerSearch" placeholder="Buscar exercício"></div></div><div id="pickerList" class="choice-list"></div><div class="modal-actions"><button class="btn btn-secondary" id="pickerNew">+ Criar novo</button><button class="btn btn-secondary" id="pickerCancel">Cancelar</button></div>`);
+    openModal(`<h2>Selecionar exercício</h2><p class="modal-sub">Use a busca ou filtre por um único grupamento.</p>
+      <button class="picker-create-top" id="pickerNew" type="button">${icons.plus}<div><strong>Criar exercício</strong><small>Adicionar rapidamente à biblioteca</small></div>${chev()}</button>
+      <div class="picker-filter-row" id="pickerGroups">
+        <button class="filter-chip ${activeGroup==='all'?'is-active':''}" type="button" data-picker-group="all">Todos</button>
+        ${MUSCLE_GROUPS.map(g=>`<button class="filter-chip ${activeGroup===g?'is-active':''}" type="button" data-picker-group="${esc(g)}">${esc(g)}</button>`).join('')}
+      </div>
+      <div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="pickerSearch" placeholder="Buscar exercício"></div></div>
+      <div id="pickerList" class="choice-list"></div>
+      <div class="modal-actions"><button class="btn btn-secondary" id="pickerCancel">Cancelar</button></div>`);
     const renderList=()=>{
-      const q=$('#pickerSearch').value.toLowerCase();
-      const arr=list.filter(e=>e.name.toLowerCase().includes(q));
-      $('#pickerList').innerHTML=arr.map(e=>`<button class="choice" type="button" data-picker-id="${esc(e.id)}"><div class="row-main"><strong>${esc(e.name)}</strong><small>${esc(e.muscleGroups.join(' · '))}</small></div>${chev()}</button>`).join('')||emptyHtml('Nenhum exercício encontrado.','Crie um novo exercício para continuar.');
+      const q=($('#pickerSearch')?.value||'').toLowerCase();
+      const arr=list.filter(e=>e.name.toLowerCase().includes(q) && (activeGroup==='all'||e.muscleGroups.includes(activeGroup)));
+      $('#pickerList').innerHTML=arr.map(e=>`<button class="choice" type="button" data-picker-id="${esc(e.id)}"><div class="row-main"><strong>${esc(e.name)}</strong><small>${esc(e.muscleGroups.join(' · '))}</small></div>${chev()}</button>`).join('')||emptyHtml('Nenhum exercício encontrado.','Troque o filtro ou crie um novo exercício.');
       $$('[data-picker-id]', $('#pickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.pickerId;closeModal();onPick(id);});
     };
-    renderList();$('#pickerSearch').oninput=renderList;
+    renderList();
+    $('#pickerSearch').oninput=renderList;
+    $$('[data-picker-group]', $('#pickerGroups')).forEach(btn=>btn.onclick=()=>{activeGroup=btn.dataset.pickerGroup;$$('[data-picker-group]', $('#pickerGroups')).forEach(x=>x.classList.toggle('is-active',x===btn));renderList();});
     $('#pickerCancel').onclick=()=>{closeModal(); if(onCancel)setTimeout(onCancel,0);};
-    $('#pickerNew').onclick=()=>{closeModal();setTimeout(()=>openExerciseForm(null,id=>{onPick(id);}, ()=>{ if(onCancel)onCancel(); }),60);};
+    $('#pickerNew').onclick=()=>{closeModal();setTimeout(()=>openExerciseForm(null,id=>onPick(id),()=>{if(onCancel)onCancel();}),60);};
   };
   picker();
 }
 
 function openProgramActions(programId){
   const p=programById(programId);if(!p)return;
-  openModal(`<h2>${esc(p.name)}</h2><p class="modal-sub">Ações do treino</p><div class="action-list"><button class="action-item" data-pa="edit"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Editar treino</strong></div>${chev()}</button><button class="action-item danger" data-pa="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Apagar treino</strong></div></button></div>`);
-  $$('[data-pa]').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.pa;closeModal();if(a==='edit')setTimeout(()=>openProgramBuilder(p.studentId,p.id),60);if(a==='delete')setTimeout(()=>confirmDeleteProgram(p.id),60);});
+  openModal(`<h2>${esc(p.name)}</h2><p class="modal-sub">Ações do treino</p><div class="action-list">
+    <button class="action-item" data-pa="edit"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Editar treino</strong></div>${chev()}</button>
+    <button class="action-item" data-pa="pdf"><span class="action-icon">PDF</span><div class="row-main"><strong>Gerar PDF do treino</strong><small>Cargas anteriores, repetições alvo e descanso</small></div>${chev()}</button>
+    <button class="action-item danger" data-pa="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Apagar treino</strong></div></button>
+  </div>`);
+  $$('[data-pa]').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.pa;closeModal();if(a==='edit')setTimeout(()=>openProgramBuilder(p.studentId,p.id),60);if(a==='pdf')setTimeout(()=>generateProgramPDF(p.id),60);if(a==='delete')setTimeout(()=>confirmDeleteProgram(p.id),60);});
 }
 function confirmDeleteProgram(programId){const p=programById(programId);if(!p)return;confirmModal(`Apagar ${p.name}?`,'O histórico já concluído será mantido, mas este treino deixará de aparecer no perfil.','Apagar treino',()=>{db.programs=db.programs.filter(x=>x.id!==p.id);persist();navigate('student',{studentId:p.studentId});toast('Treino apagado.');});}
+
+
+function openRestPicker(selected,onPick,onCancel=null,title='Selecionar descanso'){
+  const current=clamp(parseInteger(selected)||120,60,180);
+  openModal(`<h2>${esc(title)}</h2><p class="modal-sub">Escolha o intervalo em passos de 15 segundos.</p><div class="rest-choice-grid">${REST_OPTIONS.map(sec=>`<button class="rest-choice ${sec===current?'is-selected':''}" type="button" data-rest-choice="${sec}"><small>DESCANSO</small><strong>${fmtRest(sec)}</strong></button>`).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="restChoiceCancel">Cancelar</button></div>`);
+  $$('[data-rest-choice]').forEach(btn=>btn.onclick=()=>{const sec=+btn.dataset.restChoice;closeModal();onPick(sec);});
+  $('#restChoiceCancel').onclick=()=>{closeModal();if(onCancel)setTimeout(onCancel,0);};
+}
+
+function openEvolutionProgramPicker(studentId){
+  const st=studentById(studentId);if(!st)return;
+  const programs=programsForStudent(studentId);
+  openModal(`<h2>Evolução do volume</h2><p class="modal-sub">Escolha uma ficha. O volume será comparado somente entre execuções desse mesmo treino.</p><div class="choice-list">${programs.map(p=>`<button class="choice" type="button" data-evo-program="${esc(p.id)}"><div class="row-main"><strong>${esc(p.name)}</strong><small>${p.exercises.length} exercício${p.exercises.length===1?'':'s'}</small></div>${chev()}</button>`).join('')||emptyHtml('Nenhum treino cadastrado.','Crie uma ficha para este aluno primeiro.')}</div><div class="modal-actions"><button class="btn btn-secondary" id="evoProgramCancel">Cancelar</button></div>`);
+  $$('[data-evo-program]').forEach(btn=>btn.onclick=()=>{state.evolutionProgramId=btn.dataset.evoProgram;closeModal();renderEvolutionDetail($('#main'),studentId);});
+  $('#evoProgramCancel').onclick=closeModal;
+}
+
+function confirmDeleteHistorySession(sessionId,studentId){
+  const session=db.sessions.find(s=>s.id===sessionId),st=studentById(studentId);if(!session||!st)return;
+  confirmModal('Apagar este treino do histórico?',`O registro de ${st.name} será removido. Em treino em dupla, o histórico do outro aluno será preservado.`,'Apagar registro',()=>{
+    const target=db.sessions.find(s=>s.id===sessionId);if(!target)return;
+    target.participants=(target.participants||[]).filter(p=>p.studentId!==studentId);
+    if(!target.participants.length)db.sessions=db.sessions.filter(s=>s.id!==sessionId);
+    persist();renderStudentHistory($('#main'),studentId);toast('Treino removido do histórico.');
+  });
+}
+
+function generateProgramPDF(programId){
+  const program=programById(programId);if(!program)return;
+  const st=studentById(program.studentId);if(!st)return;
+  const rows=program.exercises.map((pe,i)=>{
+    const ex=exerciseById(pe.exerciseId);if(!ex)return '';
+    const entries=exerciseHistoryEntries(st.id,ex.id);
+    const latest=entries[entries.length-1]||null;
+    const sets=latest?completedSets(latest.exercise):[];
+    const loads=sets.length?sets.map((s,si)=>`<span><b>S${si+1}</b> ${parseDecimal(s.weight)} kg × ${parseInteger(s.reps)}</span>`).join(''):'<span class="print-muted">Sem carga anterior registrada</span>';
+    return `<div class="print-exercise"><div class="print-index">${String(i+1).padStart(2,'0')}</div><div><strong>${esc(ex.name)}</strong><small>${esc(ex.muscleGroups.join(' · '))}</small><div class="print-prescription"><span><b>${pe.sets}</b> séries</span><span><b>${esc(pe.targetReps||'—')}</b> reps</span><span><b>${fmtRest(pe.restSec)}</b> descanso</span></div><div class="print-last"><small>ÚLTIMA EXECUÇÃO${latest?` · ${fmtDate(latest.session.endedAt)}`:''}</small>${loads}</div></div></div>`;
+  }).join('');
+  const area=$('#printArea');
+  area.innerHTML=`<div class="print-brand">TREINO LIVE</div><h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div><div class="print-meta">Ficha gerada em ${fmtDate(Date.now())}${program.startDate?` · início ${fmtDate(program.startDate)}`:''}${program.endDate?` · término ${fmtDate(program.endDate)}`:''}</div><div class="print-rule"></div>${rows}<div class="print-footer">Treino Live · ${esc(db.trainer.name)}</div>`;
+  setTimeout(()=>window.print(),50);
+}
+
 
 /* ----------------------------- pair setup ----------------------------- */
 
@@ -1466,12 +1641,13 @@ function prepareWorkout(entries){
         return {
           exerciseId:ex.id,name:ex.name,muscleGroups:ex.muscleGroups.slice(),restSec:pe.restSec,note:pe.note||'',
           targetReps:pe.targetReps||'',
-          sets:Array.from({length:pe.sets},(_,i)=>({
-            weight:prevSets[i]?.weight ?? prevSets[prevSets.length-1]?.weight ?? '',
-            reps:prevSets[i]?.reps ?? prevSets[prevSets.length-1]?.reps ?? '',
-            done:false,
-            previous:prevSets[i]?{weight:prevSets[i].weight,reps:prevSets[i].reps}:null
-          }))
+          sets:Array.from({length:pe.sets},(_,i)=>{
+            const base=prevSets[i]||prevSets[prevSets.length-1]||null;
+            return {
+              weight:'', reps:'', done:false,
+              previous:base?{weight:base.weight,reps:base.reps}:null
+            };
+          })
         };
       }).filter(Boolean)
     });
@@ -1512,9 +1688,29 @@ function liveParticipantHtml(p,pi){
 }
 
 function liveExerciseHtml(participant,pi,ex,ei){
-  return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries · descanso ${fmtRest(ex.restSec)}${ex.targetReps?` · alvo ${esc(ex.targetReps)} reps`:''}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}">⋯</button></div><input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Observação deste exercício"><div class="set-head"><span>Série</span><span>Anterior</span><span>KG</span><span>Reps</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si)).join('')}<div class="live-exercise-footer"><button class="btn btn-secondary btn-sm" data-remove-set="${pi}:${ei}" type="button">− Série</button><button class="btn btn-secondary btn-sm" data-add-set="${pi}:${ei}" type="button">+ Série</button></div></div>`;
+  const baseWeights=ex.sets.map(s=>parseDecimal(s.previous?.weight)).filter(v=>v>0);
+  const lastLoad=baseWeights.length?Math.max(...baseWeights):0;
+  return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}">
+    <div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries · descanso ${fmtRest(ex.restSec)}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}">⋯</button></div>
+    <div class="live-base-strip"><span><small>FAIXA</small><strong>${esc(ex.targetReps||'—')} reps</strong></span><span><small>ÚLTIMA CARGA</small><strong>${lastLoad?`${lastLoad} kg`:'sem registro'}</strong></span></div>
+    <input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Observação deste exercício">
+    <div class="set-head"><span>Série</span><span>Base</span><span>Carga</span><span>Reps</span><span></span></div>
+    ${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}
+    <div class="live-exercise-footer"><button class="btn btn-secondary btn-sm" data-remove-set="${pi}:${ei}" type="button">− Série</button><button class="btn btn-secondary btn-sm" data-add-set="${pi}:${ei}" type="button">+ Série</button></div>
+  </div>`;
 }
-function liveSetHtml(pi,ei,set,si){const prev=set.previous?`${parseDecimal(set.previous.weight)} × ${parseInteger(set.previous.reps)}`:'—';return `<div class="set-row ${set.done?'is-done':''}" data-set-row="${pi}:${ei}:${si}"><div class="set-index">${si+1}</div><div class="set-prev">${esc(prev)}</div><input class="set-input" inputmode="decimal" data-set-weight="${pi}:${ei}:${si}" value="${esc(set.weight)}" placeholder="kg"><input class="set-input" inputmode="numeric" data-set-reps="${pi}:${ei}:${si}" value="${esc(set.reps)}" placeholder="reps"><button class="set-check" data-set-check="${pi}:${ei}:${si}" type="button">${set.done?icons.check:''}</button></div>`;}
+function liveSetHtml(pi,ei,set,si,ex){
+  const prev=set.previous?`${parseDecimal(set.previous.weight)}×${parseInteger(set.previous.reps)}`:'—';
+  const weightHint=set.previous&&parseDecimal(set.previous.weight)>0?String(parseDecimal(set.previous.weight)):'kg';
+  const repsHint=String(ex?.targetReps||'').trim() || (set.previous&&parseInteger(set.previous.reps)>0?String(parseInteger(set.previous.reps)):'reps');
+  return `<div class="set-row ${set.done?'is-done':''}" data-set-row="${pi}:${ei}:${si}">
+    <div class="set-index">${si+1}</div>
+    <div class="set-prev" title="${set.previous?`${parseDecimal(set.previous.weight)} kg × ${parseInteger(set.previous.reps)}`:'Sem sessão anterior'}">${esc(prev)}</div>
+    <input class="set-input" inputmode="decimal" data-set-weight="${pi}:${ei}:${si}" value="${esc(set.weight)}" placeholder="${esc(weightHint)}">
+    <input class="set-input" inputmode="numeric" data-set-reps="${pi}:${ei}:${si}" value="${esc(set.reps)}" placeholder="${esc(repsHint)}">
+    <button class="set-check" data-set-check="${pi}:${ei}:${si}" type="button">${set.done?icons.check:''}</button>
+  </div>`;
+}
 
 function parsePath(path){return String(path).split(':').map(Number);}
 function liveExerciseAt(path){const [pi,ei]=parsePath(path);return live?.participants?.[pi]?.exercises?.[ei]||null;}
@@ -1523,9 +1719,20 @@ function liveSetAt(path){const [pi,ei,si]=parsePath(path);return live?.participa
 function bindLiveHandlers(){
   $$('[data-set-weight]').forEach(inp=>inp.oninput=()=>{const s=liveSetAt(inp.dataset.setWeight);if(s){s.weight=inp.value;persistDraft();updateLiveStatsDOM();}});
   $$('[data-set-reps]').forEach(inp=>inp.oninput=()=>{const s=liveSetAt(inp.dataset.setReps);if(s){s.reps=inp.value;persistDraft();updateLiveStatsDOM();}});
-  $$('[data-set-check]').forEach(btn=>btn.onclick=()=>{const set=liveSetAt(btn.dataset.setCheck);if(!set)return;const [pi,ei]=parsePath(btn.dataset.setCheck);if(!set.done && parseInteger(set.reps)<=0)return toast('Informe as repetições antes de concluir a série.');set.done=!set.done;if(set.done){unlockAudio();const ex=live.participants[pi].exercises[ei];if(ex.restSec>0)startRest(ex.restSec);}persistDraft();renderActiveWorkout($('#main'));});
+  $$('[data-set-check]').forEach(btn=>btn.onclick=()=>{
+    const set=liveSetAt(btn.dataset.setCheck);if(!set)return;
+    const [pi,ei]=parsePath(btn.dataset.setCheck);
+    if(!set.done){
+      if(parseDecimal(set.weight)<=0 && parseDecimal(set.previous?.weight)>0)set.weight=parseDecimal(set.previous.weight);
+      if(parseInteger(set.reps)<=0 && parseInteger(set.previous?.reps)>0)set.reps=parseInteger(set.previous.reps);
+      if(parseInteger(set.reps)<=0)return toast('Informe as repetições antes de concluir a série.');
+    }
+    set.done=!set.done;
+    if(set.done){unlockAudio();const ex=live.participants[pi].exercises[ei];if(ex.restSec>0)startRest(ex.restSec);}
+    persistDraft();renderActiveWorkout($('#main'));
+  });
   $$('[data-live-note]').forEach(inp=>inp.oninput=()=>{const ex=liveExerciseAt(inp.dataset.liveNote);if(ex){ex.note=inp.value;persistDraft();}});
-  $$('[data-add-set]').forEach(btn=>btn.onclick=()=>{const ex=liveExerciseAt(btn.dataset.addSet);if(!ex)return;const last=ex.sets[ex.sets.length-1]||{};ex.sets.push({weight:last.weight||'',reps:last.reps||'',done:false,previous:null});persistDraft();renderActiveWorkout($('#main'));});
+  $$('[data-add-set]').forEach(btn=>btn.onclick=()=>{const ex=liveExerciseAt(btn.dataset.addSet);if(!ex)return;ex.sets.push({weight:'',reps:'',done:false,previous:null});persistDraft();renderActiveWorkout($('#main'));});
   $$('[data-remove-set]').forEach(btn=>btn.onclick=()=>{const ex=liveExerciseAt(btn.dataset.removeSet);if(!ex)return;if(ex.sets.length<=1)return toast('O exercício precisa ter pelo menos 1 série.');ex.sets.pop();persistDraft();renderActiveWorkout($('#main'));});
   $$('[data-live-more]').forEach(btn=>btn.onclick=()=>openLiveExerciseSettings(btn.dataset.liveMore));
 }
@@ -1582,9 +1789,16 @@ function startRest(seconds){if(!live)return;live.restDuration=Math.max(0,Number(
 function stopRest(){if(restTicker){clearInterval(restTicker);restTicker=null;}if(live){live.restEndAt=null;live.restDuration=0;persistDraft();}$('#restTimer')?.classList.add('is-hidden');}
 function adjustRest(delta){if(!live?.restEndAt)return;const left=Math.max(0,Math.ceil((live.restEndAt-Date.now())/1000)+delta);if(!left)return stopRest();live.restEndAt=Date.now()+left*1000;live.restDuration=left;persistDraft();syncRestTimer();}
 function syncRestTimer(){
-  const bar=$('#restTimer');if(!live?.restEndAt||live.restEndAt<=Date.now()){if(live?.restEndAt&&live.restEndAt<=Date.now()){live.restEndAt=null;live.restDuration=0;persistDraft();beep();toast('Descanso finalizado.');}bar.classList.add('is-hidden');if(restTicker){clearInterval(restTicker);restTicker=null;}return;}
+  const bar=$('#restTimer');
+  if(!live?.restEndAt||live.restEndAt<=Date.now()){
+    if(live?.restEndAt&&live.restEndAt<=Date.now()){live.restEndAt=null;live.restDuration=0;persistDraft();beep();toast('Descanso finalizado.');}
+    bar.classList.add('is-hidden');bar.classList.remove('on-workout');
+    if(restTicker){clearInterval(restTicker);restTicker=null;}
+    return;
+  }
   bar.classList.remove('is-hidden');
-  const tick=()=>{if(!live?.restEndAt)return stopRest();const left=Math.max(0,Math.ceil((live.restEndAt-Date.now())/1000));$('#restTimerValue').textContent=fmtClock(left);if(left<=0){live.restEndAt=null;live.restDuration=0;persistDraft();bar.classList.add('is-hidden');if(restTicker){clearInterval(restTicker);restTicker=null;}beep();toast('Descanso finalizado.');}};
+  bar.classList.toggle('on-workout',state.route==='workout');
+  const tick=()=>{if(!live?.restEndAt)return stopRest();const left=Math.max(0,Math.ceil((live.restEndAt-Date.now())/1000));$('#restTimerValue').textContent=fmtClock(left);if(left<=0){live.restEndAt=null;live.restDuration=0;persistDraft();bar.classList.add('is-hidden');bar.classList.remove('on-workout');if(restTicker){clearInterval(restTicker);restTicker=null;}beep();toast('Descanso finalizado.');}};
   tick();if(restTicker)clearInterval(restTicker);restTicker=setInterval(tick,250);
 }
 
@@ -1623,35 +1837,67 @@ function renderEvolution(main){
   setHeader({title:'Evolução',action:null});
   const students=db.students.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
   main.innerHTML=`<section class="screen"><div class="hero"><h1>Evolução</h1><p>Veja quem está evoluindo, volume acumulado, séries, grupamentos e pontos de atenção.</p></div><div class="section" style="margin-top:4px"><div class="section-title"><h2>Alunos</h2><span>${students.length}</span></div>${students.length?students.map(evolutionStudentCardHtml).join(''):emptyHtml('Nenhum aluno cadastrado.','Cadastre alunos e registre treinos para gerar análises.')}</div></section>`;
-  $$('[data-evo-student]',main).forEach(btn=>btn.onclick=()=>navigate('evolution-detail',{evolutionStudentId:btn.dataset.evoStudent}));
+  $$('[data-evo-student]',main).forEach(btn=>btn.onclick=()=>navigate('evolution-detail',{evolutionStudentId:btn.dataset.evoStudent,evolutionProgramId:null}));
 }
 function evolutionStudentCardHtml(st){const sessions=sessionsForStudent(st.id,'90d');const vol=sessions.reduce((a,s)=>a+participantVolume(participantForStudent(s,st.id)),0);const top=exerciseChanges(st.id,'90d').filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct)[0];return `<button class="row-card" type="button" data-evo-student="${esc(st.id)}"><div class="avatar round">${esc(initials(st.name))}</div><div class="row-main"><strong>${esc(st.name)}</strong><small>${sessions.length} treinos · ${kgText(vol)}${top?` · ${esc(top.exerciseName)} +${round(top.deltaKg)} kg`:''}</small></div>${chev()}</button>`;}
 
 function renderEvolutionDetail(main,studentId){
   const st=studentById(studentId);if(!st)return navigate('evolution');
   setHeader({eyebrow:'EVOLUÇÃO',title:st.name,back:()=>navigate('evolution'),action:null});
-  const period=state.evolutionPeriod;const sessions=sessionsForStudent(st.id,period);const participants=sessions.map(s=>({session:s,p:participantForStudent(s,st.id)}));
-  const totalVol=participants.reduce((a,x)=>a+participantVolume(x.p),0),sets=participants.reduce((a,x)=>a+participantSetCount(x.p),0),avg=sessions.length?totalVol/sessions.length:0,best=participants.reduce((m,x)=>Math.max(m,participantVolume(x.p)),0);
-  const changes=exerciseChanges(st.id,period);const gains=changes.filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct);const downs=changes.filter(x=>x.deltaKg<0).sort((a,b)=>a.pct-b.pct);
+  const period=state.evolutionPeriod;
+  const sessions=sessionsForStudent(st.id,period);
+  const participants=sessions.map(s=>({session:s,p:participantForStudent(s,st.id)}));
+  const sets=participants.reduce((a,x)=>a+participantSetCount(x.p),0);
+  const uniqueExercises=new Set(participants.flatMap(x=>(x.p.exercises||[]).map(ex=>ex.exerciseId))).size;
+  const changes=exerciseChanges(st.id,period);
+  const gains=changes.filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct);
+  const downs=changes.filter(x=>x.deltaKg<0).sort((a,b)=>a.pct-b.pct);
   const muscles=muscleDistribution(st.id,period);
   const comparable=changes.slice().sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
-  main.innerHTML=`<section class="screen"><div class="hero"><span class="hero-kicker">EVOLUÇÃO INDIVIDUAL</span><h1>${esc(st.name)}</h1><p>Cargas, volume, séries e evolução por exercício em uma leitura limpa para o celular.</p></div><div class="evo-filter-row">${[['30d','30 dias'],['90d','3 meses'],['180d','6 meses'],['365d','1 ano'],['all','Tudo']].map(([v,l])=>`<button class="period-btn ${period===v?'is-active':''}" data-period="${v}">${l}</button>`).join('')}</div><div class="section" style="margin-top:0"><div class="grid-2"><div class="metric-card"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></div><div class="metric-card"><div><small>Volume total</small><strong>${compactNumber(totalVol)} kg</strong></div><p>carga × repetições</p></div><div class="metric-card"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></div><div class="metric-card highlight"><div><small>Melhor sessão</small><strong>${compactNumber(best)} kg</strong></div><p>média ${compactNumber(avg)} kg</p></div></div></div>${volumeChartHtml(participants)}<div class="chart-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong><small>Distribuição aproximada do trabalho registrado.</small></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.','Registre treinos para preencher esta análise.')}</div><div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong><small>Toque em qualquer exercício para abrir as últimas execuções.</small></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.','São necessários ao menos dois registros do mesmo exercício.')}</div></div><div class="chart-card"><div class="chart-card-head"><div><strong>Destaques</strong><small>Maiores altas e pontos que merecem acompanhamento.</small></div></div>${gains[0]?`<div class="trend-highlight good"><span>${icons.trend}</span><div><small>MAIOR EVOLUÇÃO</small><strong>${esc(gains[0].exerciseName)}</strong><p>${gains[0].firstKg} kg → ${gains[0].lastKg} kg · +${round(gains[0].pct)}%</p></div></div>`:''}${downs[0]?`<div class="trend-highlight warn"><span>${icons.chart}</span><div><small>PONTO DE ATENÇÃO</small><strong>${esc(downs[0].exerciseName)}</strong><p>${downs[0].firstKg} kg → ${downs[0].lastKg} kg · ${round(downs[0].pct)}%</p></div></div>`:''}${!gains[0]&&!downs[0]?emptyHtml('Ainda sem destaques.','Continue registrando as cargas para comparar os exercícios.'):''}</div></section>`;
+  const programs=programsForStudent(st.id);
+  if(state.evolutionProgramId && !programs.some(p=>p.id===state.evolutionProgramId))state.evolutionProgramId=null;
+  const selectedProgram=state.evolutionProgramId?programById(state.evolutionProgramId):null;
+  const programParticipants=selectedProgram?participants.filter(x=>x.p.programId===selectedProgram.id):[];
+  const topGain=gains[0]||null;
+  main.innerHTML=`<section class="screen">
+    <div class="hero"><span class="hero-kicker">EVOLUÇÃO INDIVIDUAL</span><h1>${esc(st.name)}</h1><p>Cargas, séries, grupamentos e evolução por exercício. O volume é comparado apenas dentro da mesma ficha.</p></div>
+    <div class="evo-filter-row">${[['30d','30 dias'],['90d','3 meses'],['180d','6 meses'],['365d','1 ano'],['all','Tudo']].map(([v,l])=>`<button class="period-btn ${period===v?'is-active':''}" data-period="${v}">${l}</button>`).join('')}</div>
+    <div class="section evolution-summary" style="margin-top:0"><div class="grid-2">
+      <div class="metric-card"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></div>
+      <div class="metric-card"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></div>
+      <div class="metric-card"><div><small>Exercícios</small><strong>${uniqueExercises}</strong></div><p>com registro</p></div>
+      <div class="metric-card highlight"><div><small>Maior evolução</small><strong>${topGain?`+${round(topGain.deltaKg)} kg`:'—'}</strong></div><p>${topGain?esc(topGain.exerciseName):'precisa de mais histórico'}</p></div>
+    </div></div>
+    ${volumeChartHtml(programParticipants,selectedProgram,programs.length)}
+    <div class="chart-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong><small>Distribuição aproximada do trabalho registrado.</small></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.','Registre treinos para preencher esta análise.')}</div>
+    <div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong><small>Toque em qualquer exercício para abrir as últimas execuções.</small></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.','São necessários ao menos dois registros do mesmo exercício.')}</div></div>
+    <div class="chart-card"><div class="chart-card-head"><div><strong>Destaques</strong><small>Maiores altas e pontos que merecem acompanhamento.</small></div></div>${gains[0]?`<div class="trend-highlight good"><span>${icons.trend}</span><div><small>MAIOR EVOLUÇÃO</small><strong>${esc(gains[0].exerciseName)}</strong><p>${gains[0].firstKg} kg → ${gains[0].lastKg} kg · +${round(gains[0].pct)}%</p></div></div>`:''}${downs[0]?`<div class="trend-highlight warn"><span>${icons.chart}</span><div><small>PONTO DE ATENÇÃO</small><strong>${esc(downs[0].exerciseName)}</strong><p>${downs[0].firstKg} kg → ${downs[0].lastKg} kg · ${round(downs[0].pct)}%</p></div></div>`:''}${!gains[0]&&!downs[0]?emptyHtml('Ainda sem destaques.','Continue registrando as cargas para comparar os exercícios.'):''}</div>
+  </section>`;
   $$('[data-period]',main).forEach(btn=>btn.onclick=()=>{state.evolutionPeriod=btn.dataset.period;renderEvolutionDetail(main,st.id);});
-  requestAnimationFrame(()=>{const scroll=main.querySelector('.chart-scroll');if(scroll&&scroll.scrollWidth>scroll.clientWidth)scroll.scrollLeft=scroll.scrollWidth;});
+  $('#evoProgramSelect')?.addEventListener('click',()=>openEvolutionProgramPicker(st.id));
+  requestAnimationFrame(()=>{const scroll=main.querySelector('.program-volume-card .chart-scroll');if(scroll&&scroll.scrollWidth>scroll.clientWidth)scroll.scrollLeft=scroll.scrollWidth;});
 }
 
-function volumeChartHtml(participants){
-  if(!participants.length)return `<div class="chart-card">${emptyHtml('Sem sessões neste período.','Escolha outro período ou registre um treino.')}</div>`;
+function volumeChartHtml(participants,selectedProgram,programCount=0){
+  if(!selectedProgram){
+    return `<div class="chart-card program-volume-card">
+      <div class="chart-card-head"><div><strong>Evolução do volume</strong><small>Compare apenas execuções da mesma ficha de treino.</small></div></div>
+      <button class="evo-program-select" id="evoProgramSelect" type="button"><div><small>TREINO ANALISADO</small><strong>${programCount?'Selecionar um treino':'Nenhum treino cadastrado'}</strong></div>${programCount?chev():''}</button>
+      ${programCount?'<div class="chart-select-help">Escolha, por exemplo, “Treino de pernas” ou “Treino superior”. O gráfico só compara sessões dessa mesma ficha.</div>':emptyHtml('Crie uma ficha de treino primeiro.','O volume aparecerá aqui depois que o aluno tiver um treino cadastrado.')}
+    </div>`;
+  }
   const all=participants.map(x=>({date:dateShort(x.session.endedAt),value:participantVolume(x.p),ts:sessionTimestamp(x.session)}));
+  const select=`<button class="evo-program-select" id="evoProgramSelect" type="button"><div><small>TREINO ANALISADO</small><strong>${esc(selectedProgram.name)}</strong></div>${chev()}</button>`;
+  if(!all.length)return `<div class="chart-card program-volume-card"><div class="chart-card-head"><div><strong>Evolução do volume</strong><small>Volume por execução da ficha selecionada.</small></div></div>${select}${emptyHtml('Sem execuções desta ficha no período.','Troque o período ou registre este treino novamente.')}</div>`;
   const points=all.slice(-24);
   const max=Math.max(...points.map(p=>p.value),1);
-  const spacing=72,W=Math.max(360,58+(points.length-1)*spacing+38),H=218,L=52,R=W-22,T=24,B=166;
+  const spacing=76,W=Math.max(360,58+(points.length-1)*spacing+38),H=218,L=52,R=W-22,T=24,B=166;
   const coords=points.map((p,i)=>({x:points.length===1?(L+R)/2:L+i*spacing,y:B-(p.value/max)*(B-T)}));
   const line=coords.map((p,i)=>`${i?'L':'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
   const grid=[0,.5,1].map(fr=>{const y=B-fr*(B-T);return `<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" class="chart-grid-line"/><text x="${L-8}" y="${y+3}" text-anchor="end" class="chart-y-label">${compactNumber(max*fr)}</text>`;}).join('');
-  const dots=coords.map((p,i)=>`<g class="chart-point"><circle cx="${p.x}" cy="${p.y}" r="5"/><text x="${p.x}" y="${B+27}" text-anchor="middle" class="chart-x-label">${esc(points[i].date)}</text></g>`).join('');
-  const hint=all.length>24?`Mostrando as 24 sessões mais recentes de ${all.length}.`:points.length>4?'Arraste o gráfico para os lados para navegar.':'Cada ponto representa uma sessão.';
-  return `<div class="chart-card"><div class="chart-card-head"><div><strong>Evolução do volume</strong><small>Volume total de cada sessão</small></div><div class="chart-value">${compactNumber(points[points.length-1].value)} kg</div></div><div class="chart-scroll"><svg class="detail-line-chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução do volume por sessão">${grid}<path d="${line}" class="chart-line"/>${dots}</svg></div><div class="chart-footnote">${hint}</div></div>`;
+  const dots=coords.map((p,i)=>`<g class="chart-point"><circle cx="${p.x}" cy="${p.y}" r="5"/><text x="${p.x}" y="${Math.max(14,p.y-12)}" text-anchor="middle" class="point-value">${compactNumber(points[i].value)}</text><text x="${p.x}" y="${B+27}" text-anchor="middle" class="chart-x-label">${esc(points[i].date)}</text></g>`).join('');
+  const hint=all.length>24?`Mostrando as 24 execuções mais recentes de ${all.length}.`:points.length>4?'Arraste para os lados para navegar.':'Cada ponto representa uma execução desta ficha.';
+  return `<div class="chart-card program-volume-card"><div class="chart-card-head"><div><strong>Evolução do volume</strong><small>Comparação exclusiva de ${esc(selectedProgram.name)}.</small></div><div class="chart-value">${compactNumber(points[points.length-1].value)} kg</div></div>${select}<div class="chart-scroll"><svg class="detail-line-chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução do volume da ficha ${esc(selectedProgram.name)}">${grid}<path d="${line}" class="chart-line"/>${dots}</svg></div><div class="chart-footnote">${hint}</div></div>`;
 }
 
 function muscleDistribution(studentId,period){
@@ -1707,7 +1953,8 @@ function boot(){
   $('#themeToggle').onclick=()=>{toggleTheme();render();};
   $('#activeWorkoutPill').onclick=()=>navigate('workout');
   $('#modalBackdrop').onclick=closeModal;
-  $('#restMinus').onclick=()=>adjustRest(-15);$('#restPlus').onclick=()=>adjustRest(15);$('#restSkip').onclick=stopRest;
+  $('#restMinus').onclick=e=>{e.stopPropagation();adjustRest(-15);};$('#restPlus').onclick=e=>{e.stopPropagation();adjustRest(15);};$('#restSkip').onclick=e=>{e.stopPropagation();stopRest();};
+  $('#restTimer').onclick=e=>{if(e.target.closest('.rest-timer-actions'))return;if(live)navigate('workout');};
   $('#backupImportInput').onchange=e=>{const file=e.target.files?.[0];if(file)importBackupFile(file);e.target.value='';};
   document.addEventListener('click',e=>{
     const target=e.target.closest?.('[data-ex-history]'); if(!target)return;
