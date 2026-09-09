@@ -202,6 +202,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .action-item{width:100%;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;color:var(--text);text-align:left;padding:12px 13px}
 .action-item:last-child{border-bottom:1px solid var(--line)}
 .action-icon{width:36px;height:36px;border-radius:11px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);flex:0 0 auto}
+.action-icon svg{width:18px;height:18px;display:block}
 .action-item.danger{color:var(--red)}
 .action-item.danger .action-icon{background:var(--red-soft);color:var(--red)}
 .action-item .row-main strong{font-size:13px}
@@ -248,8 +249,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .live-exercise-head{display:flex;align-items:flex-start;gap:8px}
 .live-exercise-head .row-main strong{font-size:16px;letter-spacing:-.25px;white-space:normal}
 .live-exercise-head .row-main small{white-space:normal;margin-top:5px}
-.live-more{width:36px;height:36px;border-radius:11px;background:var(--surface-2);color:var(--muted);padding:0;display:grid;place-items:center;flex:0 0 auto}
-.live-more svg{width:17px;height:17px}
+.live-more{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--faint);font-size:20px;padding:0;display:grid;place-items:center;flex:0 0 auto;line-height:1}
 .live-note{width:100%;height:34px;margin-top:9px;border:0;border-bottom:1px solid var(--line);background:transparent;outline:0;color:var(--muted);font-size:11.5px}
 .set-head,.set-row{display:grid;grid-template-columns:30px minmax(52px,1fr) 64px 57px 40px;gap:6px;align-items:center}
 .set-head{padding:13px 1px 6px;color:var(--faint);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
@@ -262,8 +262,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .set-check svg{width:17px;height:17px}
 .set-row.is-done .set-index,.set-row.is-done .set-check{background:var(--green);color:#092116}
 .set-row.is-done .set-input{border-color:rgba(66,211,146,.55);background:var(--green-soft)}
-.live-exercise-footer{display:flex;gap:10px;margin-top:10px}
-.live-exercise-footer .btn{flex:1}
 .live-finish{display:flex;gap:12px;margin:20px 18px 26px}
 .live-finish .btn{flex:1}
 
@@ -629,6 +627,8 @@ const icons = {
   back: '<svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   more: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="19" r="1.7" fill="currentColor"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  minus: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  sliders: '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h7M15 7h5M4 17h3M11 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="7" r="2" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="17" r="2" stroke="currentColor" stroke-width="1.8"/></svg>',
   home: '<svg viewBox="0 0 24 24" fill="none"><path d="M3.5 10.5 12 3l8.5 7.5v9a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
   users: '<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3.6 19c.5-3.3 2.3-5.1 5.4-5.1s4.9 1.8 5.4 5.1M16.3 5.2a3 3 0 0 1 0 5.8M16.2 14c2.6.2 4.2 1.9 4.6 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   dumbbell: '<svg viewBox="0 0 24 24" fill="none"><path d="M7 7v10M17 7v10M4 9v6M20 9v6M7 12h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
@@ -1855,11 +1855,10 @@ function liveParticipantHtml(p,pi){
 
 function liveExerciseHtml(participant,pi,ex,ei){
   return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}">
-    <div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries · descanso ${fmtRest(ex.restSec)}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Editar exercício" title="Editar exercício">${icons.edit}</button></div>
+    <div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries · descanso ${fmtRest(ex.restSec)}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício" title="Ações do exercício">⋯</button></div>
     <input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Observação deste exercício">
     <div class="set-head"><span>Série</span><span>Anterior</span><span>Carga</span><span>Reps</span><span></span></div>
     ${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}
-    <div class="live-exercise-footer"><button class="btn btn-secondary btn-sm" data-remove-set="${pi}:${ei}" type="button">− Série</button><button class="btn btn-secondary btn-sm" data-add-set="${pi}:${ei}" type="button">+ Série</button></div>
   </div>`;
 }
 function liveSetHtml(pi,ei,set,si,ex){
@@ -1895,8 +1894,6 @@ function bindLiveHandlers(){
     persistDraft();renderActiveWorkout($('#main'));
   });
   $$('[data-live-note]').forEach(inp=>inp.oninput=()=>{const ex=liveExerciseAt(inp.dataset.liveNote);if(ex){ex.note=inp.value;persistDraft();}});
-  $$('[data-add-set]').forEach(btn=>btn.onclick=()=>{const ex=liveExerciseAt(btn.dataset.addSet);if(!ex)return;ex.sets.push({weight:'',reps:'',done:false,previous:null});persistDraft();renderActiveWorkout($('#main'));});
-  $$('[data-remove-set]').forEach(btn=>btn.onclick=()=>{const ex=liveExerciseAt(btn.dataset.removeSet);if(!ex)return;if(ex.sets.length<=1)return toast('O exercício precisa ter pelo menos 1 série.');ex.sets.pop();persistDraft();renderActiveWorkout($('#main'));});
   $$('[data-live-more]').forEach(btn=>btn.onclick=()=>openLiveExerciseSettings(btn.dataset.liveMore));
 }
 
@@ -1919,55 +1916,94 @@ function syncLiveExerciseToProgram(path,{exerciseId=null,sets=null,restSec=null,
   program.updatedAt=Date.now();persist();return true;
 }
 
-function askPersistLiveChanges(path, message='Salvar estes ajustes também na ficha original?'){
+function askPersistLiveChanges(path,changes,message='Salvar estes ajustes também na ficha original?'){
   openModal(`<h2>Atualizar a ficha?</h2><p class="modal-sub">${esc(message)}</p><div class="modal-actions"><button class="btn btn-secondary" id="keepOriginalProgram">Manter ficha original</button><button class="btn btn-primary" id="saveProgramChange">Salvar na ficha</button></div>`);
   $('#keepOriginalProgram').onclick=()=>{closeModal();renderActiveWorkout($('#main'));toast('Mudança mantida só nesta sessão.');};
   $('#saveProgramChange').onclick=()=>{
-    const ex=liveExerciseAt(path);if(!ex)return closeModal();
-    syncLiveExerciseToProgram(path,{exerciseId:ex.exerciseId,sets:ex.sets.length,restSec:ex.restSec,targetReps:ex.targetReps});
+    if(!liveExerciseAt(path))return closeModal();
+    syncLiveExerciseToProgram(path,changes||{});
     closeModal();renderActiveWorkout($('#main'));toast('Ficha do treino atualizada.');
   };
+}
+
+function addLiveExerciseSet(path){
+  const ex=liveExerciseAt(path);if(!ex)return;
+  const last=ex.sets[ex.sets.length-1]||{};
+  ex.sets.push({weight:'',reps:'',done:false,previous:last.previous||null});
+  persistDraft();renderActiveWorkout($('#main'));toast('Série adicionada nesta sessão.');
+}
+
+function removeLiveExerciseSet(path){
+  const ex=liveExerciseAt(path);if(!ex)return;
+  if(ex.sets.length<=1)return toast('O exercício precisa ter pelo menos 1 série.');
+  const last=ex.sets[ex.sets.length-1];
+  if(last?.done){
+    return confirmModal('Remover última série?','A última série já foi concluída. Ela será removida desta sessão.','Remover série',()=>{
+      ex.sets.pop();persistDraft();renderActiveWorkout($('#main'));toast('Série removida desta sessão.');
+    });
+  }
+  ex.sets.pop();persistDraft();renderActiveWorkout($('#main'));toast('Série removida desta sessão.');
 }
 
 function replaceLiveExercise(path,newExerciseId){
   const ex=liveExerciseAt(path), next=exerciseById(newExerciseId);if(!ex||!next)return;
   const doneCount=ex.sets.filter(s=>s.done).length;
   const apply=()=>{
-    const [pi,ei]=parsePath(path), participant=live.participants[pi], st=studentById(participant.studentId);
+    const [pi]=parsePath(path), participant=live.participants[pi], st=studentById(participant.studentId);
     const prev=getLastExercisePerformance(st.id,next.id),prevSets=prev?completedSets(prev):[];
     const count=ex.sets.length;
     ex.exerciseId=next.id;ex.name=next.name;ex.muscleGroups=next.muscleGroups.slice();
     ex.sets=Array.from({length:count},(_,i)=>{const base=prevSets[i]||prevSets[prevSets.length-1]||null;return{weight:'',reps:'',done:false,previous:base?{weight:base.weight,reps:base.reps}:null};});
     persistDraft();
-    askPersistLiveChanges(path,`Você trocou para “${next.name}”. Deseja salvar essa troca também na ficha ${participant.programName}?`);
+    askPersistLiveChanges(path,{exerciseId:next.id},`Você trocou para “${next.name}”. Deseja salvar essa troca também na ficha ${participant.programName}?`);
   };
   if(doneCount){
     confirmModal('Trocar exercício?',`Já existem ${doneCount} série${doneCount===1?' concluída':'s concluídas'} neste exercício. Para evitar registrar dados no exercício errado, a troca vai limpar as séries atuais.`,`Trocar e limpar`,()=>apply(),false);
   } else apply();
 }
 
-function openLiveExerciseSettings(path){
+function openLiveExerciseAdjustments(path){
   const ex=liveExerciseAt(path);if(!ex)return;
-  openModal(`<h2>${esc(ex.name)}</h2><p class="modal-sub">Você pode ajustar a sessão e decidir depois se quer atualizar a ficha original.</p>
-    <button class="btn btn-secondary live-change-exercise" id="liveChangeExercise" type="button">${icons.edit} Trocar exercício</button>
-    <div class="form-row" style="margin-top:14px"><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}" placeholder="Ex.: 8–12"></div>
-    <div class="form-grid">
-      <div class="form-row"><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div>
-      <div class="form-row"><label class="form-label">Número de séries</label><input id="liveSetsEdit" type="number" min="1" max="50" class="form-input" value="${ex.sets.length}"></div>
-    </div>
+  openModal(`<h2>Ajustar exercício</h2><p class="modal-sub">${esc(ex.name)} · altere a prescrição desta sessão.</p>
+    <div class="form-row"><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}" placeholder="Ex.: 8–12"></div>
+    <div class="form-row"><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div>
     <div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar ajustes</button></div>`);
-  $('#liveEditCancel').onclick=closeModal;
-  $('#liveChangeExercise').onclick=()=>{closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),60);};
+  $('#liveEditCancel').onclick=()=>{closeModal();setTimeout(()=>openLiveExerciseSettings(path),60);};
   $('#liveEditSave').onclick=()=>{
     const nextReps=$('#liveRepsEdit').value.trim();
     if(!nextReps)return toast('Informe a faixa de repetições.');
     ex.targetReps=nextReps;
     ex.restSec=clamp(parseRest($('#liveRestEdit').value),0,3600);
-    const n=clamp(parseInteger($('#liveSetsEdit').value)||1,1,50);
-    while(ex.sets.length<n){const last=ex.sets[ex.sets.length-1]||{};ex.sets.push({weight:'',reps:'',done:false,previous:last.previous||null});}
-    while(ex.sets.length>n)ex.sets.pop();
-    persistDraft();closeModal();setTimeout(()=>askPersistLiveChanges(path),60);
+    persistDraft();closeModal();
+    setTimeout(()=>askPersistLiveChanges(path,{targetReps:ex.targetReps,restSec:ex.restSec}),60);
   };
+}
+
+function openLiveExerciseSettings(path){
+  const ex=liveExerciseAt(path);if(!ex)return;
+  openModal(`<h2>${esc(ex.name)}</h2><p class="modal-sub">Ações deste exercício durante o treino em andamento.</p><div class="action-list">
+    <button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Trocar exercício</strong><small>Substituir este exercício por outro da biblioteca</small></div>${chev()}</button>
+    <button class="action-item" type="button" data-live-ex-action="adjust"><span class="action-icon">${icons.sliders}</span><div class="row-main"><strong>Repetições e descanso</strong><small>${esc(ex.targetReps||'—')} reps · ${fmtRest(ex.restSec)} de descanso</small></div>${chev()}</button>
+    <button class="action-item" type="button" data-live-ex-action="add-set"><span class="action-icon">${icons.plus}</span><div class="row-main"><strong>Adicionar série</strong><small>Passar de ${ex.sets.length} para ${ex.sets.length+1} séries nesta sessão</small></div></button>
+    <button class="action-item" type="button" data-live-ex-action="remove-set"><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong><small>${ex.sets.length>1?`Remover a última das ${ex.sets.length} séries`:'O exercício precisa manter pelo menos 1 série'}</small></div></button>
+  </div>`);
+  $$('[data-live-ex-action]',$('#modal')).forEach(btn=>btn.onclick=()=>{
+    const action=btn.dataset.liveExAction;
+    if(action==='replace'){
+      closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),60);
+      return;
+    }
+    if(action==='adjust'){
+      closeModal();setTimeout(()=>openLiveExerciseAdjustments(path),60);
+      return;
+    }
+    if(action==='add-set'){
+      closeModal();addLiveExerciseSet(path);return;
+    }
+    if(action==='remove-set'){
+      closeModal();setTimeout(()=>removeLiveExerciseSet(path),40);
+    }
+  });
 }
 
 function openLiveMenu(){
