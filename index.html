@@ -96,7 +96,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .row-card{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:13px 14px;display:flex;align-items:center;gap:13px;text-align:left;margin-bottom:11px}
 .row-card:active{background:var(--surface-2)}
 .avatar{width:42px;height:42px;flex:0 0 42px;border-radius:14px;background:var(--blue-soft);color:#C8D2FF;display:grid;place-items:center;font-size:12px;font-weight:800;overflow:hidden}
+.avatar img{width:100%;height:100%;display:block;object-fit:cover}
 .avatar.round{border-radius:50%}
+.student-photo-pick{display:flex;align-items:center;gap:12px}
+.student-photo-pick .avatar{width:58px;height:58px;flex-basis:58px;border-radius:50%}
+.student-photo-actions{display:flex;gap:8px;flex-wrap:wrap}
 .row-main{flex:1;min-width:0}
 .row-main strong{display:block;font-size:13.5px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row-main small{display:block;color:var(--faint);font-size:10.5px;line-height:1.35;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -150,12 +154,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .profile-note small{display:block;color:var(--faint);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .profile-note p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
 
-.workout-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:13px}
-.workout-card-head{display:flex;align-items:center;gap:8px}
-.workout-card-head strong{font-size:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.workout-card-head button{background:transparent;color:var(--faint);font-size:22px;padding:0 4px}
-.workout-meta{color:var(--faint);font-size:10.5px;margin-top:6px}
-.workout-exercises-preview{margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+.workout-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:11px}
+.workout-summary-toggle{width:100%;background:transparent;color:var(--text);text-align:left;padding:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.workout-summary-toggle strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.workout-toggle-side{width:28px;height:28px;border-radius:9px;background:var(--surface-2);color:var(--faint);display:grid;place-items:center;font-size:15px;transition:transform .15s ease}
+.workout-summary-toggle[aria-expanded="true"] .workout-toggle-side{transform:rotate(180deg)}
+.workout-meta{color:var(--faint);font-size:10.5px;margin-top:5px}
+.workout-date{color:var(--muted);font-size:10px;margin-top:4px}
+.workout-exercises-preview{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
 .workout-exercises-preview div{display:flex;gap:7px;align-items:center;color:var(--muted);font-size:11px;padding:4px 0}
 .workout-exercises-preview span{width:18px;color:var(--faint);font-size:9px;font-weight:800}
 .workout-actions{display:flex;gap:12px;margin-top:14px}
@@ -204,11 +210,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .builder-head h2{flex:1;margin:0;font-size:17px}
 .builder-body{flex:1;overflow:auto;padding:16px 1px 12px}
 .builder-foot{flex:0 0 auto;border-top:1px solid var(--line);padding-top:12px}
-.builder-exercise{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:13px;margin-bottom:10px}
+.builder-exercise{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:10px;margin-bottom:8px}
 .builder-exercise-head{display:flex;align-items:center;gap:8px}
 .builder-exercise-name{flex:1;min-width:0;background:transparent;color:var(--text);text-align:left;font-size:13.5px;font-weight:720;padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .builder-remove{width:30px;height:30px;border-radius:50%;background:var(--surface-2);color:var(--faint);font-size:20px}
-.builder-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.builder-controls{display:grid;grid-template-columns:minmax(86px,.72fr) minmax(120px,1fr);gap:8px;margin-top:8px}
 .control-label{display:block;color:var(--faint);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
 .stepper{height:40px;display:grid;grid-template-columns:37px 1fr 37px;align-items:center;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:11px;overflow:hidden}
 .stepper button{height:100%;background:transparent;color:var(--blue-2);font-size:18px;font-weight:700}
@@ -428,7 +434,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .builder-order-controls button{width:28px;height:30px;border-radius:9px;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:850}
 .builder-order-controls button:disabled{opacity:.28}
 .builder-tags{margin-top:8px}
-.builder-reps-field{margin-top:10px}
+.builder-reps-field{margin-top:8px}
+.builder-reps-field .form-input{height:40px}
+.builder-default-grid{display:grid;grid-template-columns:90px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:end}
+.builder-default-grid .form-input{height:40px;padding:0 9px;text-align:center;font-size:12px}
+.builder-default-grid .stepper{height:40px}
+.builder-apply-all{margin-top:8px;width:100%}
+.live-change-exercise{width:100%;margin-top:10px}
 
 .picker-filter-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 12px;padding:1px 1px 3px}
 .picker-filter-row::-webkit-scrollbar{display:none}
@@ -460,25 +472,35 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 
 .print-area{display:none}
 @media print{
-  @page{margin:14mm;background:#fff}
-  html,body{background:#fff!important;color:#111!important}
+  @page{size:A4 portrait;margin:8mm}
+  html,body{background:#fff!important;color:#111!important;width:210mm!important;min-height:297mm!important}
   body>*{display:none!important}
-  #printArea{display:block!important;color:#111!important;background:#fff!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-  .print-brand{font-size:9px;font-weight:900;letter-spacing:.16em;color:#315CF5}
-  #printArea h1{font-size:24px;margin:6px 0 3px}
-  .print-student{font-size:15px;font-weight:800}
-  .print-meta{font-size:10px;color:#666;margin-top:3px}
-  .print-rule{height:1px;background:#ddd;margin:14px 0}
-  .print-exercise{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid #e6e6e6;break-inside:avoid}
-  .print-index{font-size:10px;font-weight:900;color:#999}
-  .print-exercise strong{font-size:13px}
-  .print-exercise small{display:block;font-size:9px;color:#777;margin-top:2px}
-  .print-prescription{display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;font-size:10px}
-  .print-last{margin-top:8px}
-  .print-last>small{font-size:8px;font-weight:800;letter-spacing:.06em;color:#777;margin-bottom:4px}
-  .print-last>span{display:inline-block;margin:3px 9px 0 0;font-size:10px}
+  #printArea{display:block!important;color:#111!important;background:#fff!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;width:100%!important}
+  #printArea h1{font-size:20px;line-height:1.05;margin:0 0 3px}
+  .print-student{font-size:13px;font-weight:800}
+  .print-meta{font-size:9px;color:#666;margin-top:3px}
+  .print-rule{height:1px;background:#ddd;margin:9px 0}
+  .print-exercises-grid{display:grid;grid-template-columns:1fr;column-gap:9mm;align-items:start}
+  .print-exercises-grid.two-col{grid-template-columns:1fr 1fr}
+  .print-exercises-grid.three-col{grid-template-columns:repeat(3,1fr);column-gap:6mm}
+  .print-exercise{display:grid;grid-template-columns:20px 1fr;gap:7px;padding:7px 0;border-bottom:1px solid #e6e6e6;break-inside:avoid}
+  .print-index{font-size:8.5px;font-weight:900;color:#999}
+  .print-exercise strong{font-size:10.5px;line-height:1.15}
+  .print-exercise small{display:block;font-size:7.5px;color:#777;margin-top:1px}
+  .print-prescription{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;font-size:8px}
+  .print-last{margin-top:4px}
+  .print-last>small{font-size:6.8px;font-weight:800;letter-spacing:.04em;color:#777;margin-bottom:2px}
+  .print-last>span{display:inline-block;margin:2px 6px 0 0;font-size:7.7px}
   .print-muted{color:#999}
-  .print-footer{font-size:8.5px;color:#999;text-align:center;margin-top:18px}
+  #printArea.compact h1{font-size:18px}
+  #printArea.compact .print-exercise{padding:5px 0}
+  #printArea.compact .print-exercise strong{font-size:9.5px}
+  #printArea.compact .print-prescription,#printArea.compact .print-last>span{font-size:7.2px}
+  #printArea.ultra-compact .print-exercise{grid-template-columns:16px 1fr;gap:4px;padding:3.5px 0}
+  #printArea.ultra-compact .print-exercise strong{font-size:8.2px}
+  #printArea.ultra-compact .print-exercise small{font-size:6.5px}
+  #printArea.ultra-compact .print-prescription,#printArea.ultra-compact .print-last>span{font-size:6.3px;gap:3px}
+  #printArea.ultra-compact .print-last{margin-top:2px}
 }
 
 /* True light mode. */
@@ -506,7 +528,10 @@ html[data-theme="light"] .toast{background:#12151A;color:#fff}
   .set-head,.set-row{grid-template-columns:28px minmax(43px,1fr) 59px 53px 38px;gap:4px}
   .set-input{font-size:12.5px}
   .set-check{width:38px}
-  .form-grid,.builder-controls{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .builder-controls{grid-template-columns:82px minmax(118px,1fr)}
+  .builder-default-grid{grid-template-columns:80px minmax(0,1fr)}
+  .builder-default-grid>div:last-child{grid-column:1/-1}
   .group-grid{grid-template-columns:1fr 1fr}
 }
 
@@ -644,6 +669,37 @@ function esc(value) {
 function initials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   return (parts.slice(0, 2).map(p => p[0]).join('') || '?').toUpperCase();
+}
+
+function avatarHtml(student, extraClass='round') {
+  const cls = `avatar ${extraClass || ''}`.trim();
+  if (student?.photoDataUrl) return `<div class="${cls}"><img src="${esc(student.photoDataUrl)}" alt=""></div>`;
+  return `<div class="${cls}">${esc(initials(student?.name || 'Aluno'))}</div>`;
+}
+
+function squareImageDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve('');
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler a imagem.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Imagem inválida.'));
+      img.onload = () => {
+        const side = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+        const sx = Math.max(0, ((img.naturalWidth || img.width) - side) / 2);
+        const sy = Math.max(0, ((img.naturalHeight || img.height) - side) / 2);
+        const canvas = document.createElement('canvas');
+        canvas.width = side; canvas.height = side;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, side, side);
+        const mime = /^image\/(png|webp|jpeg)$/.test(file.type) ? file.type : 'image/jpeg';
+        resolve(canvas.toDataURL(mime, .94));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
@@ -830,7 +886,10 @@ function normalizeDatabase(raw) {
     name: String(s.name || 'Aluno').trim(),
     goal: String(s.goal || ''),
     notes: String(s.notes || ''),
+    photoDataUrl: String(s.photoDataUrl || ''),
     defaultRestSec: clamp(parseInteger(s.defaultRestSec) || 120, 60, 180),
+    defaultSets: clamp(parseInteger(s.defaultSets) || 3, 1, 50),
+    defaultTargetReps: String(s.defaultTargetReps || '8–12'),
     createdAt: Number(s.createdAt || Date.now())
   })) : [];
   clean.exercises = Array.isArray(raw.exercises) ? raw.exercises.map(e => ({
@@ -909,7 +968,7 @@ function migrateLegacy(legacy) {
   out.students = legacy.students.map(st => ({
     id: String(st.id || uid('student')),
     name: String(st.name || 'Aluno'),
-    goal: '', notes: '', defaultRestSec:120, createdAt: Date.now()
+    goal: '', notes: '', photoDataUrl:'', defaultRestSec:120, defaultSets:3, defaultTargetReps:'8–12', createdAt: Date.now()
   }));
   legacy.students.forEach(st => {
     (st.workouts || []).forEach(w => {
@@ -1178,7 +1237,7 @@ function recentSessionCardHtml(session) {
   const programs = session.participants.map(p => p.programName || 'Treino').join(' + ');
   return `<button class="recent-session-card" type="button" data-session-student="${esc(first?.studentId || '')}">
     <div class="recent-session-top">
-      <div class="avatar round">${esc(initials(names))}</div>
+      ${session.participants.length===1?avatarHtml(studentById(first?.studentId)):`<div class="avatar round">${esc(initials(names))}</div>`}
       <div class="row-main"><strong>${esc(names)}</strong><small>${esc(programs)} · ${fmtDate(session.endedAt)}</small></div>
       ${chev()}
     </div>
@@ -1195,7 +1254,7 @@ function sessionRowHtml(session) {
   const student = studentById(first?.studentId);
   const names = session.participants.map(p => studentById(p.studentId)?.name || 'Aluno').join(' + ');
   return `<button class="row-card" type="button" data-session-student="${esc(first?.studentId || '')}">
-    <div class="avatar round">${esc(initials(names))}</div>
+    ${session.participants.length===1?avatarHtml(student):`<div class="avatar round">${esc(initials(names))}</div>`}
     <div class="row-main"><strong>${esc(names)}</strong><small>${esc(first?.programName || 'Treino')} · ${fmtDate(session.endedAt)} · ${sessionSetCount(session)} séries</small></div>
     <div class="row-side">${kgText(sessionVolume(session))}</div>
   </button>`;
@@ -1244,7 +1303,7 @@ function studentRowHtml(student) {
   const programs = programsForStudent(student.id).length;
   const last = latestStudentSession(student.id);
   return `<button class="row-card" type="button" data-student-id="${esc(student.id)}">
-    <div class="avatar round">${esc(initials(student.name))}</div>
+    ${avatarHtml(student)}
     <div class="row-main"><strong>${esc(student.name)}</strong><small>${programs} treino${programs===1?'':'s'} · ${last ? `última sessão ${daysAgo(sessionTimestamp(last))}` : 'sem sessões'}</small></div>
     ${chev()}
   </button>`;
@@ -1252,15 +1311,46 @@ function studentRowHtml(student) {
 
 function openStudentForm(studentId = null) {
   const existing = studentId ? studentById(studentId) : null;
+  let photoDataUrl = existing?.photoDataUrl || '';
   openModal(`
     <h2>${existing?'Editar aluno':'Novo aluno'}</h2>
     <p class="modal-sub">${existing?'Atualize os dados usados no acompanhamento.':'Cadastre o aluno e depois monte um ou mais treinos.'}</p>
+    <div class="form-row">
+      <label class="form-label">Foto do aluno</label>
+      <div class="student-photo-pick">
+        <div id="studentPhotoPreview">${photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(existing?.name || 'Aluno'))}</div>`}</div>
+        <div class="student-photo-actions">
+          <button class="btn btn-secondary btn-sm" id="studentPhotoChoose" type="button">${photoDataUrl?'Trocar foto':'Adicionar foto'}</button>
+          ${photoDataUrl?'<button class="btn btn-ghost btn-sm" id="studentPhotoRemove" type="button">Remover</button>':''}
+        </div>
+      </div>
+      <input id="studentPhotoFile" class="is-hidden" type="file" accept="image/*">
+      <div class="form-help">A imagem é recortada ao centro em formato quadrado e exibida redonda no aplicativo, sem limite fixo de resolução.</div>
+    </div>
     <div class="form-row"><label class="form-label">Nome</label><input id="studentName" class="form-input" value="${esc(existing?.name || '')}" placeholder="Ex.: João Souza"></div>
     <div class="form-row"><label class="form-label">Objetivo</label><input id="studentGoal" class="form-input" value="${esc(existing?.goal || '')}" placeholder="Ex.: hipertrofia, força, emagrecimento"></div>
     <div class="form-row"><label class="form-label">Observações</label><textarea id="studentNotes" class="form-textarea" placeholder="Restrições, preferências, informações importantes...">${esc(existing?.notes || '')}</textarea></div>
     <div class="modal-actions"><button class="btn btn-secondary" id="studentCancel">Cancelar</button><button class="btn btn-primary" id="studentSave">${existing?'Salvar':'Criar aluno'}</button></div>
   `);
+  const refreshPhotoPreview = () => {
+    const name = $('#studentName')?.value.trim() || existing?.name || 'Aluno';
+    $('#studentPhotoPreview').innerHTML = photoDataUrl
+      ? `<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`
+      : `<div class="avatar round">${esc(initials(name))}</div>`;
+  };
   $('#studentCancel').onclick = closeModal;
+  $('#studentPhotoChoose').onclick = () => $('#studentPhotoFile').click();
+  $('#studentPhotoFile').onchange = async e => {
+    const file = e.target.files?.[0]; e.target.value='';
+    if (!file) return;
+    try {
+      photoDataUrl = await squareImageDataUrl(file);
+      refreshPhotoPreview();
+      toast('Foto pronta para salvar.');
+    } catch (err) { toast('Não foi possível usar esta imagem.'); }
+  };
+  if ($('#studentPhotoRemove')) $('#studentPhotoRemove').onclick = () => { photoDataUrl=''; refreshPhotoPreview(); $('#studentPhotoRemove').classList.add('is-hidden'); };
+  $('#studentName').oninput = () => { if (!photoDataUrl) refreshPhotoPreview(); };
   $('#studentSave').onclick = () => {
     const name = $('#studentName').value.trim();
     if (!name) return toast('Digite o nome do aluno.');
@@ -1268,8 +1358,9 @@ function openStudentForm(studentId = null) {
       existing.name = name;
       existing.goal = $('#studentGoal').value.trim();
       existing.notes = $('#studentNotes').value.trim();
+      existing.photoDataUrl = photoDataUrl;
     } else {
-      const st = { id:uid('student'), name, goal:$('#studentGoal').value.trim(), notes:$('#studentNotes').value.trim(), defaultRestSec:120, createdAt:Date.now() };
+      const st = { id:uid('student'), name, goal:$('#studentGoal').value.trim(), notes:$('#studentNotes').value.trim(), photoDataUrl, defaultRestSec:120, defaultSets:3, defaultTargetReps:'8–12', createdAt:Date.now() };
       db.students.push(st);
       state.studentId = st.id;
     }
@@ -1291,7 +1382,7 @@ function renderStudentProfile(main, studentId) {
   main.innerHTML = `
     <section class="screen">
       <div class="profile-head">
-        <div class="avatar">${esc(initials(st.name))}</div>
+        ${avatarHtml(st)}
         <div class="row-main"><strong>${esc(st.name)}</strong><small>${esc(st.goal || 'Objetivo não informado')} · ${totalSessions} ${totalSessions===1?'sessão':'sessões'}</small></div>
       </div>
       ${st.notes ? `<div class="profile-note"><small>Observações</small><p>${esc(st.notes)}</p></div>` : ''}
@@ -1313,15 +1404,27 @@ function renderStudentProfile(main, studentId) {
   $('#fullHistoryBtn').onclick = () => navigate('student-history', { historyStudentId:st.id });
   $$('[data-program-start]', main).forEach(btn => btn.onclick = () => prepareWorkout([{studentId:st.id, programId:btn.dataset.programStart}]));
   $$('[data-program-edit]', main).forEach(btn => btn.onclick = () => openProgramActions(btn.dataset.programEdit));
+  $$('[data-program-toggle]', main).forEach(btn => btn.onclick = () => {
+    const id=btn.dataset.programToggle, preview=main.querySelector(`[data-program-preview="${CSS.escape(id)}"]`);
+    if(!preview)return;
+    const willOpen=preview.classList.contains('is-hidden');
+    preview.classList.toggle('is-hidden',!willOpen);
+    btn.setAttribute('aria-expanded',String(willOpen));
+  });
 }
 
 function programCardHtml(program) {
   const items = program.exercises.map(pe => ({pe, ex:exerciseById(pe.exerciseId)})).filter(x=>x.ex);
   const sets = program.exercises.reduce((sum,pe)=>sum+pe.sets,0);
+  const dateBits = [];
+  if (program.startDate) dateBits.push(`início ${fmtDate(program.startDate)}`);
+  if (program.endDate) dateBits.push(`término ${fmtDate(program.endDate)}`);
   return `<div class="workout-card">
-    <div class="workout-card-head"><strong>${esc(program.name)}</strong><button type="button" data-program-edit="${esc(program.id)}" aria-label="Ações">⋯</button></div>
-    <div class="workout-meta">${items.length} exercício${items.length===1?'':'s'} · ${sets} séries</div>
-    <div class="workout-exercises-preview">${items.map((item,i)=>`<button class="program-exercise-row" type="button" data-ex-history data-ex-history-student="${esc(program.studentId)}" data-ex-history-id="${esc(item.ex.id)}"><span>${String(i+1).padStart(2,'0')}</span><div><strong>${esc(item.ex.name)}</strong><small>${item.pe.sets} séries${item.pe.targetReps?` · ${esc(item.pe.targetReps)} reps`:''}</small></div>${icons.history}</button>`).join('')}</div>
+    <button class="workout-summary-toggle" type="button" data-program-toggle="${esc(program.id)}" aria-expanded="false">
+      <div><strong>${esc(program.name)}</strong><div class="workout-meta">${items.length} exercício${items.length===1?'':'s'} · ${sets} séries</div>${dateBits.length?`<div class="workout-date">${dateBits.join(' · ')}</div>`:''}</div>
+      <span class="workout-toggle-side">⌄</span>
+    </button>
+    <div class="workout-exercises-preview is-hidden" data-program-preview="${esc(program.id)}">${items.map((item,i)=>`<button class="program-exercise-row" type="button" data-ex-history data-ex-history-student="${esc(program.studentId)}" data-ex-history-id="${esc(item.ex.id)}"><span>${String(i+1).padStart(2,'0')}</span><div><strong>${esc(item.ex.name)}</strong><small>${item.pe.sets} séries${item.pe.targetReps?` · ${esc(item.pe.targetReps)} reps`:''}</small></div>${icons.history}</button>`).join('')}</div>
     <div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div>
   </div>`;
 }
@@ -1454,7 +1557,9 @@ function openProgramBuilder(studentId, programId=null) {
     id:existing?.id||null, studentId,
     name:existing?.name||'', startDate:existing?.startDate||'', endDate:existing?.endDate||'',
     defaultRestSec:clamp(parseInteger(student.defaultRestSec)||120,60,180),
-    exercises:(existing?.exercises||[]).map(pe=>({...pe}))
+    defaultSets:clamp(parseInteger(student.defaultSets)||3,1,50),
+    defaultTargetReps:String(student.defaultTargetReps||'8–12'),
+    exercises:(existing?.exercises||[]).map(pe=>({...pe,targetReps:String(pe.targetReps||student.defaultTargetReps||'8–12')}))
   };
   const renderBuilder = () => {
     openModal(`
@@ -1463,12 +1568,14 @@ function openProgramBuilder(studentId, programId=null) {
         <button class="builder-quick-create" id="builderQuickCreate" type="button">${icons.plus}<div><strong>Criar exercício</strong><small>Cadastre rapidamente sem sair da montagem</small></div>${chev()}</button>
         <div class="form-row"><label class="form-label">Nome do treino</label><input id="programName" class="form-input" value="${esc(draft.name)}" placeholder="Ex.: Treino A — Peito e tríceps"></div>
         <div class="form-row">
-          <label class="form-label">Descanso padrão deste aluno</label>
-          <div class="builder-default-rest">
-            <button class="select-pill" id="builderDefaultRest" type="button"><span>Descanso padrão</span><strong>${fmtRest(draft.defaultRestSec)}</strong>${chev()}</button>
-            ${draft.exercises.length?'<button class="btn btn-ghost btn-sm" id="applyDefaultRest" type="button">Aplicar a todos</button>':''}
+          <label class="form-label">Padrões para os exercícios</label>
+          <div class="builder-default-grid">
+            <div><span class="control-label">Séries</span><div class="stepper"><button type="button" id="defaultSetsMinus">−</button><span>${draft.defaultSets}</span><button type="button" id="defaultSetsPlus">+</button></div></div>
+            <div><span class="control-label">Faixa de repetições</span><input id="builderDefaultReps" class="form-input" value="${esc(draft.defaultTargetReps)}" placeholder="Ex.: 8–12"></div>
+            <div><span class="control-label">Descanso</span><button class="select-pill compact" id="builderDefaultRest" type="button"><span>Intervalo</span><strong>${fmtRest(draft.defaultRestSec)}</strong>${chev()}</button></div>
           </div>
-          <div class="form-help">Novos exercícios usam este tempo. Você ainda pode alterar cada exercício individualmente.</div>
+          ${draft.exercises.length?'<button class="btn btn-ghost btn-sm builder-apply-all" id="applyBuilderDefaults" type="button">Aplicar séries, repetições e descanso a todos</button>':''}
+          <div class="form-help">Todo exercício novo já entra com estes valores. Você ainda pode ajustar cada um individualmente.</div>
         </div>
         <div class="form-grid"><div class="form-row"><label class="form-label">Início opcional</label><input id="programStart" type="date" class="form-input" value="${esc(draft.startDate)}"></div><div class="form-row"><label class="form-label">Término opcional</label><input id="programEnd" type="date" class="form-input" value="${esc(draft.endDate)}"></div></div>
         <div class="section-title builder-section-title"><h2>Exercícios</h2><span>${draft.exercises.length}</span></div>
@@ -1477,14 +1584,17 @@ function openProgramBuilder(studentId, programId=null) {
       </div>
       <div class="builder-foot"><div class="modal-actions" style="margin-top:0"><button class="btn btn-secondary" id="builderCancel">Cancelar</button><button class="btn btn-primary" id="builderSave">${existing?'Salvar alterações':'Criar treino'}</button></div></div>
     `,{fullscreen:true,onClose:()=>{}});
-    const syncFields=()=>{draft.name=$('#programName')?.value||draft.name;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';};
-    const addPickedExercise=(exId)=>{draft.exercises.push({exerciseId:exId,sets:3,restSec:draft.defaultRestSec,targetReps:'',note:''});renderBuilder();};
+    const syncFields=()=>{draft.name=$('#programName')?.value||draft.name;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';draft.defaultTargetReps=$('#builderDefaultReps')?.value||draft.defaultTargetReps;};
+    const addPickedExercise=(exId)=>{draft.exercises.push({exerciseId:exId,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:''});renderBuilder();};
     $('#builderClose').onclick=closeModal; $('#builderCancel').onclick=closeModal;
     $('#programName').oninput=e=>draft.name=e.target.value; $('#programStart').onchange=e=>draft.startDate=e.target.value; $('#programEnd').onchange=e=>draft.endDate=e.target.value;
     $('#builderQuickCreate').onclick=()=>{syncFields();openExerciseForm(null,id=>addPickedExercise(id),renderBuilder);};
     $('#builderAddExercise').onclick=()=>{syncFields();openExercisePicker(addPickedExercise, renderBuilder);};
+    $('#builderDefaultReps').oninput=e=>draft.defaultTargetReps=e.target.value;
+    $('#defaultSetsMinus').onclick=()=>{syncFields();draft.defaultSets=Math.max(1,draft.defaultSets-1);renderBuilder();};
+    $('#defaultSetsPlus').onclick=()=>{syncFields();draft.defaultSets=Math.min(50,draft.defaultSets+1);renderBuilder();};
     $('#builderDefaultRest').onclick=()=>{syncFields();openRestPicker(draft.defaultRestSec,sec=>{draft.defaultRestSec=sec;student.defaultRestSec=sec;persist();renderBuilder();},renderBuilder,'Descanso padrão');};
-    if($('#applyDefaultRest'))$('#applyDefaultRest').onclick=()=>{syncFields();draft.exercises.forEach(pe=>pe.restSec=draft.defaultRestSec);renderBuilder();toast('Descanso padrão aplicado aos exercícios.');};
+    if($('#applyBuilderDefaults'))$('#applyBuilderDefaults').onclick=()=>{syncFields();if(!String(draft.defaultTargetReps).trim())return toast('Defina a faixa de repetições padrão.');draft.exercises.forEach(pe=>{pe.sets=draft.defaultSets;pe.restSec=draft.defaultRestSec;pe.targetReps=draft.defaultTargetReps.trim();});renderBuilder();toast('Padrões aplicados a todos os exercícios.');};
     $$('[data-builder-remove]').forEach(btn=>btn.onclick=()=>{syncFields();draft.exercises.splice(+btn.dataset.builderRemove,1);renderBuilder();});
     $$('[data-builder-up]').forEach(btn=>btn.onclick=()=>{syncFields();const i=+btn.dataset.builderUp;if(i<=0)return;[draft.exercises[i-1],draft.exercises[i]]=[draft.exercises[i],draft.exercises[i-1]];renderBuilder();});
     $$('[data-builder-down]').forEach(btn=>btn.onclick=()=>{syncFields();const i=+btn.dataset.builderDown;if(i>=draft.exercises.length-1)return;[draft.exercises[i+1],draft.exercises[i]]=[draft.exercises[i],draft.exercises[i+1]];renderBuilder();});
@@ -1500,6 +1610,8 @@ function openProgramBuilder(studentId, programId=null) {
       if(draft.exercises.some(pe=>!exerciseById(pe.exerciseId)))return toast('Há um exercício inválido no treino.');
       if(draft.exercises.some(pe=>!String(pe.targetReps||'').trim()))return toast('Informe a faixa de repetições de todos os exercícios.');
       student.defaultRestSec=draft.defaultRestSec;
+      student.defaultSets=draft.defaultSets;
+      student.defaultTargetReps=String(draft.defaultTargetReps||'8–12').trim()||'8–12';
       if(existing){existing.name=name;existing.startDate=draft.startDate;existing.endDate=draft.endDate;existing.exercises=draft.exercises.map(pe=>({...pe,targetReps:String(pe.targetReps).trim()}));existing.updatedAt=Date.now();}
       else db.programs.push({id:uid('program'),studentId,name,startDate:draft.startDate,endDate:draft.endDate,exercises:draft.exercises.map(pe=>({...pe,targetReps:String(pe.targetReps).trim()})),createdAt:Date.now(),updatedAt:Date.now()});
       persist();closeModal();navigate('student',{studentId});toast(existing?'Treino atualizado.':'Treino criado.');
@@ -1602,11 +1714,17 @@ function generateProgramPDF(programId){
     const entries=exerciseHistoryEntries(st.id,ex.id);
     const latest=entries[entries.length-1]||null;
     const sets=latest?completedSets(latest.exercise):[];
-    const loads=sets.length?sets.map((s,si)=>`<span><b>S${si+1}</b> ${parseDecimal(s.weight)} kg × ${parseInteger(s.reps)}</span>`).join(''):'<span class="print-muted">Sem carga anterior registrada</span>';
+    const loads=sets.length?sets.map((s,si)=>`<span><b>S${si+1}</b> ${parseDecimal(s.weight)} kg × ${parseInteger(s.reps)}</span>`).join(''):'<span class="print-muted">Sem carga anterior</span>';
     return `<div class="print-exercise"><div class="print-index">${String(i+1).padStart(2,'0')}</div><div><strong>${esc(ex.name)}</strong><small>${esc(ex.muscleGroups.join(' · '))}</small><div class="print-prescription"><span><b>${pe.sets}</b> séries</span><span><b>${esc(pe.targetReps||'—')}</b> reps</span><span><b>${fmtRest(pe.restSec)}</b> descanso</span></div><div class="print-last"><small>ÚLTIMA EXECUÇÃO${latest?` · ${fmtDate(latest.session.endedAt)}`:''}</small>${loads}</div></div></div>`;
   }).join('');
   const area=$('#printArea');
-  area.innerHTML=`<div class="print-brand">TREINO LIVE</div><h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div><div class="print-meta">Ficha gerada em ${fmtDate(Date.now())}${program.startDate?` · início ${fmtDate(program.startDate)}`:''}${program.endDate?` · término ${fmtDate(program.endDate)}`:''}</div><div class="print-rule"></div>${rows}<div class="print-footer">Treino Live · ${esc(db.trainer.name)}</div>`;
+  const useThreeCols=program.exercises.length>18;
+  const useTwoCols=!useThreeCols&&program.exercises.length>6;
+  const compact=program.exercises.length>10;
+  const ultraCompact=program.exercises.length>18;
+  const dateBits=[];if(program.startDate)dateBits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`Término ${fmtDate(program.endDate)}`);
+  area.className=`print-area${compact?' compact':''}${ultraCompact?' ultra-compact':''}`;
+  area.innerHTML=`<h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div>${dateBits.length?`<div class="print-meta">${dateBits.join(' · ')}</div>`:''}<div class="print-rule"></div><div class="print-exercises-grid ${useThreeCols?'three-col':useTwoCols?'two-col':''}">${rows}</div>`;
   setTimeout(()=>window.print(),50);
 }
 
@@ -1667,7 +1785,7 @@ function renderWorkoutPreview(main){
   main.innerHTML=`<section class="screen"><div class="preview-wrap"><div class="preview-title"><small>${live.participants.length>1?'DUPLA':'SESSÃO'}</small><h1>Vamos começar?</h1><p>Confira os exercícios. Ao iniciar, o cronômetro e o controle de séries ficam ativos.</p></div>${live.participants.map(previewPersonHtml).join('')}<button id="beginWorkoutBtn" class="btn btn-primary btn-block" style="margin-top:18px">Iniciar treino</button></div></section>`;
   $('#beginWorkoutBtn').onclick=()=>{unlockAudio();live.startedAt=Date.now();persistDraft();render();};
 }
-function previewPersonHtml(p){const st=studentById(p.studentId);return `<div class="preview-person"><div class="preview-person-head"><div class="avatar round">${esc(initials(st?.name))}</div><div class="row-main"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName)}</small></div></div>${p.exercises.map((ex,i)=>`<div class="preview-ex-row"><span>${String(i+1).padStart(2,'0')}</span><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries</small></div>`).join('')}</div>`;}
+function previewPersonHtml(p){const st=studentById(p.studentId);return `<div class="preview-person"><div class="preview-person-head">${avatarHtml(st)}<div class="row-main"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName)}</small></div></div>${p.exercises.map((ex,i)=>`<div class="preview-ex-row"><span>${String(i+1).padStart(2,'0')}</span><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries</small></div>`).join('')}</div>`;}
 
 function renderActiveWorkout(main){
   const title=live.participants.length>1?'Treino em dupla':live.participants[0].programName;
@@ -1684,7 +1802,7 @@ function renderActiveWorkout(main){
 
 function liveParticipantHtml(p,pi){
   const st=studentById(p.studentId);const pvol=p.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).reduce((x,s)=>x+setVolume(s),0),0);
-  return `<div class="live-person-head"><div class="avatar round">${esc(initials(st?.name))}</div><span>${esc(st?.name||'Aluno')} · ${esc(p.programName)} · ${kgText(pvol)}</span></div>${p.exercises.map((ex,ei)=>liveExerciseHtml(p,pi,ex,ei)).join('')}`;
+  return `<div class="live-person-head">${avatarHtml(st)}<span>${esc(st?.name||'Aluno')} · ${esc(p.programName)} · ${kgText(pvol)}</span></div>${p.exercises.map((ex,ei)=>liveExerciseHtml(p,pi,ex,ei)).join('')}`;
 }
 
 function liveExerciseHtml(participant,pi,ex,ei){
@@ -1745,10 +1863,66 @@ function updateLiveStatsDOM(){
   if($('#liveVolume'))$('#liveVolume').textContent=kgText(vol);if($('#liveSets'))$('#liveSets').textContent=`${done} / ${total}`;
 }
 
+function syncLiveExerciseToProgram(path,{exerciseId=null,sets=null,restSec=null,targetReps=null}={}){
+  const [pi,ei]=parsePath(path), participant=live?.participants?.[pi];
+  const program=participant?programById(participant.programId):null;
+  const pe=program?.exercises?.[ei]; if(!pe)return false;
+  if(exerciseId)pe.exerciseId=exerciseId;
+  if(sets!=null)pe.sets=clamp(parseInteger(sets)||1,1,50);
+  if(restSec!=null)pe.restSec=clamp(parseInteger(restSec),0,3600);
+  if(targetReps!=null)pe.targetReps=String(targetReps).trim();
+  program.updatedAt=Date.now();persist();return true;
+}
+
+function askPersistLiveChanges(path, message='Salvar estes ajustes também na ficha original?'){
+  openModal(`<h2>Atualizar a ficha?</h2><p class="modal-sub">${esc(message)}</p><div class="modal-actions"><button class="btn btn-secondary" id="keepOriginalProgram">Manter ficha original</button><button class="btn btn-primary" id="saveProgramChange">Salvar na ficha</button></div>`);
+  $('#keepOriginalProgram').onclick=()=>{closeModal();renderActiveWorkout($('#main'));toast('Mudança mantida só nesta sessão.');};
+  $('#saveProgramChange').onclick=()=>{
+    const ex=liveExerciseAt(path);if(!ex)return closeModal();
+    syncLiveExerciseToProgram(path,{exerciseId:ex.exerciseId,sets:ex.sets.length,restSec:ex.restSec,targetReps:ex.targetReps});
+    closeModal();renderActiveWorkout($('#main'));toast('Ficha do treino atualizada.');
+  };
+}
+
+function replaceLiveExercise(path,newExerciseId){
+  const ex=liveExerciseAt(path), next=exerciseById(newExerciseId);if(!ex||!next)return;
+  const doneCount=ex.sets.filter(s=>s.done).length;
+  const apply=()=>{
+    const [pi,ei]=parsePath(path), participant=live.participants[pi], st=studentById(participant.studentId);
+    const prev=getLastExercisePerformance(st.id,next.id),prevSets=prev?completedSets(prev):[];
+    const count=ex.sets.length;
+    ex.exerciseId=next.id;ex.name=next.name;ex.muscleGroups=next.muscleGroups.slice();
+    ex.sets=Array.from({length:count},(_,i)=>{const base=prevSets[i]||prevSets[prevSets.length-1]||null;return{weight:'',reps:'',done:false,previous:base?{weight:base.weight,reps:base.reps}:null};});
+    persistDraft();
+    askPersistLiveChanges(path,`Você trocou para “${next.name}”. Deseja salvar essa troca também na ficha ${participant.programName}?`);
+  };
+  if(doneCount){
+    confirmModal('Trocar exercício?',`Já existem ${doneCount} série${doneCount===1?' concluída':'s concluídas'} neste exercício. Para evitar registrar dados no exercício errado, a troca vai limpar as séries atuais.`,`Trocar e limpar`,()=>apply(),false);
+  } else apply();
+}
+
 function openLiveExerciseSettings(path){
   const ex=liveExerciseAt(path);if(!ex)return;
-  openModal(`<h2>${esc(ex.name)}</h2><p class="modal-sub">Ajustes válidos apenas para esta sessão.</p><div class="form-row"><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div><div class="form-row"><label class="form-label">Número de séries</label><input id="liveSetsEdit" type="number" min="1" max="50" class="form-input" value="${ex.sets.length}"></div><div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar</button></div>`);
-  $('#liveEditCancel').onclick=closeModal;$('#liveEditSave').onclick=()=>{ex.restSec=clamp(parseRest($('#liveRestEdit').value),0,3600);const n=clamp(parseInteger($('#liveSetsEdit').value)||1,1,50);while(ex.sets.length<n){const last=ex.sets[ex.sets.length-1]||{};ex.sets.push({weight:last.weight||'',reps:last.reps||'',done:false,previous:null});}while(ex.sets.length>n)ex.sets.pop();persistDraft();closeModal();renderActiveWorkout($('#main'));};
+  openModal(`<h2>${esc(ex.name)}</h2><p class="modal-sub">Você pode ajustar a sessão e decidir depois se quer atualizar a ficha original.</p>
+    <button class="btn btn-secondary live-change-exercise" id="liveChangeExercise" type="button">${icons.edit} Trocar exercício</button>
+    <div class="form-row" style="margin-top:14px"><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}" placeholder="Ex.: 8–12"></div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div>
+      <div class="form-row"><label class="form-label">Número de séries</label><input id="liveSetsEdit" type="number" min="1" max="50" class="form-input" value="${ex.sets.length}"></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar ajustes</button></div>`);
+  $('#liveEditCancel').onclick=closeModal;
+  $('#liveChangeExercise').onclick=()=>{closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),60);};
+  $('#liveEditSave').onclick=()=>{
+    const nextReps=$('#liveRepsEdit').value.trim();
+    if(!nextReps)return toast('Informe a faixa de repetições.');
+    ex.targetReps=nextReps;
+    ex.restSec=clamp(parseRest($('#liveRestEdit').value),0,3600);
+    const n=clamp(parseInteger($('#liveSetsEdit').value)||1,1,50);
+    while(ex.sets.length<n){const last=ex.sets[ex.sets.length-1]||{};ex.sets.push({weight:'',reps:'',done:false,previous:last.previous||null});}
+    while(ex.sets.length>n)ex.sets.pop();
+    persistDraft();closeModal();setTimeout(()=>askPersistLiveChanges(path),60);
+  };
 }
 
 function openLiveMenu(){
@@ -1839,7 +2013,7 @@ function renderEvolution(main){
   main.innerHTML=`<section class="screen"><div class="hero"><h1>Evolução</h1><p>Veja quem está evoluindo, volume acumulado, séries, grupamentos e pontos de atenção.</p></div><div class="section" style="margin-top:4px"><div class="section-title"><h2>Alunos</h2><span>${students.length}</span></div>${students.length?students.map(evolutionStudentCardHtml).join(''):emptyHtml('Nenhum aluno cadastrado.','Cadastre alunos e registre treinos para gerar análises.')}</div></section>`;
   $$('[data-evo-student]',main).forEach(btn=>btn.onclick=()=>navigate('evolution-detail',{evolutionStudentId:btn.dataset.evoStudent,evolutionProgramId:null}));
 }
-function evolutionStudentCardHtml(st){const sessions=sessionsForStudent(st.id,'90d');const vol=sessions.reduce((a,s)=>a+participantVolume(participantForStudent(s,st.id)),0);const top=exerciseChanges(st.id,'90d').filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct)[0];return `<button class="row-card" type="button" data-evo-student="${esc(st.id)}"><div class="avatar round">${esc(initials(st.name))}</div><div class="row-main"><strong>${esc(st.name)}</strong><small>${sessions.length} treinos · ${kgText(vol)}${top?` · ${esc(top.exerciseName)} +${round(top.deltaKg)} kg`:''}</small></div>${chev()}</button>`;}
+function evolutionStudentCardHtml(st){const sessions=sessionsForStudent(st.id,'90d');const vol=sessions.reduce((a,s)=>a+participantVolume(participantForStudent(s,st.id)),0);const top=exerciseChanges(st.id,'90d').filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct)[0];return `<button class="row-card" type="button" data-evo-student="${esc(st.id)}">${avatarHtml(st)}<div class="row-main"><strong>${esc(st.name)}</strong><small>${sessions.length} treinos · ${kgText(vol)}${top?` · ${esc(top.exerciseName)} +${round(top.deltaKg)} kg`:''}</small></div>${chev()}</button>`;}
 
 function renderEvolutionDetail(main,studentId){
   const st=studentById(studentId);if(!st)return navigate('evolution');
