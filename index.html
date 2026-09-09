@@ -248,7 +248,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .live-exercise-head{display:flex;align-items:flex-start;gap:8px}
 .live-exercise-head .row-main strong{font-size:16px;letter-spacing:-.25px;white-space:normal}
 .live-exercise-head .row-main small{white-space:normal;margin-top:5px}
-.live-more{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--faint);font-size:20px;padding:0}
+.live-more{width:36px;height:36px;border-radius:11px;background:var(--surface-2);color:var(--muted);padding:0;display:grid;place-items:center;flex:0 0 auto}
+.live-more svg{width:17px;height:17px}
 .live-note{width:100%;height:34px;margin-top:9px;border:0;border-bottom:1px solid var(--line);background:transparent;outline:0;color:var(--muted);font-size:11.5px}
 .set-head,.set-row{display:grid;grid-template-columns:30px minmax(52px,1fr) 64px 57px 40px;gap:6px;align-items:center}
 .set-head{padding:13px 1px 6px;color:var(--faint);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
@@ -454,10 +455,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .rest-choice strong{font-size:15px;font-weight:900}
 .rest-choice.is-selected{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-2)}
 
-.live-base-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
-.live-base-strip>span{display:block;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:8px 10px;min-width:0}
-.live-base-strip small{display:block;color:var(--faint);font-size:7.5px;font-weight:850;letter-spacing:.06em;margin-bottom:3px}
-.live-base-strip strong{display:block;font-size:10.5px;font-weight:720;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .history-session-side{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .history-delete-btn{width:32px;height:32px;border-radius:10px;background:var(--red-soft);color:var(--red);display:grid;place-items:center}
@@ -470,38 +467,53 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .evo-program-select strong{display:block;font-size:12.5px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chart-select-help{color:var(--muted);font-size:10.5px;line-height:1.5;margin-top:12px}
 
+/* Student-level print selection. Large tap targets for mobile. */
+.student-print-action{min-height:64px;padding-top:14px;padding-bottom:14px}
+.student-print-action .action-icon{width:40px;height:40px}
+.print-select-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.print-select-item{width:100%;min-height:68px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;align-items:center;padding:12px 13px;border:1px solid var(--line-strong);background:var(--surface);border-radius:15px;color:var(--text);text-align:left}
+.print-select-item:active{background:var(--surface-2)}
+.print-select-item.is-selected{border-color:var(--blue);background:var(--blue-soft)}
+.print-select-check{width:30px;height:30px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);display:grid;place-items:center;color:transparent}
+.print-select-item.is-selected .print-select-check{border-color:var(--blue);background:var(--blue);color:#fff}
+.print-select-check svg{width:16px;height:16px}
+.print-select-copy{min-width:0}
+.print-select-copy strong{display:block;font-size:13.5px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.print-select-copy small{display:block;color:var(--faint);font-size:10px;line-height:1.4;margin-top:4px}
+.print-select-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 12px}
+.print-select-toolbar span{font-size:10.5px;color:var(--muted)}
+.print-select-toolbar button{height:36px}
+.print-generate-btn{min-height:52px;font-size:13.5px}
+
 .print-area{display:none}
 @media print{
-  @page{size:A4 portrait;margin:8mm}
+  @page{size:A4 portrait;margin:9mm}
   html,body{background:#fff!important;color:#111!important;width:210mm!important;min-height:297mm!important}
   body>*{display:none!important}
   #printArea{display:block!important;color:#111!important;background:#fff!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;width:100%!important}
-  #printArea h1{font-size:20px;line-height:1.05;margin:0 0 3px}
-  .print-student{font-size:13px;font-weight:800}
-  .print-meta{font-size:9px;color:#666;margin-top:3px}
-  .print-rule{height:1px;background:#ddd;margin:9px 0}
-  .print-exercises-grid{display:grid;grid-template-columns:1fr;column-gap:9mm;align-items:start}
+  .print-program-page{break-after:page;page-break-after:always}
+  .print-program-page:last-child{break-after:auto;page-break-after:auto}
+  #printArea h1{font-size:23px;line-height:1.05;margin:0 0 4px}
+  .print-student{font-size:14px;font-weight:850}
+  .print-meta{font-size:10px;color:#555;margin-top:4px}
+  .print-rule{height:1px;background:#d8d8d8;margin:10px 0}
+  .print-exercises-grid{display:grid;grid-template-columns:1fr;column-gap:8mm;align-items:start}
   .print-exercises-grid.two-col{grid-template-columns:1fr 1fr}
-  .print-exercises-grid.three-col{grid-template-columns:repeat(3,1fr);column-gap:6mm}
-  .print-exercise{display:grid;grid-template-columns:20px 1fr;gap:7px;padding:7px 0;border-bottom:1px solid #e6e6e6;break-inside:avoid}
-  .print-index{font-size:8.5px;font-weight:900;color:#999}
-  .print-exercise strong{font-size:10.5px;line-height:1.15}
-  .print-exercise small{display:block;font-size:7.5px;color:#777;margin-top:1px}
-  .print-prescription{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;font-size:8px}
-  .print-last{margin-top:4px}
-  .print-last>small{font-size:6.8px;font-weight:800;letter-spacing:.04em;color:#777;margin-bottom:2px}
-  .print-last>span{display:inline-block;margin:2px 6px 0 0;font-size:7.7px}
+  .print-exercise{display:grid;grid-template-columns:22px 1fr;gap:7px;padding:8px 0;border-bottom:1px solid #e3e3e3;break-inside:avoid;page-break-inside:avoid}
+  .print-index{font-size:9px;font-weight:900;color:#8a8a8a}
+  .print-exercise strong{font-size:11.5px;line-height:1.18}
+  .print-exercise small{display:block;font-size:8px;color:#6e6e6e;margin-top:2px}
+  .print-prescription{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px;font-size:8.6px}
+  .print-last{margin-top:5px}
+  .print-last>small{font-size:7.2px;font-weight:850;letter-spacing:.04em;color:#777;margin-bottom:2px}
+  .print-last>span{display:inline-block;margin:2px 7px 0 0;font-size:8.2px}
   .print-muted{color:#999}
-  #printArea.compact h1{font-size:18px}
-  #printArea.compact .print-exercise{padding:5px 0}
-  #printArea.compact .print-exercise strong{font-size:9.5px}
-  #printArea.compact .print-prescription,#printArea.compact .print-last>span{font-size:7.2px}
-  #printArea.ultra-compact .print-exercise{grid-template-columns:16px 1fr;gap:4px;padding:3.5px 0}
-  #printArea.ultra-compact .print-exercise strong{font-size:8.2px}
-  #printArea.ultra-compact .print-exercise small{font-size:6.5px}
-  #printArea.ultra-compact .print-prescription,#printArea.ultra-compact .print-last>span{font-size:6.3px;gap:3px}
-  #printArea.ultra-compact .print-last{margin-top:2px}
+  .print-program-page.compact h1{font-size:21px}
+  .print-program-page.compact .print-exercise{padding:6px 0}
+  .print-program-page.compact .print-exercise strong{font-size:10.5px}
+  .print-program-page.compact .print-prescription,.print-program-page.compact .print-last>span{font-size:7.7px}
 }
+
 
 /* True light mode. */
 html[data-theme="light"]{color-scheme:light;--bg:#F5F6F8;--bg-elev:#FFFFFF;--surface:#FFFFFF;--surface-2:#F0F2F5;--surface-3:#E7EAF0;--line:#E3E6EB;--line-strong:#D5DAE2;--text:#12151A;--muted:#5F6875;--faint:#8B94A0;--blue:#315CF5;--blue-2:#244FD9;--blue-soft:rgba(49,92,245,.10);--green:#159D69;--green-soft:rgba(21,157,105,.11);--red:#D64258;--red-soft:rgba(214,66,88,.10);--amber:#B96C10;--amber-soft:rgba(185,108,16,.10);--shadow:0 24px 70px rgba(22,30,42,.14)}
@@ -1437,6 +1449,7 @@ function openStudentActions(studentId) {
       <button class="action-item" data-action="edit"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Editar aluno</strong></div>${chev()}</button>
       <button class="action-item" data-action="evo"><span class="action-icon">${icons.chart}</span><div class="row-main"><strong>Ver evolução</strong></div>${chev()}</button>
       <button class="action-item" data-action="history"><span class="action-icon">${icons.history}</span><div class="row-main"><strong>Histórico completo</strong></div>${chev()}</button>
+      <button class="action-item student-print-action" data-action="pdf"><span class="action-icon">${icons.download}</span><div class="row-main"><strong>Imprimir / gerar PDF</strong><small>Escolha um ou mais treinos deste aluno</small></div>${chev()}</button>
       <button class="action-item danger" data-action="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Excluir aluno</strong><small>Treinos e histórico deste aluno serão removidos</small></div></button>
     </div>`);
   $$('[data-action]', $('#modal')).forEach(btn => btn.onclick = () => {
@@ -1444,6 +1457,7 @@ function openStudentActions(studentId) {
     if (action === 'edit') setTimeout(()=>openStudentForm(st.id),80);
     if (action === 'evo') navigate('evolution-detail',{evolutionStudentId:st.id});
     if (action === 'history') navigate('student-history',{historyStudentId:st.id});
+    if (action === 'pdf') setTimeout(()=>openStudentPrintSelector(st.id),80);
     if (action === 'delete') setTimeout(()=>confirmDeleteStudent(st.id),80);
   });
 }
@@ -1673,10 +1687,9 @@ function openProgramActions(programId){
   const p=programById(programId);if(!p)return;
   openModal(`<h2>${esc(p.name)}</h2><p class="modal-sub">Ações do treino</p><div class="action-list">
     <button class="action-item" data-pa="edit"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Editar treino</strong></div>${chev()}</button>
-    <button class="action-item" data-pa="pdf"><span class="action-icon">PDF</span><div class="row-main"><strong>Gerar PDF do treino</strong><small>Cargas anteriores, repetições alvo e descanso</small></div>${chev()}</button>
     <button class="action-item danger" data-pa="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Apagar treino</strong></div></button>
   </div>`);
-  $$('[data-pa]').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.pa;closeModal();if(a==='edit')setTimeout(()=>openProgramBuilder(p.studentId,p.id),60);if(a==='pdf')setTimeout(()=>generateProgramPDF(p.id),60);if(a==='delete')setTimeout(()=>confirmDeleteProgram(p.id),60);});
+  $$('[data-pa]').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.pa;closeModal();if(a==='edit')setTimeout(()=>openProgramBuilder(p.studentId,p.id),60);if(a==='delete')setTimeout(()=>confirmDeleteProgram(p.id),60);});
 }
 function confirmDeleteProgram(programId){const p=programById(programId);if(!p)return;confirmModal(`Apagar ${p.name}?`,'O histórico já concluído será mantido, mas este treino deixará de aparecer no perfil.','Apagar treino',()=>{db.programs=db.programs.filter(x=>x.id!==p.id);persist();navigate('student',{studentId:p.studentId});toast('Treino apagado.');});}
 
@@ -1706,9 +1719,32 @@ function confirmDeleteHistorySession(sessionId,studentId){
   });
 }
 
-function generateProgramPDF(programId){
-  const program=programById(programId);if(!program)return;
-  const st=studentById(program.studentId);if(!st)return;
+function openStudentPrintSelector(studentId){
+  const st=studentById(studentId);if(!st)return;
+  const programs=programsForStudent(studentId);
+  if(!programs.length)return toast('Este aluno ainda não possui treinos para imprimir.');
+  const selected=new Set(programs.map(p=>p.id));
+  const renderSelection=()=>{
+    openModal(`<h2>Imprimir treinos</h2><p class="modal-sub">Selecione quais fichas de ${esc(st.name)} deseja incluir. Cada treino será organizado em sua própria folha A4.</p>
+      <div class="print-select-toolbar"><span id="printSelectedCount">${selected.size} de ${programs.length} selecionado${selected.size===1?'':'s'}</span><button class="btn btn-ghost btn-sm" id="printToggleAll" type="button">${selected.size===programs.length?'Desmarcar todos':'Selecionar todos'}</button></div>
+      <div class="print-select-list">${programs.map(p=>{const active=selected.has(p.id);const dateBits=[];if(p.startDate)dateBits.push(`Início ${fmtDate(p.startDate)}`);if(p.endDate)dateBits.push(`Término ${fmtDate(p.endDate)}`);return `<button class="print-select-item ${active?'is-selected':''}" type="button" data-print-program="${esc(p.id)}" aria-pressed="${active?'true':'false'}"><span class="print-select-check">${icons.check}</span><span class="print-select-copy"><strong>${esc(p.name)}</strong><small>${p.exercises.length} exercício${p.exercises.length===1?'':'s'}${dateBits.length?` · ${dateBits.join(' · ')}`:''}</small></span></button>`;}).join('')}</div>
+      <div class="modal-actions"><button class="btn btn-secondary" id="printCancel" type="button">Cancelar</button><button class="btn btn-primary print-generate-btn" id="printGenerate" type="button">Gerar PDF / Imprimir</button></div>`);
+    const sync=()=>{
+      const count=$('#printSelectedCount');if(count)count.textContent=`${selected.size} de ${programs.length} selecionado${selected.size===1?'':'s'}`;
+      const allBtn=$('#printToggleAll');if(allBtn)allBtn.textContent=selected.size===programs.length?'Desmarcar todos':'Selecionar todos';
+      $$('[data-print-program]',$('#modal')).forEach(btn=>{const on=selected.has(btn.dataset.printProgram);btn.classList.toggle('is-selected',on);btn.setAttribute('aria-pressed',on?'true':'false');});
+      const gen=$('#printGenerate');if(gen)gen.disabled=selected.size===0;
+    };
+    $$('[data-print-program]',$('#modal')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.printProgram;if(selected.has(id))selected.delete(id);else selected.add(id);sync();});
+    $('#printToggleAll').onclick=()=>{if(selected.size===programs.length)selected.clear();else programs.forEach(p=>selected.add(p.id));sync();};
+    $('#printCancel').onclick=closeModal;
+    $('#printGenerate').onclick=()=>{if(!selected.size)return toast('Selecione pelo menos um treino.');const ids=programs.filter(p=>selected.has(p.id)).map(p=>p.id);closeModal();setTimeout(()=>generateStudentProgramsPDF(studentId,ids),80);};
+    sync();
+  };
+  renderSelection();
+}
+
+function programPrintPageHtml(program,st){
   const rows=program.exercises.map((pe,i)=>{
     const ex=exerciseById(pe.exerciseId);if(!ex)return '';
     const entries=exerciseHistoryEntries(st.id,ex.id);
@@ -1717,16 +1753,28 @@ function generateProgramPDF(programId){
     const loads=sets.length?sets.map((s,si)=>`<span><b>S${si+1}</b> ${parseDecimal(s.weight)} kg × ${parseInteger(s.reps)}</span>`).join(''):'<span class="print-muted">Sem carga anterior</span>';
     return `<div class="print-exercise"><div class="print-index">${String(i+1).padStart(2,'0')}</div><div><strong>${esc(ex.name)}</strong><small>${esc(ex.muscleGroups.join(' · '))}</small><div class="print-prescription"><span><b>${pe.sets}</b> séries</span><span><b>${esc(pe.targetReps||'—')}</b> reps</span><span><b>${fmtRest(pe.restSec)}</b> descanso</span></div><div class="print-last"><small>ÚLTIMA EXECUÇÃO${latest?` · ${fmtDate(latest.session.endedAt)}`:''}</small>${loads}</div></div></div>`;
   }).join('');
-  const area=$('#printArea');
-  const useThreeCols=program.exercises.length>18;
-  const useTwoCols=!useThreeCols&&program.exercises.length>6;
-  const compact=program.exercises.length>10;
-  const ultraCompact=program.exercises.length>18;
+  const useTwoCols=program.exercises.length>7;
+  const compact=program.exercises.length>14;
   const dateBits=[];if(program.startDate)dateBits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`Término ${fmtDate(program.endDate)}`);
-  area.className=`print-area${compact?' compact':''}${ultraCompact?' ultra-compact':''}`;
-  area.innerHTML=`<h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div>${dateBits.length?`<div class="print-meta">${dateBits.join(' · ')}</div>`:''}<div class="print-rule"></div><div class="print-exercises-grid ${useThreeCols?'three-col':useTwoCols?'two-col':''}">${rows}</div>`;
-  setTimeout(()=>window.print(),50);
+  return `<section class="print-program-page${compact?' compact':''}"><h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div>${dateBits.length?`<div class="print-meta">${dateBits.join(' · ')}</div>`:''}<div class="print-rule"></div><div class="print-exercises-grid ${useTwoCols?'two-col':''}">${rows}</div></section>`;
 }
+
+function generateStudentProgramsPDF(studentId,programIds){
+  const st=studentById(studentId);if(!st)return;
+  const ids=new Set(Array.isArray(programIds)?programIds:[]);
+  const programs=programsForStudent(studentId).filter(p=>ids.has(p.id));
+  if(!programs.length)return toast('Selecione pelo menos um treino para imprimir.');
+  const area=$('#printArea');
+  area.className='print-area';
+  area.innerHTML=programs.map(p=>programPrintPageHtml(p,st)).join('');
+  setTimeout(()=>window.print(),80);
+}
+
+function generateProgramPDF(programId){
+  const program=programById(programId);if(!program)return;
+  generateStudentProgramsPDF(program.studentId,[program.id]);
+}
+
 
 
 /* ----------------------------- pair setup ----------------------------- */
@@ -1806,13 +1854,10 @@ function liveParticipantHtml(p,pi){
 }
 
 function liveExerciseHtml(participant,pi,ex,ei){
-  const baseWeights=ex.sets.map(s=>parseDecimal(s.previous?.weight)).filter(v=>v>0);
-  const lastLoad=baseWeights.length?Math.max(...baseWeights):0;
   return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}">
-    <div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries · descanso ${fmtRest(ex.restSec)}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}">⋯</button></div>
-    <div class="live-base-strip"><span><small>FAIXA</small><strong>${esc(ex.targetReps||'—')} reps</strong></span><span><small>ÚLTIMA CARGA</small><strong>${lastLoad?`${lastLoad} kg`:'sem registro'}</strong></span></div>
+    <div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${ex.sets.length} séries · descanso ${fmtRest(ex.restSec)}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Editar exercício" title="Editar exercício">${icons.edit}</button></div>
     <input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Observação deste exercício">
-    <div class="set-head"><span>Série</span><span>Base</span><span>Carga</span><span>Reps</span><span></span></div>
+    <div class="set-head"><span>Série</span><span>Anterior</span><span>Carga</span><span>Reps</span><span></span></div>
     ${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}
     <div class="live-exercise-footer"><button class="btn btn-secondary btn-sm" data-remove-set="${pi}:${ei}" type="button">− Série</button><button class="btn btn-secondary btn-sm" data-add-set="${pi}:${ei}" type="button">+ Série</button></div>
   </div>`;
