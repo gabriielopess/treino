@@ -1,55 +1,37 @@
 # Treino Pro
 
-PWA mobile-first para personal trainer acompanhar alunos, montar fichas e conduzir treinos presenciais com rapidez.
+PWA estática mobile-first para personal trainer acompanhar alunos, montar fichas e conduzir sessões presenciais.
 
-## Destaques desta reconstrução
+## Principais recursos
 
-- Interface redesenhada com hierarquia visual mais forte, tipografia e espaçamentos mais próximos de um app nativo.
-- Treino ao vivo mais compacto e legível, com separação clara entre séries e estados concluídos.
-- RPE opcional por série (1–10), preservado no histórico.
-- Resumo final do treino com séries concluídas, duração, volume, RPE médio e distribuição de volume por grupamento.
-- Histórico por exercício com evolução de carga.
-- Filtros de exercícios por grupamento muscular.
-- Ajustes de exercício durante a sessão com opção de salvar de volta na ficha.
-- Treino individual e treino em dupla.
-- Fotos de alunos, tema claro/escuro, exportação/importação de backup e impressão/PDF das fichas.
-- Funciona como PWA e continua usando armazenamento local do navegador, sem backend obrigatório.
-
-## Estrutura
-
-```text
-index.html
-styles.css
-app.js
-manifest.webmanifest
-sw.js
-vercel.json
-icons/
-  icon-192.png
-  icon-512.png
-```
+- Alunos, modalidades, fotos, objetivos e observações
+- Biblioteca de exercícios por grupamento muscular
+- Fichas por aluno, carga de referência, séries, faixa de repetições e descanso
+- Início rápido de treino pela tela inicial
+- Treino individual e em dupla
+- Histórico da última execução por exercício
+- Carga, repetições e RPE por série
+- Timer automático de descanso com ±15 s e pular
+- Ajustes durante a sessão e opção de salvar na ficha original
+- Resumo final com duração, séries, volume, RPE médio e volume por grupamento
+- Histórico e evolução por exercício
+- Evolução de volume por ficha e distribuição por grupamento
+- Impressão/PDF de fichas
+- Tema claro/escuro
+- Backup/importação JSON
+- PWA e Service Worker para uso após o primeiro carregamento
 
 ## Deploy no Vercel
 
-1. Suba todos os arquivos para a raiz do repositório no GitHub.
+1. Extraia o ZIP e envie o conteúdo da pasta para a raiz do repositório GitHub.
 2. Importe o repositório no Vercel.
 3. Framework Preset: `Other`.
-4. Não use Build Command.
-5. Não defina Output Directory; a raiz já é o site.
+4. Build Command: vazio.
+5. Output Directory: vazio.
 6. Faça o deploy.
 
-Também funciona como site estático em qualquer host HTTPS.
+Não há `npm install` nem processo de build.
 
-## Dados e compatibilidade
+## Dados
 
-O app mantém as mesmas chaves de armazenamento local (`treinoLiveCleanV1` e `treinoLiveCleanV1_draft`) para aproveitar dados existentes no mesmo domínio/navegador. Também preserva a migração do formato legado `treinoLiveV4`.
-
-Antes de substituir um deploy em produção, use o menu do app para **Exportar backup**.
-
-## Instalar no iPhone
-
-Abra o site no Safari, toque em **Compartilhar** → **Adicionar à Tela de Início**. O service worker mantém os arquivos principais em cache após o primeiro carregamento.
-
-## Observação
-
-Os dados continuam locais ao aparelho/navegador. Para sincronizar entre celular e computador, login de alunos ou trabalho multiusuário, a próxima etapa seria adicionar um backend (por exemplo, Supabase/Postgres).
+Os dados continuam no `localStorage` do navegador/PWA. Antes de substituir uma versão em produção, exporte um backup JSON pelo app atual.

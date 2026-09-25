@@ -618,7 +618,14 @@ function renderHome(main) {
         <div><span class="hero-kicker">PERSONAL TRAINER</span><h1>${greeting}, ${esc(db.trainer.name.split(' ')[0] || 'Professor')}</h1></div>
         <p>Controle a sessão, acompanhe as últimas cargas e enxergue a evolução sem perder tempo durante o treino.</p>
       </div>
-      <div class="section home-metrics" style="margin-top:5px">
+      <div class="home-start-wrap">
+        <button class="home-start-card" id="homeQuickStart" type="button">
+          <span class="home-start-icon">${icons.dumbbell}</span>
+          <span class="home-start-copy"><small>PRÓXIMA SESSÃO</small><strong>Iniciar treino</strong><em>Escolha o aluno e a ficha</em></span>
+          <span class="home-start-arrow">${chev()}</span>
+        </button>
+      </div>
+      <div class="section home-metrics" style="margin-top:18px">
         <div class="grid-2">
           <div class="metric-card"><div><small>Alunos</small><strong>${db.students.length}</strong></div><p>cadastrados no app</p></div>
           <div class="metric-card"><div><small>Treinos · 7 dias</small><strong>${dash.sessions.length}</strong></div><p>${dash.active} aluno${dash.active===1?' ativo':'s ativos'}</p></div>
@@ -644,9 +651,31 @@ function renderHome(main) {
         ${homeInsightsHtml()}
       </div>
     </section>`;
+  $('#homeQuickStart')?.addEventListener('click', openQuickStart);
   $('[data-quick="student"]')?.addEventListener('click', () => openStudentForm());
   $('[data-quick="exercise"]')?.addEventListener('click', () => openExerciseForm());
   $$('[data-session-student]', main).forEach(el => el.onclick = () => navigate('student', { studentId:el.dataset.sessionStudent }));
+}
+
+function openQuickStart(){
+  if(live)return navigate('workout');
+  const eligible=db.students
+    .map(st=>({st,programs:programsForStudent(st.id)}))
+    .filter(x=>x.programs.length)
+    .sort((a,b)=>a.st.name.localeCompare(b.st.name,'pt-BR'));
+  if(!eligible.length){
+    if(!db.students.length)return openStudentForm();
+    return toast('Crie uma ficha de treino para um aluno antes de iniciar.');
+  }
+  openModal(`<h2>Iniciar treino</h2><p class="modal-sub">Escolha o aluno. Na próxima etapa você seleciona a ficha.</p><div class="choice-list quick-start-list">${eligible.map(({st,programs})=>`<button class="choice quick-start-student" type="button" data-quick-start-student="${esc(st.id)}">${avatarHtml(st)}<div class="row-main"><strong>${esc(st.name)}</strong><small>${programs.length} ficha${programs.length===1?'':'s'} disponível${programs.length===1?'':'eis'}</small></div>${chev()}</button>`).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="quickStartCancel" type="button">Cancelar</button></div>`);
+  $('#quickStartCancel').onclick=closeModal;
+  $$('[data-quick-start-student]',$('#modal')).forEach(btn=>btn.onclick=()=>{
+    const st=studentById(btn.dataset.quickStartStudent);if(!st)return;
+    const programs=programsForStudent(st.id);
+    openModal(`<h2>${esc(st.name)}</h2><p class="modal-sub">Qual treino será realizado agora?</p><div class="choice-list">${programs.map(p=>`<button class="choice" type="button" data-quick-start-program="${esc(p.id)}"><div class="row-main"><strong>${esc(p.name)}</strong><small>${p.exercises.length} exercícios · ${p.exercises.reduce((n,e)=>n+e.sets,0)} séries</small></div>${chev()}</button>`).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="quickStartBack" type="button">Voltar</button></div>`);
+    $('#quickStartBack').onclick=openQuickStart;
+    $$('[data-quick-start-program]',$('#modal')).forEach(pbtn=>pbtn.onclick=()=>{closeModal();prepareWorkout([{studentId:st.id,programId:pbtn.dataset.quickStartProgram}]);});
+  });
 }
 
 function recentSessionCardHtml(session) {
