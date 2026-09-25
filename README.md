@@ -1,39 +1,19 @@
-# Treino Live — versão limpa
+# Treino Pro
 
-Aplicativo web/PWA mobile-first para personal trainer usar durante treinos presenciais.
+PWA mobile-first para personal trainer acompanhar alunos, montar fichas e conduzir treinos presenciais com rapidez.
 
-## O que já funciona
+## Destaques desta reconstrução
 
-- Cadastro, edição e exclusão de alunos
-- Objetivo e observações do aluno
-- Biblioteca de exercícios com múltiplos grupamentos musculares
-- Criação e edição de treinos por aluno
-- Séries, descanso e faixa-alvo de repetições por exercício
-- Treino individual
-- Treino em dupla, com dois alunos e dois treinos na mesma sessão
-- Cronômetro da sessão
-- Registro rápido de carga e repetições
-- Pré-preenchimento com a última carga/repetições registradas
-- Marcação de séries concluídas
-- Adição e remoção de séries durante o treino
-- Descanso automático após concluir uma série
-- Ajuste de descanso em ±15s e botão para pular
-- Aviso sonoro/visual quando o descanso termina
-- Volume total em kg (`carga × repetições`)
-- Contagem de séries concluídas
-- Histórico completo por aluno
-- Parecer/observação do treinador ao concluir a sessão
-- Evolução por 30 dias, 3 meses, 6 meses, 1 ano ou todo o histórico
-- Volume total, séries, média por sessão e melhor sessão
-- Evolução de carga por exercício
-- Pontos de atenção quando a maior carga cai
-- Distribuição de volume por grupamento muscular
-- Parecer automático copiável para enviar ao aluno
-- Backup completo em JSON
-- Restauração de backup
-- Migração automática dos dados antigos salvos em `treinoLiveV4`
-- PWA instalável na Tela de Início do iPhone
-- Service Worker para abrir o app mesmo com conexão instável depois do primeiro carregamento
+- Interface redesenhada com hierarquia visual mais forte, tipografia e espaçamentos mais próximos de um app nativo.
+- Treino ao vivo mais compacto e legível, com separação clara entre séries e estados concluídos.
+- RPE opcional por série (1–10), preservado no histórico.
+- Resumo final do treino com séries concluídas, duração, volume, RPE médio e distribuição de volume por grupamento.
+- Histórico por exercício com evolução de carga.
+- Filtros de exercícios por grupamento muscular.
+- Ajustes de exercício durante a sessão com opção de salvar de volta na ficha.
+- Treino individual e treino em dupla.
+- Fotos de alunos, tema claro/escuro, exportação/importação de backup e impressão/PDF das fichas.
+- Funciona como PWA e continua usando armazenamento local do navegador, sem backend obrigatório.
 
 ## Estrutura
 
@@ -49,39 +29,27 @@ icons/
   icon-512.png
 ```
 
-## Publicar no GitHub
+## Deploy no Vercel
 
-1. Crie um repositório vazio.
-2. Envie todos os arquivos desta pasta para a raiz do repositório.
-3. Não é necessário `npm install`, build ou framework.
+1. Suba todos os arquivos para a raiz do repositório no GitHub.
+2. Importe o repositório no Vercel.
+3. Framework Preset: `Other`.
+4. Não use Build Command.
+5. Não defina Output Directory; a raiz já é o site.
+6. Faça o deploy.
 
-## Publicar no Vercel
+Também funciona como site estático em qualquer host HTTPS.
 
-1. Importe o repositório do GitHub no Vercel.
-2. Framework Preset: `Other`.
-3. Build Command: deixe vazio.
-4. Output Directory: deixe vazio / raiz do projeto.
-5. Faça o deploy.
+## Dados e compatibilidade
 
-Também é possível arrastar a pasta/projeto para um fluxo de deploy estático.
+O app mantém as mesmas chaves de armazenamento local (`treinoLiveCleanV1` e `treinoLiveCleanV1_draft`) para aproveitar dados existentes no mesmo domínio/navegador. Também preserva a migração do formato legado `treinoLiveV4`.
+
+Antes de substituir um deploy em produção, use o menu do app para **Exportar backup**.
 
 ## Instalar no iPhone
 
-Depois que estiver publicado em HTTPS:
+Abra o site no Safari, toque em **Compartilhar** → **Adicionar à Tela de Início**. O service worker mantém os arquivos principais em cache após o primeiro carregamento.
 
-1. Abra a URL no Safari.
-2. Toque em **Compartilhar**.
-3. Toque em **Adicionar à Tela de Início**.
-4. Abra pelo novo ícone `Treino Live`.
+## Observação
 
-## Onde os dados ficam
-
-Nesta versão, os dados ficam no `localStorage` do próprio navegador/PWA. Isso é ótimo para uso pessoal em um único iPhone e não exige servidor, banco de dados ou mensalidade.
-
-Use **Início → menu (...) → Exportar backup** regularmente.
-
-Para sincronizar automaticamente entre iPhone, computador e outros aparelhos, ou para criar login de alunos, será necessário conectar um backend (por exemplo Supabase/Firebase/Postgres). Essa sincronização não faz parte desta versão estática.
-
-## Observação sobre volume por grupamento
-
-Quando um exercício pertence a mais de um grupamento muscular, o volume daquele exercício é dividido igualmente entre os grupamentos associados para que o volume total não seja contado duas vezes.
+Os dados continuam locais ao aparelho/navegador. Para sincronizar entre celular e computador, login de alunos ou trabalho multiusuário, a próxima etapa seria adicionar um backend (por exemplo, Supabase/Postgres).

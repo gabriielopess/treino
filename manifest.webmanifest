@@ -1,13 +1,13 @@
 {
-  "name": "Treino Live",
-  "short_name": "Treino Live",
+  "name": "Treino Pro",
+  "short_name": "Treino",
   "description": "Controle de treinos presenciais, cargas, séries, descanso, histórico e evolução de alunos.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0B0D10",
-  "theme_color": "#0B0D10",
+  "background_color": "#080A0D",
+  "theme_color": "#080A0D",
   "lang": "pt-BR",
   "icons": [
     {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
