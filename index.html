@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="theme-color" content="#080A0D">
+  <meta name="theme-color" content="#053C6C">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Treino">
@@ -12,6 +12,181 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
+
+  <!--
+    Alterações desta etapa ficam propositalmente apenas no index.html.
+    O bloco abaixo sobrescreve somente a camada visual do CSS externo.
+  -->
+  <style>
+    :root{
+      --rp-navy:#053C6C;
+      --rp-blue:#0A427E;
+      --rp-bright:#0B8FDC;
+      --rp-sky:#4DB8EA;
+      --rp-soft:rgba(11,143,220,.14);
+      --blue:#0A427E;
+      --blue-2:#0B8FDC;
+      --blue-soft:rgba(11,143,220,.14);
+    }
+
+    html,body{
+      background:radial-gradient(circle at 50% -14%,rgba(11,143,220,.12),transparent 32%),var(--bg)!important;
+    }
+
+    /* Remove o aspecto roxo e transforma o azul escuro em cor de produto. */
+    .hero-kicker,.chart-value,.row-side,.history-session-head span,.home-start-copy small,.home-start-arrow,
+    .quick-action svg,.live-stat strong.accent,.change-history-icon,.history-mini,.builder-exercise-name,
+    .btn-ghost,.stepper button,.add-dashed,.workout-toggle-side,.period-btn.is-active{
+      color:var(--rp-bright)!important;
+    }
+
+    .btn-primary{
+      background:linear-gradient(180deg,#0B8FDC 0%,#096AA8 100%)!important;
+      box-shadow:0 10px 28px rgba(5,60,108,.28)!important;
+    }
+    .btn-primary:active{background:#075A91!important}
+
+    .nav-item.is-active{
+      color:#57BCEB!important;
+      background:linear-gradient(180deg,rgba(11,143,220,.20),rgba(5,60,108,.20))!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.055)!important;
+    }
+
+    .metric-card.highlight{
+      background:linear-gradient(145deg,rgba(10,66,126,.42),rgba(5,60,108,.16))!important;
+      border-color:rgba(11,143,220,.34)!important;
+    }
+
+    .avatar,.exercise-symbol{
+      background:linear-gradient(145deg,rgba(11,143,220,.22),rgba(5,60,108,.12))!important;
+      color:#89D6F6!important;
+    }
+
+    .home-start-card{
+      background:linear-gradient(135deg,rgba(10,66,126,.64),rgba(5,60,108,.26) 56%,rgba(255,255,255,.035))!important;
+      border-color:rgba(11,143,220,.38)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 16px 36px rgba(5,60,108,.18)!important;
+    }
+    .home-start-icon{
+      background:linear-gradient(180deg,#0B8FDC,#0767A2)!important;
+      box-shadow:0 11px 26px rgba(5,60,108,.34)!important;
+    }
+
+    .group-button.is-selected,.filter-chip.is-active,.period-btn.is-active{
+      background:var(--rp-blue)!important;
+      border-color:var(--rp-bright)!important;
+      color:#fff!important;
+    }
+
+    .set-row:focus-within{background:rgba(11,143,220,.055)!important}
+    .set-input:focus{
+      border-color:var(--rp-bright)!important;
+      box-shadow:0 0 0 3px rgba(11,143,220,.12)!important;
+    }
+    .live-note:focus{
+      border-color:rgba(11,143,220,.38)!important;
+      background:rgba(11,143,220,.055)!important;
+    }
+
+    .progress-track span,.finish-muscle-row i{
+      background:linear-gradient(90deg,#075F99,#0B8FDC)!important;
+    }
+    .coach-report{
+      background:linear-gradient(145deg,rgba(10,66,126,.22),rgba(5,60,108,.08))!important;
+      border-color:rgba(11,143,220,.28)!important;
+    }
+
+    /* Dashboard: cards realmente clicáveis. */
+    .metric-link{
+      width:100%;text-align:left;color:var(--text);cursor:pointer;position:relative;
+      transition:transform .13s ease,border-color .16s ease,background .16s ease;
+    }
+    .metric-link:active{transform:scale(.985)}
+    .metric-link:after{
+      content:'›';position:absolute;right:13px;top:12px;color:var(--faint);font-size:19px;font-weight:500;
+    }
+    .metric-link:hover{border-color:rgba(11,143,220,.30)}
+
+    .metric-list{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+    .metric-session-row{
+      width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;
+      text-align:left;color:var(--text);background:var(--surface);border:1px solid var(--line);
+      border-radius:15px;padding:13px;
+    }
+    .metric-session-row strong{display:block;font-size:13px}
+    .metric-session-row small{display:block;color:var(--faint);font-size:10px;margin-top:4px;line-height:1.4}
+    .metric-session-row b{font-size:11px;color:var(--rp-bright);white-space:nowrap}
+
+    /* Ações visíveis dentro de "Ver treino". */
+    .program-view-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+    .program-view-actions .btn{width:100%;min-width:0;padding-left:10px;padding-right:10px}
+    .program-view-actions .program-delete-action{grid-column:1/-1}
+
+    /* Resumo final mais próximo de um app nativo de treino. */
+    .finish-celebration{
+      text-align:center;padding:12px 4px 18px;
+    }
+    .finish-check{
+      width:62px;height:62px;border-radius:22px;margin:0 auto 13px;display:grid;place-items:center;
+      color:#fff;background:linear-gradient(145deg,#0B8FDC,#075A91);box-shadow:0 16px 38px rgba(5,60,108,.30);
+    }
+    .finish-check svg{width:30px;height:30px}
+    .finish-celebration small{display:block;color:var(--rp-bright);font-size:8px;font-weight:900;letter-spacing:.15em;margin-bottom:6px}
+    .finish-celebration h2{font-size:27px!important;letter-spacing:-.8px!important;margin:0 0 7px!important}
+    .finish-celebration p{max-width:380px;margin:0 auto;color:var(--muted);font-size:12px;line-height:1.5}
+
+    .muscle-map-card{
+      margin-top:15px;padding:14px;border-radius:18px;background:linear-gradient(155deg,#111820,#0D131A);
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .muscle-map-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .muscle-map-head strong{display:block;font-size:13px}
+    .muscle-map-head small{display:block;color:var(--faint);font-size:9.5px;margin-top:3px;line-height:1.35}
+    .muscle-map-head span{font-size:9px;color:var(--rp-bright);font-weight:800;white-space:nowrap}
+    .muscle-bodies{display:grid;grid-template-columns:1fr 1fr;gap:9px;align-items:start}
+    .muscle-figure{min-width:0;text-align:center;padding:8px 4px 6px;border-radius:15px;background:rgba(255,255,255,.018)}
+    .muscle-figure>small{display:block;color:var(--faint);font-size:8px;font-weight:850;letter-spacing:.12em;margin-bottom:3px}
+    .muscle-figure svg{width:100%;max-width:150px;height:255px;overflow:visible}
+    .body-base{fill:#1C2630;stroke:#31404E;stroke-width:1.2}
+    .muscle-shape{fill:#25313C;stroke:#354553;stroke-width:.7;transition:fill .2s ease,fill-opacity .2s ease}
+    .muscle-shape.is-active{fill:#0B8FDC;fill-opacity:calc(.40 + (var(--heat, .5) * .60));stroke:#52B9E8}
+    .muscle-labels{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+    .muscle-chip{
+      display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:5px 8px;border-radius:10px;
+      background:rgba(11,143,220,.10);border:1px solid rgba(11,143,220,.18);font-size:9.5px;color:#BBDFF0;
+    }
+    .muscle-chip i{width:6px;height:6px;border-radius:50%;background:#0B8FDC;box-shadow:0 0 0 3px rgba(11,143,220,.10)}
+    .muscle-chip b{font-size:9px;color:#fff}
+
+    .finish-card{border-color:rgba(11,143,220,.10)!important}
+    .finish-stats>div{min-width:0}
+    .finish-stats strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    html[data-theme="light"] body{
+      background:radial-gradient(circle at 50% -12%,rgba(11,143,220,.08),transparent 30%),var(--bg)!important;
+    }
+    html[data-theme="light"] .home-start-card{
+      background:linear-gradient(135deg,#E8F4FA,#F7FBFD)!important;
+      border-color:#B9DCEB!important;
+      box-shadow:0 14px 30px rgba(5,60,108,.08)!important;
+    }
+    html[data-theme="light"] .metric-card.highlight{
+      background:linear-gradient(145deg,#E6F2F8,#F7FBFD)!important;
+      border-color:#B9DCEB!important;
+    }
+    html[data-theme="light"] .muscle-map-card{background:#F7FAFC;border-color:#DDE7ED}
+    html[data-theme="light"] .muscle-figure{background:#F0F5F8}
+    html[data-theme="light"] .body-base{fill:#DDE6EB;stroke:#C7D4DB}
+    html[data-theme="light"] .muscle-shape{fill:#D0DCE2;stroke:#C1CED5}
+    html[data-theme="light"] .muscle-chip{color:#21526A;background:#E6F4FA}
+    html[data-theme="light"] .muscle-chip b{color:#0B3552}
+
+    @media(max-width:370px){
+      .muscle-figure svg{height:225px}
+      .program-view-actions{grid-template-columns:1fr}
+      .program-view-actions .program-delete-action{grid-column:auto}
+    }
+  </style>
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -66,6 +241,281 @@
 
   <div id="printArea" class="print-area" aria-hidden="true"></div>
   <input id="backupImportInput" class="is-hidden" type="file" accept="application/json,.json">
-    <script src="./app.js" defer></script>
+
+  <!-- Carregado de forma síncrona no fim do body para permitir as sobrescritas abaixo. -->
+  <script src="./app.js"></script>
+  <script>
+  'use strict';
+
+  /* ============================================================
+     INDEX-ONLY PATCH — dashboard, treino, resumo muscular
+     ============================================================ */
+
+  function sevenDaySessions(){
+    const cutoff=Date.now()-7*86400000;
+    return db.sessions.filter(s=>sessionTimestamp(s)>=cutoff).sort((a,b)=>sessionTimestamp(b)-sessionTimestamp(a));
+  }
+
+  function openDashboardMetric(kind){
+    if(kind==='students') return navigate('students');
+
+    const sessions=sevenDaySessions();
+    if(kind==='top'){
+      const top=findTopImprovementAcrossStudents('90d');
+      if(!top) return navigate('evolution');
+      navigate('evolution-detail',{evolutionStudentId:top.student.id});
+      setTimeout(()=>{
+        if(typeof openExerciseHistory==='function' && top.exerciseId) openExerciseHistory(top.student.id,top.exerciseId);
+      },80);
+      return;
+    }
+
+    const isSets=kind==='sets';
+    const totalSets=sessions.reduce((sum,s)=>sum+sessionSetCount(s),0);
+    const title=isSets?'Séries · últimos 7 dias':'Treinos · últimos 7 dias';
+    const subtitle=isSets
+      ? `${totalSets} séries concluídas em ${sessions.length} treino${sessions.length===1?'':'s'}.`
+      : `${sessions.length} treino${sessions.length===1?'':'s'} registrado${sessions.length===1?'':'s'} no período.`;
+
+    openModal(`<h2>${title}</h2><p class="modal-sub">${subtitle}</p>
+      <div class="metric-list">
+        ${sessions.length?sessions.map(session=>{
+          const first=session.participants[0];
+          const names=session.participants.map(p=>studentById(p.studentId)?.name||'Aluno').join(' + ');
+          const programs=session.participants.map(p=>p.programName||'Treino').join(' + ');
+          const sets=sessionSetCount(session);
+          return `<button class="metric-session-row" type="button" data-metric-student="${esc(first?.studentId||'')}">
+            <span><strong>${esc(names)}</strong><small>${esc(programs)} · ${fmtDate(session.endedAt)} · ${fmtClock(session.durationSec||0)}</small></span>
+            <b>${isSets?`${sets} séries`:kgText(sessionVolume(session))}</b>
+          </button>`;
+        }).join(''):emptyHtml('Nada registrado nos últimos 7 dias.','Os próximos treinos aparecerão aqui automaticamente.')}
+      </div>
+      <div class="modal-actions"><button class="btn btn-secondary" id="metricClose" type="button">Fechar</button></div>`);
+
+    $('#metricClose').onclick=closeModal;
+    $$('[data-metric-student]',$('#modal')).forEach(btn=>btn.onclick=()=>{
+      const sid=btn.dataset.metricStudent;
+      closeModal();
+      if(sid) navigate('student',{studentId:sid});
+    });
+  }
+
+  /* Home sem "Leitura rápida" e com os quatro indicadores navegáveis. */
+  renderHome = function(main){
+    const h=new Date().getHours();
+    const greeting=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+    const dash=dashboardData();
+    const latest=db.sessions.slice().sort((a,b)=>sessionTimestamp(b)-sessionTimestamp(a)).slice(0,4);
+    const top=findTopImprovementAcrossStudents('90d');
+    setHeader({title:'Início',action:'more',actionFn:openSettingsMenu});
+
+    main.innerHTML=`
+      <section class="screen">
+        <div class="hero home-hero">
+          <div><span class="hero-kicker">PERSONAL TRAINER</span><h1>${greeting}, ${esc(db.trainer.name.split(' ')[0]||'Professor')}</h1></div>
+          <p>Controle a sessão, acompanhe as últimas cargas e enxergue a evolução sem perder tempo durante o treino.</p>
+        </div>
+
+        <div class="home-start-wrap">
+          <button class="home-start-card" id="homeQuickStart" type="button">
+            <span class="home-start-icon">${icons.dumbbell}</span>
+            <span class="home-start-copy"><small>ATALHO RÁPIDO</small><strong>Iniciar treino</strong><em>Escolha o aluno e a ficha</em></span>
+            <span class="home-start-arrow">${chev()}</span>
+          </button>
+        </div>
+
+        <div class="section home-metrics" style="margin-top:18px">
+          <div class="grid-2">
+            <button class="metric-card metric-link" data-dashboard-metric="students" type="button"><div><small>Alunos</small><strong>${db.students.length}</strong></div><p>ver alunos cadastrados</p></button>
+            <button class="metric-card metric-link" data-dashboard-metric="sessions" type="button"><div><small>Treinos · 7 dias</small><strong>${dash.sessions.length}</strong></div><p>${dash.active} aluno${dash.active===1?' ativo':'s ativos'}</p></button>
+            <button class="metric-card metric-link" data-dashboard-metric="sets" type="button"><div><small>Séries · 7 dias</small><strong>${dash.sets}</strong></div><p>ver séries concluídas</p></button>
+            <button class="metric-card metric-link highlight" data-dashboard-metric="top" type="button"><div><small>Maior evolução</small><strong>${top?esc(top.student.name.split(' ')[0]):'—'}</strong></div><p>${top?`${esc(top.exerciseName)} · +${round(top.deltaKg)} kg`:'precisa de mais histórico'}</p></button>
+          </div>
+        </div>
+
+        <div class="section home-recent-section">
+          <div class="section-title"><h2>Últimos treinos</h2><span>${latest.length}</span></div>
+          <div id="homeLatest">${latest.length?latest.map(recentSessionCardHtml).join(''):emptyHtml('Ainda não há treinos registrados.','Seu histórico aparecerá aqui depois da primeira sessão.')}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><h2>Ações rápidas</h2></div>
+          <div class="quick-actions">
+            <button class="quick-action" data-quick="student" type="button">${icons.users}<strong>Novo aluno</strong><small>Cadastrar e montar treinos</small></button>
+            <button class="quick-action" data-quick="exercise" type="button">${icons.dumbbell}<strong>Novo exercício</strong><small>Adicionar à biblioteca</small></button>
+          </div>
+        </div>
+      </section>`;
+
+    $('#homeQuickStart')?.addEventListener('click',openQuickStart);
+    $('[data-quick="student"]')?.addEventListener('click',()=>openStudentForm());
+    $('[data-quick="exercise"]')?.addEventListener('click',()=>openExerciseForm());
+    $$('[data-dashboard-metric]',main).forEach(btn=>btn.onclick=()=>openDashboardMetric(btn.dataset.dashboardMetric));
+    $$('[data-session-student]',main).forEach(el=>el.onclick=()=>navigate('student',{studentId:el.dataset.sessionStudent}));
+  };
+
+  /* Excluir/editar/copy ficam explícitos dentro de "Ver treino". */
+  openProgramView = function(programId){
+    const p=programById(programId);if(!p)return;
+    const st=studentById(p.studentId);
+    openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div>
+      <div class="builder-body"><p class="modal-sub">${esc(st?.name||'')} · ${p.exercises.length} exercícios</p>
+      ${p.exercises.map((pe,i)=>{
+        const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);
+        return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)} descanso</p>${pe.referenceWeight!=null?`<p><strong>Carga de referência: ${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="view-loads"><small>Anterior</small>${prev?completedSets(prev).map((set,j)=>`<span>S${j+1} · <b>${parseDecimal(set.weight)} kg × ${parseInteger(set.reps)}</b></span>`).join(''):'<span>Sem registro</span>'}</div></div>`;
+      }).join('')}</div>
+      <div class="builder-foot"><div class="program-view-actions">
+        <button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button>
+        <button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button>
+        <button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button>
+      </div></div>`,{fullscreen:true});
+
+    $('#viewClose').onclick=closeModal;
+    $('#viewEdit').onclick=()=>{closeModal();setTimeout(()=>openProgramBuilder(p.studentId,p.id),50);};
+    $('#viewCopy').onclick=()=>openProgramCopy(programId);
+    $('#viewDelete').onclick=()=>{
+      closeModal();
+      setTimeout(()=>confirmDeleteProgram(programId),50);
+    };
+  };
+
+  function liveMuscleStats(participant){
+    const map=new Map();
+    (participant.exercises||[]).forEach(ex=>{
+      const done=(ex.sets||[]).filter(s=>s.done);
+      if(!done.length)return;
+      const groups=normalizeGroups(ex.muscleGroups);
+      const divisor=Math.max(groups.length,1);
+      const volume=done.reduce((sum,s)=>sum+setVolume(s),0);
+      groups.forEach(group=>{
+        if(!map.has(group))map.set(group,{group,volume:0,sets:0,score:0});
+        const row=map.get(group);
+        row.volume+=volume/divisor;
+        row.sets+=done.length/divisor;
+        row.score+=(volume>0?volume:done.length*100)/divisor;
+      });
+    });
+    const rows=[...map.values()].sort((a,b)=>b.score-a.score);
+    const max=Math.max(...rows.map(r=>r.score),1);
+    rows.forEach(r=>r.heat=clamp(r.score/max,.18,1));
+    return rows;
+  }
+
+  function muscleHeat(stats,name){
+    const row=stats.find(r=>r.group===name);
+    return row?row.heat:0;
+  }
+
+  function muscleClass(stats,name){
+    return muscleHeat(stats,name)>0?'muscle-shape is-active':'muscle-shape';
+  }
+
+  function muscleStyle(stats,name){
+    const heat=muscleHeat(stats,name);
+    return heat?` style="--heat:${heat.toFixed(3)}"`:'';
+  }
+
+  function frontBodySvg(stats){
+    const c=name=>muscleClass(stats,name),s=name=>muscleStyle(stats,name);
+    return `<svg viewBox="0 0 170 300" role="img" aria-label="Mapa muscular frontal">
+      <circle class="body-base" cx="85" cy="24" r="17"/>
+      <path class="body-base" d="M66 44 Q85 37 104 44 L112 102 Q108 125 103 139 L111 181 L103 276 L89 276 L84 190 L81 190 L78 276 L64 276 L58 181 L67 139 Q62 122 58 102 Z"/>
+      <path class="body-base" d="M61 50 Q48 54 43 70 L28 135 L40 139 L58 87 Z"/>
+      <path class="body-base" d="M109 50 Q122 54 127 70 L142 135 L130 139 L112 87 Z"/>
+
+      <ellipse class="${c('Ombros')}"${s('Ombros')} cx="58" cy="57" rx="12" ry="10"/>
+      <ellipse class="${c('Ombros')}"${s('Ombros')} cx="112" cy="57" rx="12" ry="10"/>
+      <path class="${c('Peito')}"${s('Peito')} d="M68 58 Q76 51 84 57 L83 83 Q72 85 66 75 Z"/>
+      <path class="${c('Peito')}"${s('Peito')} d="M102 58 Q94 51 86 57 L87 83 Q98 85 104 75 Z"/>
+      <ellipse class="${c('Bíceps')}"${s('Bíceps')} cx="50" cy="90" rx="8" ry="18" transform="rotate(12 50 90)"/>
+      <ellipse class="${c('Bíceps')}"${s('Bíceps')} cx="120" cy="90" rx="8" ry="18" transform="rotate(-12 120 90)"/>
+      <path class="${c('Abdômen')}"${s('Abdômen')} d="M75 88 Q85 84 95 88 L96 132 Q85 138 74 132 Z"/>
+      <path class="${c('Adutores')}"${s('Adutores')} d="M70 144 Q80 138 83 149 L79 190 L68 190 Z"/>
+      <path class="${c('Adutores')}"${s('Adutores')} d="M100 144 Q90 138 87 149 L91 190 L102 190 Z"/>
+      <path class="${c('Quadríceps')}"${s('Quadríceps')} d="M61 142 Q72 136 78 144 L75 207 L61 210 L56 181 Z"/>
+      <path class="${c('Quadríceps')}"${s('Quadríceps')} d="M109 142 Q98 136 92 144 L95 207 L109 210 L114 181 Z"/>
+      <path class="${c('Panturrilhas')}"${s('Panturrilhas')} d="M62 216 Q70 210 75 217 L73 266 L64 270 Z"/>
+      <path class="${c('Panturrilhas')}"${s('Panturrilhas')} d="M108 216 Q100 210 95 217 L97 266 L106 270 Z"/>
+    </svg>`;
+  }
+
+  function backBodySvg(stats){
+    const c=name=>muscleClass(stats,name),s=name=>muscleStyle(stats,name);
+    return `<svg viewBox="0 0 170 300" role="img" aria-label="Mapa muscular posterior">
+      <circle class="body-base" cx="85" cy="24" r="17"/>
+      <path class="body-base" d="M66 44 Q85 37 104 44 L112 102 Q108 125 103 139 L111 181 L103 276 L89 276 L84 190 L81 190 L78 276 L64 276 L58 181 L67 139 Q62 122 58 102 Z"/>
+      <path class="body-base" d="M61 50 Q48 54 43 70 L28 135 L40 139 L58 87 Z"/>
+      <path class="body-base" d="M109 50 Q122 54 127 70 L142 135 L130 139 L112 87 Z"/>
+
+      <ellipse class="${c('Ombros')}"${s('Ombros')} cx="58" cy="57" rx="12" ry="10"/>
+      <ellipse class="${c('Ombros')}"${s('Ombros')} cx="112" cy="57" rx="12" ry="10"/>
+      <path class="${c('Costas')}"${s('Costas')} d="M66 58 Q85 48 104 58 L100 116 Q85 130 70 116 Z"/>
+      <ellipse class="${c('Tríceps')}"${s('Tríceps')} cx="49" cy="91" rx="8" ry="19" transform="rotate(12 49 91)"/>
+      <ellipse class="${c('Tríceps')}"${s('Tríceps')} cx="121" cy="91" rx="8" ry="19" transform="rotate(-12 121 91)"/>
+      <path class="${c('Glúteos')}"${s('Glúteos')} d="M65 132 Q74 125 84 134 L82 160 Q70 166 61 156 Z"/>
+      <path class="${c('Glúteos')}"${s('Glúteos')} d="M105 132 Q96 125 86 134 L88 160 Q100 166 109 156 Z"/>
+      <path class="${c('Posteriores')}"${s('Posteriores')} d="M62 164 Q72 158 80 165 L76 215 L62 215 L57 183 Z"/>
+      <path class="${c('Posteriores')}"${s('Posteriores')} d="M108 164 Q98 158 90 165 L94 215 L108 215 L113 183 Z"/>
+      <path class="${c('Panturrilhas')}"${s('Panturrilhas')} d="M62 218 Q70 210 76 219 L73 268 L64 271 Z"/>
+      <path class="${c('Panturrilhas')}"${s('Panturrilhas')} d="M108 218 Q100 210 94 219 L97 268 L106 271 Z"/>
+    </svg>`;
+  }
+
+  function muscleMapHtml(participant){
+    const stats=liveMuscleStats(participant);
+    if(!stats.length)return '';
+    const chips=stats.slice(0,8).map(row=>`<span class="muscle-chip"><i></i><span>${esc(row.group)}</span><b>${round(row.sets)}s${row.volume>0?` · ${kgText(row.volume)}`:''}</b></span>`).join('');
+    return `<div class="muscle-map-card">
+      <div class="muscle-map-head"><div><strong>Mapa muscular do treino</strong><small>Quanto mais intenso o azul, maior a participação do grupamento nesta sessão.</small></div><span>${stats.length} grupamento${stats.length===1?'':'s'}</span></div>
+      <div class="muscle-bodies">
+        <div class="muscle-figure"><small>FRENTE</small>${frontBodySvg(stats)}</div>
+        <div class="muscle-figure"><small>COSTAS</small>${backBodySvg(stats)}</div>
+      </div>
+      <div class="muscle-labels">${chips}</div>
+    </div>`;
+  }
+
+  openFinishWorkout = function(){
+    if(!live)return;
+    const completed=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).length,0),0);
+    if(!completed)return toast('Marque pelo menos uma série como concluída.');
+
+    openModal(`
+      <div class="finish-celebration">
+        <div class="finish-check">${icons.check}</div>
+        <small>TREINO CONCLUÍDO</small>
+        <h2>Parabéns!</h2>
+        <p>Veja o resumo da sessão, os músculos trabalhados e deixe uma observação antes de salvar.</p>
+      </div>
+      ${live.participants.map((p,i)=>{
+        const st=studentById(p.studentId);
+        const vol=p.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).reduce((x,s)=>x+setVolume(s),0),0);
+        const sets=p.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0);
+        const rpes=p.exercises.flatMap(e=>e.sets.filter(s=>s.done&&s.rpe).map(s=>Number(s.rpe))).filter(Boolean);
+        const avgRpe=rpes.length?(rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1).replace('.',','):'—';
+        return `<div class="finish-card">
+          <div class="finish-card-head"><div><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')}</small></div><span>${fmtClock((Date.now()-live.startedAt)/1000)}</span></div>
+          <div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avgRpe}</strong></div></div>
+          ${muscleMapHtml(p)}
+          <div class="form-row finish-note"><label class="form-label">Parecer / observação</label><textarea class="form-textarea" data-feedback="${i}" placeholder="O que vale lembrar para a próxima sessão?">${esc(p.feedback||'')}</textarea></div>
+        </div>`;
+      }).join('')}
+      <div class="modal-actions"><button class="btn btn-secondary" id="finishCancel">Voltar</button><button class="btn btn-primary" id="finishSave">Salvar treino</button></div>`,{fullscreen:true});
+
+    $('#finishCancel').onclick=closeModal;
+    $('#finishSave').onclick=()=>{
+      $$('[data-feedback]').forEach(t=>live.participants[+t.dataset.feedback].feedback=t.value.trim());
+      saveFinishedWorkout();
+    };
+  };
+
+  /* Mantém a cor da barra do navegador alinhada ao novo azul no modo escuro. */
+  const originalApplyTheme=applyTheme;
+  applyTheme = function(theme,persistChoice=true){
+    originalApplyTheme(theme,persistChoice);
+    const meta=document.querySelector('meta[name="theme-color"]');
+    if(meta)meta.setAttribute('content',theme==='light'?'#F4F5F8':'#053C6C');
+  };
+  </script>
 </body>
 </html>
