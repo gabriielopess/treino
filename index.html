@@ -185,7 +185,79 @@
     .finish-pending-note{margin:9px 2px 0;color:var(--faint);font-size:9.5px;line-height:1.4}
     @media(max-width:390px){.muscle-figure svg{height:270px!important}.finish-card{padding:14px!important}.finish-stats strong{font-size:13px!important}}
 
-  </style>
+  
+
+/* ============================================================
+   TREINOS-SPEC-PATCH-2026-09-25
+   Scoped index-only refinements: RPE, print, crop, anatomy, nav.
+   ============================================================ */
+
+/* Scrollbars are hidden visually only; scrolling remains enabled. */
+html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important;background:transparent!important}
+
+/* Bottom navigation: opaque menu + soft reveal edge. */
+.bottom-nav{overflow:visible!important;background:var(--bg)!important;isolation:isolate}
+.bottom-nav::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:42px;pointer-events:none;z-index:-1;background:linear-gradient(to top,var(--bg) 0%,color-mix(in srgb,var(--bg) 84%,transparent) 45%,transparent 100%)}
+html[data-theme="light"] .bottom-nav::before{background:linear-gradient(to top,#F5F6F8 0%,rgba(245,246,248,.86) 45%,rgba(245,246,248,0) 100%)}
+html[data-theme="dark"] .bottom-nav::before{background:linear-gradient(to top,#0B0D10 0%,rgba(11,13,16,.88) 45%,rgba(11,13,16,0) 100%)}
+
+/* RPE: number + thin track only. Touch area stays large. */
+.rpe-dock{left:50%!important;right:auto!important;transform:translateX(-50%)!important;bottom:calc(88px + var(--safe-bottom))!important;width:min(420px,calc(100% - 38px))!important;max-width:none!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:5px 8px 2px!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.rpe-dock-head,.rpe-dock-close,.rpe-quick,.rpe-scale,.rpe-clear{display:none!important}
+.rpe-dock-value{display:block!important;text-align:center!important;color:var(--text)!important;font-size:19px!important;line-height:24px!important;font-weight:850!important;letter-spacing:-.25px!important;margin:0 0 1px!important}
+.rpe-touch{height:46px;display:flex;align-items:center;padding:0 3px;touch-action:pan-x}
+.rpe-range{width:100%!important;height:46px!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;outline:0!important;-webkit-appearance:none!important;appearance:none!important;cursor:pointer}
+.rpe-range::-webkit-slider-runnable-track{height:4px;border-radius:999px;background:linear-gradient(to right,var(--rp-navy) 0,var(--rp-navy) var(--rpe-pos,77.8%),var(--line-strong) var(--rpe-pos,77.8%),var(--line-strong) 100%)}
+.rpe-range::-webkit-slider-thumb{-webkit-appearance:none!important;appearance:none!important;width:24px;height:24px;border-radius:50%;background:var(--rp-navy);border:3px solid var(--bg-elev);box-shadow:0 1px 6px rgba(0,0,0,.22);margin-top:-10px}
+.rpe-range::-moz-range-track{height:4px;border-radius:999px;background:var(--line-strong)}
+.rpe-range::-moz-range-progress{height:4px;border-radius:999px;background:var(--rp-navy)}
+.rpe-range::-moz-range-thumb{width:21px;height:21px;border-radius:50%;background:var(--rp-navy);border:3px solid var(--bg-elev);box-shadow:0 1px 6px rgba(0,0,0,.22)}
+html[data-theme="light"] .rpe-range::-webkit-slider-thumb{border-color:#fff}
+html[data-theme="light"] .rpe-range::-moz-range-thumb{border-color:#fff}
+
+/* High-quality anatomy slot; SVG stays vector at any export size. */
+.anatomy-slot{width:100%;min-height:305px;display:flex;align-items:center;justify-content:center}
+.anatomy-slot .hq-muscle-svg{display:block;width:100%;height:100%;max-height:355px;overflow:visible}
+.muscle-map .muscle-labels{margin-top:18px!important;position:relative!important;z-index:2}
+.muscle-map .muscle-bodies{align-items:end!important}
+
+/* Photo crop flow. */
+.photo-crop-layer{position:fixed;inset:0;z-index:260;background:var(--bg);color:var(--text);display:flex;flex-direction:column;padding:calc(14px + var(--safe-top)) 18px calc(18px + var(--safe-bottom));overflow:auto}
+.photo-crop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:780px;width:100%;margin:0 auto 18px}
+.photo-crop-head h2{margin:0;font-size:19px;letter-spacing:-.4px}
+.photo-crop-head button{width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);color:var(--text);font-size:22px}
+.photo-crop-layout{width:100%;max-width:780px;margin:auto;display:grid;grid-template-columns:minmax(260px,1fr) 180px;gap:30px;align-items:center;justify-content:center}
+.photo-crop-stage-wrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.photo-crop-stage{position:relative;width:min(78vw,390px);aspect-ratio:1;overflow:hidden;border-radius:22px;background:#111;touch-action:none;box-shadow:0 14px 44px rgba(0,0,0,.20)}
+.photo-crop-stage img{position:absolute;max-width:none!important;max-height:none!important;user-select:none;-webkit-user-drag:none;pointer-events:none;will-change:left,top,width,height}
+.photo-crop-grid{position:absolute;inset:0;pointer-events:none;border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 0 0 999px rgba(0,0,0,.06);background:linear-gradient(to right,transparent 33.15%,rgba(255,255,255,.26) 33.2%,rgba(255,255,255,.26) 33.55%,transparent 33.6%,transparent 66.3%,rgba(255,255,255,.26) 66.35%,rgba(255,255,255,.26) 66.7%,transparent 66.75%),linear-gradient(to bottom,transparent 33.15%,rgba(255,255,255,.26) 33.2%,rgba(255,255,255,.26) 33.55%,transparent 33.6%,transparent 66.3%,rgba(255,255,255,.26) 66.35%,rgba(255,255,255,.26) 66.7%,transparent 66.75%)}
+.photo-crop-zoom{width:min(78vw,390px);height:46px;display:flex;align-items:center;gap:11px;color:var(--muted);font-size:12px}
+.photo-crop-zoom input{flex:1;accent-color:var(--rp-navy)}
+.photo-crop-preview{text-align:center}
+.photo-crop-preview small{display:block;color:var(--faint);font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:11px}
+.photo-crop-preview canvas{width:116px;height:116px;border-radius:50%;display:block;margin:auto;background:var(--surface-2);border:1px solid var(--line)}
+.photo-crop-actions{display:flex;gap:10px;width:100%;max-width:780px;margin:26px auto 0}
+.photo-crop-actions .btn{flex:1}
+@media(max-width:640px){.photo-crop-layout{grid-template-columns:1fr;gap:18px}.photo-crop-preview canvas{width:86px;height:86px}.photo-crop-preview small{margin-bottom:8px}.photo-crop-stage{width:min(86vw,390px)}.photo-crop-zoom{width:min(86vw,390px)}}
+
+/* PDF/print: series are grouped pills, only horizontal separators remain. */
+@media print{
+  html,body,#printArea,.print-program-page{background:#fff!important;color-scheme:light!important}
+  #printArea{min-height:279mm!important;background:#fff!important}
+  .print-program-page{min-height:279mm!important}
+  .print-program-page,.print-exercises-grid,.print-exercise,.print-exercise>div,.print-series-list,.print-series-pill{border-left:0!important;border-right:0!important;outline:0!important;box-shadow:none!important}
+  .print-exercise{display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;gap:7px!important;padding:8px 0!important;border-top:0!important;border-bottom:1px solid #E4E7EB!important;background:transparent!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  .print-exercise:last-child{border-bottom:0!important}
+  .print-exercises-grid{border:0!important}
+  .print-series-list{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:6px!important}
+  .print-series-pill{display:inline-flex!important;align-items:center!important;gap:5px!important;white-space:nowrap!important;background:#F0F2F4!important;color:#333!important;border:0!important;border-radius:7px!important;padding:5px 7px!important;font-size:7.8px!important;line-height:1.1!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  .print-series-pill b{font-size:7.8px!important;color:#111!important}
+  .print-series-pill span{color:#4D5560!important}
+  .print-prescription{margin-top:5px!important}
+  .print-rule{border:0!important;height:1px!important;background:#D8DCE1!important}
+}
+</style>
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -511,6 +583,252 @@
     persist();const first=participants[0]?.studentId;stopRest();live=null;persistDraft();closeModal();if(first)navigate('student',{studentId:first});else navigate('home');toast('Treino salvo com sucesso.');
   };
 
+
+
+  /* ============================================================
+     TREINOS-SPEC-PATCH-2026-09-25
+     Runtime overrides are intentionally late and index-only.
+     ============================================================ */
+
+  /* Add the muscle groups required by the new anatomical model without
+     changing the persisted schema or the external app.js. */
+  ['Antebraços','Trapézio','Lombar','Oblíquos','Abdutores'].forEach(g=>{if(!MUSCLE_GROUPS.includes(g))MUSCLE_GROUPS.splice(Math.max(0,MUSCLE_GROUPS.length-1),0,g);});
+  const baseNormalizeGroupsIndexPatch=normalizeGroups;
+  normalizeGroups=function(groups){
+    const extraAliases={'Antebraço':'Antebraços','Oblíquo':'Oblíquos','Obliquo':'Oblíquos','Abdutor':'Abdutores','Abdutores de quadril':'Abdutores','Lombares':'Lombar','Trapézios':'Trapézio'};
+    const arr=Array.isArray(groups)?groups:(groups?[groups]:[]);
+    return baseNormalizeGroupsIndexPatch(arr.map(v=>extraAliases[String(v).trim()]||String(v).trim()));
+  };
+
+  /* 1. RPE: only selected number + thin slider; comma decimal stays numeric in data. */
+  rpeLabel=function(v){const n=Number(v);if(!Number.isFinite(n))return '—';return Number.isInteger(n)?String(n):n.toFixed(1).replace('.',',');};
+  ensureRpeDock=function(){
+    let dock=$('#rpeDock');
+    if(dock){dock.remove();}
+    dock=document.createElement('div');dock.id='rpeDock';dock.className='rpe-dock is-hidden';
+    dock.innerHTML=`<strong class="rpe-dock-value" id="rpeDockValue">8</strong><div class="rpe-touch"><input id="rpeRange" class="rpe-range" type="range" min="1" max="10" step="0.5" value="8" aria-label="Percepção de esforço de 1 a 10"></div>`;
+    document.body.appendChild(dock);return dock;
+  };
+  syncRpeDock=function(value){
+    const n=clamp(Number(value)||8,1,10),range=$('#rpeRange'),label=$('#rpeDockValue');
+    if(range){range.value=String(n);range.style.setProperty('--rpe-pos',`${((n-1)/9)*100}%`);}
+    if(label)label.textContent=rpeLabel(n);
+  };
+  applyRpeValue=function(value){
+    if(!activeRpePath)return;const set=liveSetAt(activeRpePath);if(!set)return;
+    const n=clamp(Number(value),1,10);set.rpe=n;persistDraft();
+    const btn=$(`[data-set-rpe-trigger="${activeRpePath}"]`);if(btn){btn.textContent=rpeLabel(n);btn.classList.add('has-value');}
+    syncRpeDock(n);
+  };
+  openRpePicker=function(path){
+    activeRpePath=path;const dock=ensureRpeDock(),set=liveSetAt(path),value=set?.rpe===''||set?.rpe==null?8:Number(set.rpe);
+    syncRpeDock(value);dock.classList.remove('is-hidden');
+    $('#rpeRange').oninput=e=>applyRpeValue(e.target.value);
+  };
+  closeRpePicker=function(){const dock=$('#rpeDock');if(dock)dock.classList.add('is-hidden');activeRpePath=null;};
+  document.addEventListener('pointerdown',e=>{if(!activeRpePath)return;if(e.target.closest?.('#rpeDock')||e.target.closest?.('[data-set-rpe-trigger]'))return;closeRpePicker();},true);
+
+  liveSetHtml=function(pi,ei,set,si,ex){
+    const path=`${pi}:${ei}:${si}`,rpe=set.rpe===''||set.rpe==null?'':Number(set.rpe),sw=setSuggestion(set,'weight'),sr=setSuggestion(set,'reps');
+    return `<div class="set-row ${set.done?'is-done':''}" data-set-row="${path}"><div class="set-index">${si+1}</div><input class="set-input ${!set.weight&&sw?'has-suggestion':''}" inputmode="decimal" data-set-weight="${path}" value="${esc(set.weight)}" placeholder="${esc(sw||'kg')}" aria-label="Carga da série ${si+1}"><input class="set-input ${!set.reps&&sr?'has-suggestion':''}" inputmode="numeric" data-set-reps="${path}" value="${esc(set.reps)}" placeholder="${esc(sr||'reps')}" aria-label="Repetições da série ${si+1}"><button class="rpe-trigger ${rpe?'has-value':''}" type="button" data-set-rpe-trigger="${path}" aria-label="RPE da série ${si+1}">${rpe?rpeLabel(rpe):'—'}</button><button class="set-check" data-set-check="${path}" type="button" aria-label="${set.done?'Desmarcar':'Concluir'} série ${si+1}">${set.done?icons.check:''}</button></div>`;
+  };
+
+  /* 2. PDF/print: each prescribed set is a discrete gray pill. */
+  programPrintPageHtml=function(program,st){
+    const rows=program.exercises.map((pe,i)=>{
+      const ex=exerciseById(pe.exerciseId);if(!ex)return '';
+      const entries=exerciseHistoryEntries(st.id,ex.id),latest=entries[entries.length-1]||null,sets=latest?completedSets(latest.exercise):[];
+      const series=Array.from({length:Math.max(1,parseInteger(pe.sets)||1)},(_,si)=>{
+        const set=sets[si]||null;
+        const detail=set?`${parseDecimal(set.weight)} kg × ${parseInteger(set.reps)}${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}`:'—';
+        return `<span class="print-series-pill"><b>S${si+1}</b><span>${esc(detail)}</span></span>`;
+      }).join('');
+      return `<div class="print-exercise"><div class="print-index">${String(i+1).padStart(2,'0')}</div><div><strong>${esc(ex.name)}</strong><small>${esc(ex.muscleGroups.join(' · '))}</small><div class="print-prescription"><span><b>${pe.sets}</b> séries</span><span><b>${esc(pe.targetReps||'—')}</b> reps</span><span><b>${fmtRest(pe.restSec)}</b></span></div><div class="print-series-list">${series}</div></div></div>`;
+    }).join('');
+    const useTwoCols=program.exercises.length>7,compact=program.exercises.length>14,dateBits=[];if(program.startDate)dateBits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`Término ${fmtDate(program.endDate)}`);
+    return `<section class="print-program-page${compact?' compact':''}"><h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div>${dateBits.length?`<div class="print-meta">${dateBits.join(' · ')}</div>`:''}<div class="print-rule"></div><div class="print-exercises-grid ${useTwoCols?'two-col':''}">${rows}</div></section>`;
+  };
+
+  /* 3. Anatomical model: Apache-2.0 body-muscles UMD is lazy-loaded.
+     It never blocks app boot; the existing embedded anatomy remains an offline fallback. */
+  const HQ_ANATOMY_URL='https://unpkg.com/body-muscles@1.0.0/dist/umd/body-muscles.umd.min.js';
+  let anatomyLibPromise=null;
+  function ensureAnatomyLibrary(){
+    if(window.BodyMuscles?.BodyChart)return Promise.resolve(window.BodyMuscles);
+    if(anatomyLibPromise)return anatomyLibPromise;
+    anatomyLibPromise=new Promise(resolve=>{
+      let settled=false,timer=null;
+      const finish=lib=>{if(settled)return;settled=true;if(timer)clearTimeout(timer);if(!lib)anatomyLibPromise=null;resolve(lib||null);};
+      let script=document.querySelector('script[data-hq-anatomy-lib]');
+      if(!script){script=document.createElement('script');script.src=HQ_ANATOMY_URL;script.async=true;script.crossOrigin='anonymous';script.dataset.hqAnatomyLib='1';document.head.appendChild(script);}
+      script.addEventListener('load',()=>finish(window.BodyMuscles||null),{once:true});
+      script.addEventListener('error',()=>{script.remove();finish(null);},{once:true});
+      timer=setTimeout(()=>finish(window.BodyMuscles||null),4500);
+    });
+    return anatomyLibPromise;
+  }
+  function anatomyToken(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ');}
+  const anatomyKeywords={
+    'Peito':['chest','pectoral'],
+    'Abdômen':['abs','abdom','rectus abdom'],
+    'Oblíquos':['oblique'],
+    'Ombros':['shoulder','deltoid'],
+    'Bíceps':['biceps','bicep'],
+    'Tríceps':['triceps','tricep'],
+    'Antebraços':['forearm','brachiorad','wrist flexor','wrist extensor'],
+    'Trapézio':['trapezius','trap'],
+    'Costas':['latiss','lats','rhomboid','teres major','teres minor','upper back','mid back'],
+    'Lombar':['lower back','lumbar','erector','quadratus lumborum'],
+    'Glúteos':['glute'],
+    'Quadríceps':['quad','quadriceps','vastus','rectus femor'],
+    'Posteriores':['hamstring','biceps femor','semitend','semimembr'],
+    'Adutores':['adductor','adduct','groin'],
+    'Abdutores':['abductor','gluteus medius','tensor fascia','tfl'],
+    'Panturrilhas':['calf','gastrocnem','soleus']
+  };
+  function anatomyDefId(def){return String(def?.id||def?.muscleId||def?.key||'');}
+  function anatomyDefText(def){return anatomyToken([def?.id,def?.name,def?.label,def?.group].filter(Boolean).join(' '));}
+  function anatomyGroupMatches(group,def){
+    const text=anatomyDefText(def),keys=anatomyKeywords[group]||[];
+    if(group==='Bíceps'&&text.includes('femor'))return false;
+    if(group==='Posteriores'&&text.includes('biceps')&&!text.includes('femor'))return false;
+    return keys.some(k=>text.includes(anatomyToken(k)));
+  }
+  function anatomyStateForStats(defs,stats){
+    const state={},heatById={};
+    defs.forEach(def=>{const id=anatomyDefId(def);if(!id)return;let best=0;stats.forEach(row=>{if(anatomyGroupMatches(row.group,def))best=Math.max(best,Number(row.heat)||0);});if(best>0){const intensity=clamp(Math.round(2+best*8),1,10);state[id]={intensity,selected:true};heatById[id]=best;}});
+    return {state,heatById};
+  }
+  function blendHex(a,b,t){const A=a.match(/\w\w/g).map(x=>parseInt(x,16)),B=b.match(/\w\w/g).map(x=>parseInt(x,16));return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*clamp(t,0,1)).toString(16).padStart(2,'0')).join('');}
+  async function renderAnatomyVectorData(view,stats,dark=currentTheme()==='dark'){
+    const lib=await ensureAnatomyLibrary();if(!lib?.BodyChart)return null;
+    const defs=(view==='FRONT'?lib.FRONT_MUSCLES:lib.BACK_MUSCLES)||[];if(!defs.length)return null;
+    const {state,heatById}=anatomyStateForStats(defs,stats),host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-10000px;top:-10000px;width:360px;height:760px;opacity:0;pointer-events:none;';document.body.appendChild(host);
+    let chart=null;
+    try{
+      chart=new lib.BodyChart(host,{view:view==='FRONT'?lib.ViewSide.FRONT:lib.ViewSide.BACK,bodyState:state,showViewLabel:false,enableTransitions:false,onMuscleClick:()=>{},onMuscleHover:()=>{}});
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      const svg=host.querySelector('svg');if(!svg)return null;
+      const shapes=[...svg.querySelectorAll('.body-chart-muscle')],idle=dark?'#8C969D':'#B5BDC3',outline=dark?'#56636C':'#7D8890';
+      const bg=svg.querySelector('.body-chart-background');if(bg){bg.style.opacity=dark?'0.18':'0.24';[...bg.querySelectorAll('path')].forEach(p=>p.setAttribute('fill',idle));}
+      shapes.forEach((node,i)=>{
+        const def=defs[i]||null,id=anatomyDefId(def),heat=heatById[id]||0;
+        node.setAttribute('fill',heat?blendHex('0A6FAE','0897E1',.35+heat*.65):idle);
+        node.setAttribute('stroke',heat?blendHex('075A8C','0579B9',heat):outline);
+        node.setAttribute('stroke-width',heat?'0.28':'0.12');node.setAttribute('vector-effect','non-scaling-stroke');node.setAttribute('opacity','1');node.style.fillOpacity='1';node.style.filter='none';node.style.cursor='default';
+      });
+      const viewBox=svg.getAttribute('viewBox')||'0 0 32 90';return {viewBox,inner:svg.innerHTML};
+    }catch(err){console.warn('Anatomia vetorial indisponível; usando fallback.',err);return null;}finally{try{chart?.destroy?.();}catch(e){}host.remove();}
+  }
+  function anatomyVectorMarkup(data,label=''){return `<svg class="hq-muscle-svg" viewBox="${esc(data.viewBox)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(label)}">${data.inner}</svg>`;}
+  async function hydrateAnatomyMaps(root,participants){
+    const slots=$$('[data-hq-anatomy]',root);await Promise.all(slots.map(async slot=>{const pi=+slot.dataset.participantIndex,view=slot.dataset.hqAnatomy,p=participants?.[pi];if(!p)return;const data=await renderAnatomyVectorData(view,liveMuscleStats(p));if(data)slot.innerHTML=anatomyVectorMarkup(data,view==='FRONT'?'Vista anterior':'Vista posterior');}));
+  }
+  muscleMapHtml=function(participant,index=0){
+    const stats=liveMuscleStats(participant),chips=stats.map(r=>`<span class="muscle-chip" style="--heat:${r.heat}">${esc(r.group)}</span>`).join('')||'<span class="muscle-chip">Sem grupamento</span>';
+    return `<div class="muscle-map"><div class="muscle-bodies"><div class="muscle-figure"><small>FRENTE</small><div class="anatomy-slot" data-hq-anatomy="FRONT" data-participant-index="${index}">${frontBodySvg(stats)}</div></div><div class="muscle-figure"><small>COSTAS</small><div class="anatomy-slot" data-hq-anatomy="BACK" data-participant-index="${index}">${backBodySvg(stats)}</div></div></div><div class="muscle-labels">${chips}</div></div>`;
+  };
+  window.addEventListener('load',()=>setTimeout(()=>ensureAnatomyLibrary(),700),{once:true});
+
+  /* 4. Saved share image: dynamic height; chips always start below both feet. */
+  function layoutShareChips(stats,startY,color){
+    let x=84,y=startY,markup='',rows=stats.length?1:0;
+    stats.forEach(row=>{const w=shareChipWidth(row.group);if(x+w>996){x=84;y+=56;rows++;}markup+=`<g transform="translate(${x} ${y})"><rect width="${w}" height="40" rx="20" fill="${color}"/><text x="${w/2}" y="26" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="16" font-weight="750" fill="#FFFFFF">${xmlEsc(row.group)}</text></g>`;x+=w+12;});
+    return {markup,bottom:stats.length?y+40:startY,rows};
+  }
+  function nestedAnatomySvg(data,x,y,w,h){return `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${xmlEsc(data.viewBox)}" preserveAspectRatio="xMidYMid meet">${data.inner}</svg>`;}
+  async function buildSummaryShareSvg(participant){
+    const st=studentById(participant.studentId),stats=liveMuscleStats(participant),sets=participant.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0),vol=participant.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).reduce((x,s)=>x+setVolume(s),0),0),rpes=participant.exercises.flatMap(e=>e.sets.filter(s=>s.done&&s.rpe).map(s=>Number(s.rpe))).filter(Boolean),avg=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—',duration=formatDurationShort((Date.now()-live.startedAt)/1000),dark=currentTheme()==='dark';
+    const C=dark?{card:'#10161C',surface:'#182129',text:'#F6F8FA',muted:'#9EABB6',faint:'#71808C',blue:'#148BD6',blueStrong:'#0A5F9E'}:{card:'#FFFFFF',surface:'#F1F4F6',text:'#102A3D',muted:'#657683',faint:'#8A98A3',blue:'#0A6FB6',blueStrong:'#08558D'};
+    const [front,back]=await Promise.all([renderAnatomyVectorData('FRONT',stats,dark),renderAnatomyVectorData('BACK',stats,dark)]);
+    const modelTop=458,modelH=560,modelBottom=modelTop+modelH,chipStart=modelBottom+56,chips=layoutShareChips(stats,chipStart,C.blueStrong),height=Math.max(1220,chips.bottom+96),cardH=height-48;
+    const fallbackFront=`<g transform="translate(180 ${modelTop}) scale(1.5)"><image href="${dark?ANATOMY_FRONT_DARK:ANATOMY_FRONT_LIGHT}" x="0" y="0" width="146" height="357"/>${frontPhotoOverlay(stats)}</g>`,fallbackBack=`<g transform="translate(662 ${modelTop}) scale(1.5)"><image href="${dark?ANATOMY_BACK_DARK:ANATOMY_BACK_LIGHT}" x="0" y="0" width="143" height="353"/>${backPhotoOverlay(stats)}</g>`;
+    const frontSvg=front?nestedAnatomySvg(front,145,modelTop,300,modelH):fallbackFront,backSvg=back?nestedAnatomySvg(back,635,modelTop,300,modelH):fallbackBack;
+    return {height,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}"><rect x="24" y="24" width="1032" height="${cardH}" rx="72" fill="${C.card}"/><text x="84" y="102" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="850" letter-spacing="3" fill="${C.blue}">TREINO CONCLUÍDO</text><text x="84" y="174" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="50" font-weight="820" fill="${C.text}">${xmlEsc(st?.name||'Aluno')}</text><g transform="translate(812 126)"><rect width="178" height="58" rx="29" fill="${C.surface}"/><text x="89" y="37" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="800" fill="${C.blue}">${xmlEsc(duration)}</text></g><text x="84" y="216" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="600" fill="${C.muted}">${xmlEsc(participant.programName||'Treino')} · ${xmlEsc(fmtDate(Date.now()))}</text><g transform="translate(84 260)">${[['SÉRIES',sets],['VOLUME',kgText(vol)],['RPE MÉDIO',avg]].map((item,i)=>`<g transform="translate(${i*306} 0)"><rect width="286" height="104" rx="24" fill="${C.surface}"/><text x="20" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="1" fill="${C.faint}">${item[0]}</text><text x="20" y="75" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="820" fill="${C.text}">${xmlEsc(item[1])}</text></g>`).join('')}</g><text x="84" y="422" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="29" font-weight="820" fill="${C.text}">Músculos trabalhados</text><text x="295" y="450" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="2" fill="${C.faint}">FRENTE</text><text x="785" y="450" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="2" fill="${C.faint}">COSTAS</text>${frontSvg}${backSvg}${chips.markup}<text x="996" y="${height-48}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="17" font-weight="750" fill="${C.faint}">TREINO</text></svg>`};
+  }
+  saveWorkoutSummaryImage=async function(index){
+    const participant=live?.participants?.[index];if(!participant)return;
+    try{
+      const built=await buildSummaryShareSvg(participant),blob=new Blob([built.svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),img=new Image();
+      await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
+      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=built.height;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);
+      const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!png)throw new Error('PNG');
+      const st=studentById(participant.studentId),file=new File([png],`treino-${String(st?.name||'aluno').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}-${localDateISO()}.png`,{type:'image/png'});
+      if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:`Resumo do treino — ${st?.name||'Aluno'}`});}
+      else{const out=URL.createObjectURL(png),a=document.createElement('a');a.href=out;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(out),1200);toast('Imagem salva.');}
+    }catch(err){console.warn(err);toast('Não foi possível gerar a imagem neste navegador.');}
+  };
+
+  /* 5. Mandatory square photo crop with pan/zoom and faithful circular preview. */
+  function openPhotoCropper(file,onConfirm,onCancel){
+    const url=URL.createObjectURL(file),layer=document.createElement('div');layer.className='photo-crop-layer';
+    layer.innerHTML=`<div class="photo-crop-head"><h2>Ajustar foto</h2><button type="button" id="photoCropClose" aria-label="Cancelar">×</button></div><div class="photo-crop-layout"><div class="photo-crop-stage-wrap"><div class="photo-crop-stage" id="photoCropStage"><img id="photoCropImage" alt=""><div class="photo-crop-grid"></div></div><div class="photo-crop-zoom"><span>−</span><input id="photoCropZoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="Zoom da foto"><span>+</span></div></div><div class="photo-crop-preview"><small>Avatar</small><canvas id="photoCropPreview" width="180" height="180"></canvas></div></div><div class="photo-crop-actions"><button class="btn btn-secondary" id="photoCropCancel" type="button">Cancelar</button><button class="btn btn-primary" id="photoCropSave" type="button">Usar foto</button></div>`;
+    document.body.appendChild(layer);
+    const stage=$('#photoCropStage',layer),img=$('#photoCropImage',layer),zoom=$('#photoCropZoom',layer),preview=$('#photoCropPreview',layer),pctx=preview.getContext('2d');
+    let iw=0,ih=0,base=1,z=1,x=0,y=0,pointerId=null,lastX=0,lastY=0,previewRAF=0;
+    function metrics(){const V=stage.clientWidth,w=iw*base*z,h=ih*base*z;return {V,w,h,left:(V-w)/2+x,top:(V-h)/2+y,scale:w/iw};}
+    function clampOffset(){if(!iw)return;const m=metrics(),mx=Math.max(0,(m.w-m.V)/2),my=Math.max(0,(m.h-m.V)/2);x=clamp(x,-mx,mx);y=clamp(y,-my,my);}
+    function drawPreview(){previewRAF=0;if(!iw)return;const m=metrics(),sx=Math.max(0,(0-m.left)/m.scale),sy=Math.max(0,(0-m.top)/m.scale),ss=Math.min(iw-sx,ih-sy,m.V/m.scale);pctx.clearRect(0,0,180,180);pctx.save();pctx.beginPath();pctx.arc(90,90,90,0,Math.PI*2);pctx.clip();pctx.drawImage(img,sx,sy,ss,ss,0,0,180,180);pctx.restore();}
+    function render(){if(!iw)return;clampOffset();const m=metrics();img.style.width=`${m.w}px`;img.style.height=`${m.h}px`;img.style.left=`${m.left}px`;img.style.top=`${m.top}px`;if(!previewRAF)previewRAF=requestAnimationFrame(drawPreview);}
+    function finish(cancelled){URL.revokeObjectURL(url);layer.remove();if(cancelled){onCancel?.();return;}const m=metrics(),sx=Math.max(0,(0-m.left)/m.scale),sy=Math.max(0,(0-m.top)/m.scale),ss=Math.min(iw-sx,ih-sy,m.V/m.scale),c=document.createElement('canvas');c.width=c.height=640;c.getContext('2d').drawImage(img,sx,sy,ss,ss,0,0,640,640);onConfirm?.(c.toDataURL('image/jpeg',.92));}
+    img.onload=()=>{iw=img.naturalWidth;ih=img.naturalHeight;const V=stage.clientWidth;base=Math.max(V/iw,V/ih);render();};img.src=url;
+    zoom.oninput=()=>{z=Number(zoom.value)||1;render();};
+    stage.addEventListener('pointerdown',e=>{pointerId=e.pointerId;lastX=e.clientX;lastY=e.clientY;try{stage.setPointerCapture?.(e.pointerId);}catch(_){};});
+    stage.addEventListener('pointermove',e=>{if(pointerId!==e.pointerId)return;x+=e.clientX-lastX;y+=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;render();});
+    const release=e=>{if(pointerId===e.pointerId)pointerId=null;};stage.addEventListener('pointerup',release);stage.addEventListener('pointercancel',release);
+    stage.addEventListener('wheel',e=>{e.preventDefault();z=clamp(z+(e.deltaY<0?.08:-.08),1,3);zoom.value=String(z);render();},{passive:false});
+    $('#photoCropClose',layer).onclick=()=>finish(true);$('#photoCropCancel',layer).onclick=()=>finish(true);$('#photoCropSave',layer).onclick=()=>finish(false);
+  }
+  openStudentForm=function(studentId=null){
+    const existing=studentId?studentById(studentId):null;let photoDataUrl=existing?.photoDataUrl||'';
+    openModal(`<h2>${existing?'Editar aluno':'Novo aluno'}</h2><div class="form-row"><label class="form-label">Foto do aluno</label><div class="student-photo-pick"><div id="studentPhotoPreview">${photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(existing?.name||'Aluno'))}</div>`}</div><div class="student-photo-actions"><button class="btn btn-secondary btn-sm" id="studentPhotoChoose" type="button">${photoDataUrl?'Trocar foto':'Adicionar foto'}</button>${photoDataUrl?'<button class="btn btn-ghost btn-sm" id="studentPhotoRemove" type="button">Remover</button>':''}</div></div><input id="studentPhotoFile" class="is-hidden" type="file" accept="image/*"></div><div class="form-row"><label class="form-label">Nome</label><input id="studentName" class="form-input" value="${esc(existing?.name||'')}"></div><div class="form-row"><label class="form-label" for="studentModality">Modalidade</label><select id="studentModality" class="form-select">${['Presencial','Online','Ficha de Treinamento'].map(m=>`<option ${m===(existing?.modality||'Presencial')?'selected':''}>${m}</option>`).join('')}</select></div><div class="form-row"><label class="form-label" for="studentPaired">Dupla</label><select id="studentPaired" class="form-select"><option value="no">Não</option><option value="yes" ${existing?.paired?'selected':''}>Sim</option></select></div><div class="form-row"><label class="form-label">Objetivo</label><input id="studentGoal" class="form-input" value="${esc(existing?.goal||'')}"></div><div class="form-row"><label class="form-label">Observações</label><textarea id="studentNotes" class="form-textarea">${esc(existing?.notes||'')}</textarea></div><div class="modal-actions"><button class="btn btn-secondary" id="studentCancel">Cancelar</button><button class="btn btn-primary" id="studentSave">${existing?'Salvar':'Criar aluno'}</button></div>`);
+    const refreshPhotoPreview=()=>{const name=$('#studentName')?.value.trim()||existing?.name||'Aluno';$('#studentPhotoPreview').innerHTML=photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(name))}</div>`;};
+    $('#studentCancel').onclick=closeModal;$('#studentPhotoChoose').onclick=()=>$('#studentPhotoFile').click();
+    $('#studentPhotoFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;openPhotoCropper(file,data=>{photoDataUrl=data;refreshPhotoPreview();toast('Recorte pronto para salvar.');},()=>{});};
+    if($('#studentPhotoRemove'))$('#studentPhotoRemove').onclick=()=>{photoDataUrl='';refreshPhotoPreview();$('#studentPhotoRemove')?.classList.add('is-hidden');};
+    $('#studentName').oninput=()=>{if(!photoDataUrl)refreshPhotoPreview();};
+    $('#studentSave').onclick=()=>{const name=$('#studentName').value.trim();if(!name)return toast('Digite o nome do aluno.');if(existing){existing.name=name;existing.modality=$('#studentModality').value;existing.paired=$('#studentPaired').value==='yes';existing.goal=$('#studentGoal').value.trim();existing.notes=$('#studentNotes').value.trim();existing.photoDataUrl=photoDataUrl;}else{const st={id:uid('student'),name,modality:$('#studentModality').value,paired:$('#studentPaired').value==='yes',goal:$('#studentGoal').value.trim(),notes:$('#studentNotes').value.trim(),photoDataUrl,defaultRestSec:120,defaultSets:3,defaultTargetReps:'8–12',createdAt:Date.now()};db.students.push(st);state.studentId=st.id;}persist();closeModal();navigate('student',{studentId:existing?.id||state.studentId});toast(existing?'Aluno atualizado.':'Aluno criado.');};
+    setTimeout(()=>$('#studentName')?.focus(),120);
+  };
+
+  /* 8. Global exercise deletion: remove every persisted/draft reference, never whole workouts. */
+  confirmDeleteExercise=function(exerciseId){
+    const ex=exerciseById(exerciseId);if(!ex)return;
+    const programRefs=db.programs.reduce((n,p)=>n+p.exercises.filter(pe=>pe.exerciseId===exerciseId).length,0),historyRefs=db.sessions.reduce((n,s)=>n+s.participants.reduce((a,p)=>a+(p.exercises||[]).filter(x=>x.exerciseId===exerciseId||x.sourceExerciseId===exerciseId).length,0),0),draftRefs=live?live.participants.reduce((n,p)=>n+(p.exercises||[]).filter(x=>x.exerciseId===exerciseId||x.sourceExerciseId===exerciseId).length,0):0;
+    const detail=[programRefs?`${programRefs} ocorrência${programRefs===1?' em ficha':'s em fichas'}`:'',historyRefs?`${historyRefs} registro${historyRefs===1?' no histórico':'s no histórico'}`:'',draftRefs?'treino em andamento':''].filter(Boolean).join(', ');
+    confirmModal(`Excluir ${ex.name}?`,`O exercício será removido da biblioteca e de todos os locais em que aparece${detail?` (${detail})`:''}. Alunos, fichas, sessões e os demais exercícios serão preservados.`,'Excluir de todos os locais',()=>{
+      db.exercises=db.exercises.filter(e=>e.id!==exerciseId);
+      db.programs.forEach(p=>{p.exercises=(p.exercises||[]).filter(pe=>pe.exerciseId!==exerciseId);p.updatedAt=Date.now();});
+      db.sessions.forEach(s=>(s.participants||[]).forEach(p=>{p.exercises=(p.exercises||[]).filter(x=>x.exerciseId!==exerciseId&&x.sourceExerciseId!==exerciseId);}));
+      if(live){live.participants.forEach(p=>{p.exercises=(p.exercises||[]).filter(x=>x.exerciseId!==exerciseId&&x.sourceExerciseId!==exerciseId);});persistDraft();}
+      persist();closeModal();render();toast('Exercício removido de todos os locais.');
+    });
+  };
+
+  /* 9/10. Cleaner evolution/volume copy + nomenclature. */
+  muscleRowHtml=function(row,_,arr){const max=Math.max(...arr.map(x=>x.volume),1),count=round(row.sets);return `<div class="progress-row"><div class="progress-row-head"><div><strong>${esc(row.group)}</strong><small>${count} ${count===1?'série':'séries'}</small></div><b>${kgText(row.volume)}</b></div><div class="progress-track"><span style="width:${clamp((row.volume/max)*100,3,100)}%"></span></div></div>`;};
+  volumeChartHtml=function(participants,selectedProgram,programCount=0){
+    if(!selectedProgram){return `<div class="chart-card program-volume-card"><div class="chart-card-head"><div><strong>Evolução do volume</strong></div></div><button class="evo-program-select" id="evoProgramSelect" type="button"><div><small>TREINO ANALISADO</small><strong>${programCount?'Selecionar treino':'Nenhum treino cadastrado'}</strong></div>${programCount?chev():''}</button>${programCount?'':emptyHtml('Nenhum treino cadastrado.')}</div>`;}
+    const all=participants.map(x=>({date:dateShort(x.session.endedAt),value:participantVolume(x.p),ts:sessionTimestamp(x.session)})),select=`<button class="evo-program-select" id="evoProgramSelect" type="button"><div><small>TREINO ANALISADO</small><strong>${esc(selectedProgram.name)}</strong></div>${chev()}</button>`;
+    if(!all.length)return `<div class="chart-card program-volume-card"><div class="chart-card-head"><div><strong>Evolução do volume</strong></div></div>${select}${emptyHtml('Sem execuções desta ficha no período.')}</div>`;
+    const points=all.slice(-24),max=Math.max(...points.map(p=>p.value),1),spacing=76,W=Math.max(360,58+(points.length-1)*spacing+38),H=218,L=52,R=W-22,T=24,B=166,coords=points.map((p,i)=>({x:points.length===1?(L+R)/2:L+i*spacing,y:B-(p.value/max)*(B-T)})),line=coords.map((p,i)=>`${i?'L':'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '),grid=[0,.5,1].map(fr=>{const y=B-fr*(B-T);return `<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" class="chart-grid-line"/><text x="${L-8}" y="${y+3}" text-anchor="end" class="chart-y-label">${compactNumber(max*fr)}</text>`;}).join(''),dots=coords.map((p,i)=>`<g class="chart-point"><circle cx="${p.x}" cy="${p.y}" r="5"/><text x="${p.x}" y="${Math.max(14,p.y-12)}" text-anchor="middle" class="point-value">${compactNumber(points[i].value)}</text><text x="${p.x}" y="${B+27}" text-anchor="middle" class="chart-x-label">${esc(points[i].date)}</text></g>`).join('');
+    return `<div class="chart-card program-volume-card"><div class="chart-card-head"><div><strong>Evolução do volume</strong></div><div class="chart-value">${compactNumber(points[points.length-1].value)} kg</div></div>${select}<div class="chart-scroll"><svg class="detail-line-chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução do volume da ficha ${esc(selectedProgram.name)}">${grid}<path d="${line}" class="chart-line"/>${dots}</svg></div></div>`;
+  };
+  renderEvolutionDetail=function(main,studentId){
+    const st=studentById(studentId);if(!st)return navigate('evolution');setHeader({eyebrow:'EVOLUÇÃO',title:st.name,back:()=>navigate('evolution'),action:null});
+    const period=state.evolutionPeriod,sessions=sessionsForStudent(st.id,period),participants=sessions.map(s=>({session:s,p:participantForStudent(s,st.id)})),sets=participants.reduce((a,x)=>a+participantSetCount(x.p),0),uniqueExercises=new Set(participants.flatMap(x=>(x.p.exercises||[]).map(ex=>ex.exerciseId))).size,changes=exerciseChanges(st.id,period),gains=changes.filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct),downs=changes.filter(x=>x.deltaKg<0).sort((a,b)=>a.pct-b.pct),muscles=muscleDistribution(st.id,period),comparable=changes.slice().sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct)),programs=programsForStudent(st.id);if(state.evolutionProgramId&&!programs.some(p=>p.id===state.evolutionProgramId))state.evolutionProgramId=null;const selectedProgram=state.evolutionProgramId?programById(state.evolutionProgramId):null,programParticipants=selectedProgram?participants.filter(x=>x.p.programId===selectedProgram.id):[],topGain=gains[0]||null;
+    main.innerHTML=`<section class="screen"><div class="hero"><span class="hero-kicker">EVOLUÇÃO INDIVIDUAL</span><h1>${esc(st.name)}</h1></div><div class="evo-filter-row">${[['30d','30 dias'],['90d','3 meses'],['180d','6 meses'],['365d','1 ano'],['all','Tudo']].map(([v,l])=>`<button class="period-btn ${period===v?'is-active':''}" data-period="${v}">${l}</button>`).join('')}</div><div class="section evolution-summary" style="margin-top:0"><div class="grid-2"><div class="metric-card"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></div><div class="metric-card"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></div><div class="metric-card"><div><small>Exercícios</small><strong>${uniqueExercises}</strong></div><p>com registro</p></div><div class="metric-card highlight"><div><small>Maior evolução</small><strong>${topGain?`+${round(topGain.deltaKg)} kg`:'—'}</strong></div><p>${topGain?esc(topGain.exerciseName):'sem comparação'}</p></div></div></div>${volumeChartHtml(programParticipants,selectedProgram,programs.length)}<div class="chart-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.')}</div><div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.')}</div></div><div class="chart-card"><div class="chart-card-head"><div><strong>Destaques</strong></div></div>${gains[0]?`<div class="trend-highlight good"><span>${icons.trend}</span><div><small>MAIOR EVOLUÇÃO</small><strong>${esc(gains[0].exerciseName)}</strong><p>${gains[0].firstKg} kg → ${gains[0].lastKg} kg · +${round(gains[0].pct)}%</p></div></div>`:''}${downs[0]?`<div class="trend-highlight warn"><span>${icons.chart}</span><div><small>PONTO DE ATENÇÃO</small><strong>${esc(downs[0].exerciseName)}</strong><p>${downs[0].firstKg} kg → ${downs[0].lastKg} kg · ${round(downs[0].pct)}%</p></div></div>`:''}${!gains[0]&&!downs[0]?emptyHtml('Ainda sem destaques.'):''}</div></section>`;
+    $$('[data-period]',main).forEach(btn=>btn.onclick=()=>{state.evolutionPeriod=btn.dataset.period;renderEvolutionDetail(main,st.id);});$('#evoProgramSelect')?.addEventListener('click',()=>openEvolutionProgramPicker(st.id));requestAnimationFrame(()=>{const scroll=main.querySelector('.program-volume-card .chart-scroll');if(scroll&&scroll.scrollWidth>scroll.clientWidth)scroll.scrollLeft=scroll.scrollWidth;});
+  };
+
+  /* Refresh finish flow to hydrate the new vector anatomy after modal mount. */
+  openFinishWorkout=function(){
+    if(!live)return;const completed=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).length,0),0);if(!completed)return toast('Marque pelo menos uma série como concluída.');
+    const planned=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.length,0),0),pending=Math.max(0,planned-completed);
+    openModal(`<div class="finish-celebration"><small>TREINO CONCLUÍDO</small><h2>Parabéns!</h2></div>${live.participants.map((p,i)=>{const st=studentById(p.studentId),vol=p.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).reduce((x,s)=>x+setVolume(s),0),0),sets=p.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0),rpes=p.exercises.flatMap(e=>e.sets.filter(s=>s.done&&s.rpe).map(s=>Number(s.rpe))).filter(Boolean),avgRpe=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—',duration=formatDurationShort((Date.now()-live.startedAt)/1000);return `<div class="finish-card"><div class="finish-card-head"><div><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(Date.now())}</small></div><span class="finish-duration-pill">${esc(duration)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avgRpe}</strong></div></div>${muscleMapHtml(p,i)}<button class="btn btn-secondary finish-share-btn" type="button" data-save-summary="${i}">Salvar imagem</button></div>`;}).join('')}${pending?`<div class="finish-pending-note">${pending} série${pending===1?' não realizada será ignorada':'s não realizadas serão ignoradas'} ao salvar.</div>`:''}<div class="modal-actions"><button class="btn btn-secondary" id="finishCancel">Voltar</button><button class="btn btn-primary" id="finishSave">Salvar treino</button></div>`,{fullscreen:true});
+    $('#finishCancel').onclick=closeModal;$('#finishSave').onclick=saveFinishedWorkout;$$('[data-save-summary]',$('#modal')).forEach(btn=>btn.onclick=()=>saveWorkoutSummaryImage(+btn.dataset.saveSummary));hydrateAnatomyMaps($('#modal'),live.participants).catch(()=>{});
+  };
   const originalApplyTheme=applyTheme;
   applyTheme=function(theme,persistChoice=true){originalApplyTheme(theme,persistChoice);const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',theme==='light'?'#F4F5F8':'#0A427E');};
   </script>
