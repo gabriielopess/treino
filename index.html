@@ -346,6 +346,80 @@ body.workout-route .rest-timer.on-workout{bottom:calc(80px + var(--safe-bottom))
 .choice.is-selected{border-color:var(--blue)!important;background:var(--blue-soft)!important}
 .metric-explain{display:grid;gap:10px}.metric-explain-row{padding:11px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}.metric-explain-row small{display:block;color:var(--faint);font-size:8px;font-weight:850;letter-spacing:.06em;margin-bottom:4px}.metric-explain-row strong{font-size:12px;line-height:1.45}
 
+
+
+/* ============================================================
+   POLISH PASS — navegação, seletor, RPE, séries e anatomia
+   ============================================================ */
+
+/* Barra inferior como uma tab bar estrutural: largura inteira do app, sem cantos/flutuação. */
+.bottom-nav{
+  left:50%!important;right:auto!important;transform:translateX(-50%)!important;
+  width:min(600px,100%)!important;max-width:600px!important;margin:0!important;
+  border-radius:0!important;overflow:visible!important;background:var(--bg)!important;
+  border-top:1px solid var(--line)!important;box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.bottom-nav::before{
+  left:0!important;right:0!important;height:28px!important;bottom:100%!important;z-index:-1!important;
+  background:linear-gradient(to top,var(--bg) 0%,color-mix(in srgb,var(--bg) 82%,transparent) 52%,transparent 100%)!important;
+}
+.bottom-nav::after{left:0!important;right:0!important;top:100%!important;background:var(--bg)!important}
+html[data-theme="light"] .bottom-nav{background:#F5F6F8!important;border-top-color:#DDE3E9!important}
+html[data-theme="dark"] .bottom-nav{background:#0B0D10!important;border-top-color:#242B35!important}
+html[data-theme="light"] .bottom-nav::before{background:linear-gradient(to top,#F5F6F8 0%,rgba(245,246,248,.84) 52%,rgba(245,246,248,0) 100%)!important}
+html[data-theme="dark"] .bottom-nav::before{background:linear-gradient(to top,#0B0D10 0%,rgba(11,13,16,.86) 52%,rgba(11,13,16,0) 100%)!important}
+
+/* RPE em um pop-up compacto, leve e legível. */
+.rpe-dock{
+  left:50%!important;right:auto!important;transform:translateX(-50%)!important;
+  bottom:calc(84px + var(--safe-bottom))!important;width:min(316px,calc(100% - 30px))!important;
+  max-width:none!important;padding:10px 12px 12px!important;border-radius:18px!important;
+  background:var(--bg-elev)!important;border:1px solid var(--line-strong)!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.26)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+}
+.rpe-mini-head{display:grid;grid-template-columns:1fr auto 30px;align-items:center;gap:8px;margin-bottom:2px}
+.rpe-mini-head span{font-size:9px;font-weight:900;letter-spacing:.09em;color:var(--faint)}
+.rpe-mini-head .rpe-dock-value{margin:0!important;font-size:20px!important;line-height:28px!important;color:var(--text)!important;text-align:center!important;min-width:40px}
+.rpe-mini-close{width:30px;height:30px;border-radius:10px;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;font-size:17px;padding:0}
+.rpe-touch{height:40px!important;padding:0 2px!important}
+.rpe-range{height:40px!important}
+.rpe-range::-webkit-slider-runnable-track{height:3px!important}
+.rpe-range::-webkit-slider-thumb{width:22px!important;height:22px!important;margin-top:-9.5px!important}
+.rpe-range::-moz-range-track,.rpe-range::-moz-range-progress{height:3px!important}
+.rpe-range::-moz-range-thumb{width:20px!important;height:20px!important}
+html[data-theme="light"] .rpe-dock{background:rgba(255,255,255,.97)!important;border-color:#CBD6DF!important;box-shadow:0 14px 36px rgba(36,55,70,.18)!important}
+
+/* Seletor de treino analisado: destaque contido, sem checkbox gigante. */
+.evo-program-choice{min-height:58px!important;padding:11px 12px!important}
+.evo-program-choice.is-selected{border-color:var(--rp-navy)!important;background:var(--blue-soft)!important}
+.evo-choice-state{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:0 0 24px;color:var(--faint);background:var(--surface-2);border:1px solid var(--line)}
+.evo-program-choice.is-selected .evo-choice-state{background:var(--rp-navy);border-color:var(--rp-navy);color:#fff}
+.evo-choice-state svg{width:13px!important;height:13px!important;display:block!important}
+.evo-choice-state .chev{width:13px!important;height:13px!important}
+
+/* Fechamento explícito dos sheets + área de arraste funcional. */
+.sheet-close-btn{position:absolute;right:14px;top:12px;z-index:6;width:34px;height:34px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);display:grid;place-items:center;font-size:18px;padding:0}
+.modal:not(.fullscreen)>h2:first-of-type{padding-right:46px}
+.modal-handle{width:52px!important;height:5px!important;margin-bottom:14px!important;background:var(--surface-3)!important;touch-action:none!important}
+
+/* Mais respiro antes dos primeiros chips/balões de série. */
+.live-exercise-head{margin-bottom:6px!important}
+.view-exercise h3{margin-bottom:8px!important}
+.view-exercise .series-inline,.session-exercise .series-inline{margin-top:13px!important}
+.history-exercise strong{display:block;margin-bottom:5px}
+.execution-sets{margin-top:13px!important}
+
+/* Ordem visual global: reps antes de kg. */
+.set-head,.set-row{grid-template-columns:34px minmax(48px,.86fr) minmax(56px,1fr) 50px 38px!important}
+@media(max-width:390px){.set-head,.set-row{grid-template-columns:31px minmax(45px,.84fr) minmax(51px,1fr) 47px 36px!important}}
+@media(max-width:350px){.set-head,.set-row{grid-template-columns:29px minmax(42px,.82fr) minmax(47px,1fr) 44px 34px!important}}
+
+/* Anatomia: suaviza a leitura do conjunto e reduz sensação de peças separadas. */
+.anatomy-slot .hq-muscle-svg{filter:drop-shadow(0 8px 18px rgba(0,0,0,.10)) saturate(.94)!important}
+.anatomy-slot .hq-muscle-svg path,.anatomy-slot .hq-muscle-svg polygon,.anatomy-slot .hq-muscle-svg ellipse,.anatomy-slot .hq-muscle-svg circle{stroke-linejoin:round!important;stroke-linecap:round!important}
+.muscle-figure{overflow:visible!important}
+
 /* Boot failure fallback. */
 .boot-failure{margin:28px 18px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text)}.boot-failure h2{font-size:17px;margin:0 0 7px}.boot-failure p{font-size:12px;color:var(--muted);line-height:1.5}.boot-failure button{margin-top:12px}
 
@@ -1048,6 +1122,103 @@ openFinishWorkout=function(){if(!live)return;const completed=live.participants.r
 /* Preserve existing paired associations, but don't show them as a student identity label. */
 const __studentRowHtml=studentRowHtml;
 studentRowHtml=function(student){const programs=programsForStudent(student.id).length,last=latestStudentSession(student.id);return `<button class="row-card" type="button" data-student-id="${esc(student.id)}">${avatarHtml(student)}<div class="row-main"><strong>${esc(student.name)}</strong><small>${esc(student.modality||'Presencial')} · ${programs} treino${programs===1?'':'s'} · ${last?`última sessão ${daysAgo(sessionTimestamp(last))}`:'sem sessões'}</small></div>${chev()}</button>`;};
+
+
+
+/* ============================================================
+   POLISH PASS JS — correções solicitadas nesta rodada
+   ============================================================ */
+
+/* 1) Seletor da evolução com estado selecionado contido. */
+openEvolutionProgramPicker=function(studentId){
+  const programs=programsForStudent(studentId);
+  openModal(`<h2>Treino analisado</h2><div class="choice-list">${programs.map(p=>{const selected=state.evolutionProgramId===p.id;return `<button class="choice evo-program-choice ${selected?'is-selected':''}" type="button" data-evo-program="${esc(p.id)}"><div class="row-main"><strong>${esc(p.name)}</strong><small>${p.exercises.length} exercícios</small></div><span class="evo-choice-state">${selected?icons.check:chev()}</span></button>`;}).join('')||emptyHtml('Nenhum treino cadastrado.')}</div><div class="modal-actions"><button class="btn btn-secondary" id="evoProgramCancel">Cancelar</button></div>`);
+  $$('[data-evo-program]',$('#modal')).forEach(btn=>btn.onclick=()=>{state.evolutionProgramId=btn.dataset.evoProgram;closeModal();renderEvolutionDetail($('#main'),studentId);});
+  $('#evoProgramCancel').onclick=closeModal;
+};
+
+/* 2) RPE compacto com pop-up delicado. */
+ensureRpeDock=function(){
+  let dock=$('#rpeDock');if(dock)dock.remove();
+  dock=document.createElement('div');dock.id='rpeDock';dock.className='rpe-dock is-hidden';
+  dock.innerHTML=`<div class="rpe-mini-head"><span>RPE</span><strong class="rpe-dock-value" id="rpeDockValue">8</strong><button class="rpe-mini-close" id="rpeMiniClose" type="button" aria-label="Fechar RPE">×</button></div><div class="rpe-touch"><input id="rpeRange" class="rpe-range" type="range" min="1" max="10" step="0.5" value="8" aria-label="Percepção de esforço de 1 a 10"></div>`;
+  document.body.appendChild(dock);$('#rpeMiniClose').onclick=closeRpePicker;return dock;
+};
+
+/* 3) Repetições antes de carga, na execução e em todos os resumos. */
+compactLastSetsHtml=function(ex){const rows=(ex.sets||[]).map(s=>s.previous).filter(Boolean).slice(0,4);if(!rows.length)return '';return `<div class="live-last-strip"><small>Último</small>${rows.map((s,i)=>`<span class="live-last-chip"><b>${i+1}</b> ${parseInteger(s.reps)} reps · ${parseDecimal(s.weight)} kg</span>`).join('')}</div>`;};
+
+liveExerciseHtml=function(participant,pi,ex,ei){
+  const meta=[`${ex.sets.length}S`,ex.targetReps?`${esc(ex.targetReps)} reps`:'',fmtRest(ex.restSec)].filter(Boolean).join(' · ');
+  return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong><small>${meta}</small></div><span class="history-mini">${icons.history}</span></button><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${compactLastSetsHtml(ex)}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Observação" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;
+};
+
+liveSetHtml=function(pi,ei,set,si,ex){
+  const path=`${pi}:${ei}:${si}`,rpe=set.rpe===''||set.rpe==null?'':Number(set.rpe),sw=setSuggestion(set,'weight'),sr=setSuggestion(set,'reps');
+  return `<div class="set-row ${set.done?'is-done':''}" data-set-row="${path}"><div class="set-index">${si+1}</div><input class="set-input ${!set.reps&&sr?'has-suggestion':''}" inputmode="numeric" data-set-reps="${path}" value="${esc(set.reps)}" placeholder="${esc(sr||'reps')}" aria-label="Repetições da série ${si+1}"><input class="set-input ${!set.weight&&sw?'has-suggestion':''}" inputmode="decimal" data-set-weight="${path}" value="${esc(set.weight)}" placeholder="${esc(sw||'kg')}" aria-label="Carga da série ${si+1}"><button class="rpe-trigger ${rpe?'has-value':''}" type="button" data-set-rpe-trigger="${path}" aria-label="RPE da série ${si+1}">${rpe?rpeLabel(rpe):'—'}</button><button class="set-check" data-set-check="${path}" type="button" aria-label="${set.done?'Desmarcar':'Concluir'} série ${si+1}">${set.done?icons.check:''}</button></div>`;
+};
+
+openProgramView=function(programId){
+  const p=programById(programId);if(!p)return;const st=studentById(p.studentId);
+  openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><p class="modal-sub">${esc(st?.name||'')} · ${p.exercises.length} exercícios</p>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=prev?completedSets(prev).map((set,j)=>`<span class="series-chip"><b>${j+1}</b><span>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg</span></span>`).join(''):'<span class="series-chip">Sem registro</span>';return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="series-inline">${setChips}</div></div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
+  $('#viewClose').onclick=closeModal;$('#viewEdit').onclick=()=>{closeModal();setTimeout(()=>openProgramBuilder(p.studentId,p.id),50);};$('#viewCopy').onclick=()=>openProgramCopy(programId);$('#viewDelete').onclick=()=>{closeModal();setTimeout(()=>confirmDeleteProgram(programId),50);};
+};
+
+programPrintPageHtml=function(program,st){
+  const rows=program.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId);if(!ex)return '';const entries=exerciseHistoryEntries(st.id,ex.id),latest=entries[entries.length-1]||null,sets=latest?completedSets(latest.exercise):[];const series=Array.from({length:Math.max(1,parseInteger(pe.sets)||1)},(_,si)=>{const set=sets[si]||null,detail=set?`${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}`:'—';return `<span class="print-series-pill"><b>${si+1}</b><span>${esc(detail)}</span></span>`;}).join('');return `<div class="print-exercise"><div class="print-index">${String(i+1).padStart(2,'0')}</div><div><strong>${esc(ex.name)}</strong><small>${esc(ex.muscleGroups.join(' · '))}</small><div class="print-prescription"><span><b>${pe.sets}</b> séries</span><span><b>${esc(pe.targetReps||'—')}</b> reps</span><span><b>${fmtRest(pe.restSec)}</b></span></div><div class="print-series-list">${series}</div></div></div>`;}).join('');
+  const useTwoCols=program.exercises.length>7,compact=program.exercises.length>14,dateBits=[];if(program.startDate)dateBits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`Término ${fmtDate(program.endDate)}`);return `<section class="print-program-page${compact?' compact':''}"><h1>${esc(program.name)}</h1><div class="print-student">${esc(st.name)}</div>${dateBits.length?`<div class="print-meta">${dateBits.join(' · ')}</div>`:''}<div class="print-rule"></div><div class="print-exercises-grid ${useTwoCols?'two-col':''}">${rows}</div></section>`;
+};
+
+summarySetChips=function(ex){return completedSets(ex).map((s,i)=>`<span class="series-chip"><b>${i+1}</b><span>${parseInteger(s.reps)} reps · ${parseDecimal(s.weight)} kg${s.rpe?` · RPE ${rpeLabel(s.rpe)}`:''}</span></span>`).join('');};
+
+historySessionHtml=function(session,studentId,expanded=true){const p=participantForStudent(session,studentId);if(!p)return '';const vol=participantVolume(p),sets=participantSetCount(p);if(!expanded)return `<button class="history-session history-session-click" type="button" data-session-summary-id="${esc(session.id)}" data-session-summary-student="${esc(studentId)}"><div class="history-session-head"><div><strong>${esc(p.programName||'Treino')}</strong><small>${fmtDate(session.endedAt)} · ${formatDurationShort(session.durationSec||0)} · ${sets} séries</small></div><span>${kgText(vol)}</span></div></button>`;return `<div class="history-session"><div class="history-session-head"><div><strong>${esc(p.programName||'Treino')}</strong><small>${fmtDate(session.endedAt)} · ${formatDurationShort(session.durationSec||0)} · ${sets} séries</small></div><div class="history-session-side"><button class="btn btn-ghost btn-sm" type="button" data-session-summary-id="${esc(session.id)}" data-session-summary-student="${esc(studentId)}">Resumo</button><span>${kgText(vol)}</span><button class="history-delete-btn" type="button" data-history-delete="${esc(session.id)}" data-history-student="${esc(studentId)}" aria-label="Apagar este treino do histórico">${icons.trash}</button></div></div>${(p.exercises||[]).map(ex=>`<button class="history-exercise" type="button" data-ex-history data-ex-history-student="${esc(studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div><strong>${esc(ex.name)}</strong><small>${completedSets(ex).map((s,i)=>`${i+1} — ${parseInteger(s.reps)} reps · ${parseDecimal(s.weight)} kg`).join(' · ')||'Sem séries concluídas'}</small></div>${icons.history}</button>`).join('')}${p.feedback?`<div class="feedback-box"><b>Observação do treinador:</b> ${esc(p.feedback)}</div>`:''}</div>`;};
+
+const __openExerciseHistoryPolish=openExerciseHistory;
+openExerciseHistory=function(...args){
+  __openExerciseHistoryPolish(...args);
+  requestAnimationFrame(()=>{$$('.execution-sets span',$('#modal')).forEach(span=>{const text=span.textContent.replace(/\s+/g,' ').trim();const m=text.match(/^(?:S)?(\d+)\s*([0-9.,]+)\s*kg\s*[×x]\s*(\d+)/i);if(!m)return;span.innerHTML=`<b>${m[1]}</b>${m[3]} reps · ${m[2]} kg`;});});
+};
+
+/* 4) Sheets: alça realmente arrastável + botão de fechar. */
+installSheetGesture=function(){
+  sheetCleanup?.();sheetCleanup=null;
+  const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!modal||!handle||modal.classList.contains('fullscreen'))return;
+  let active=false,startY=0,dy=0,startT=0,lastY=0,lastT=0,pid=null;
+  const cleanupWindow=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);};
+  const down=e=>{if(e.button!=null&&e.button!==0)return;active=true;pid=e.pointerId;startY=lastY=e.clientY;startT=lastT=performance.now();dy=0;modal.classList.add('is-dragging');try{handle.setPointerCapture?.(pid);}catch(_){}window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);e.preventDefault();};
+  function move(e){if(!active)return;dy=Math.max(0,e.clientY-startY);lastY=e.clientY;lastT=performance.now();modal.style.transform=`translate3d(0,${dy}px,0)`;if(e.cancelable)e.preventDefault();}
+  function up(e){if(!active)return;active=false;cleanupWindow();modal.classList.remove('is-dragging');const elapsed=Math.max(1,performance.now()-startT),velocity=dy/elapsed,threshold=Math.min(105,modal.offsetHeight*.18),shouldClose=dy>threshold||velocity>.72;if(shouldClose){modal.style.transform=`translate3d(0,${modal.offsetHeight}px,0)`;setTimeout(()=>closeModal(),175);}else{modal.style.transform='translate3d(0,0,0)';setTimeout(()=>{if(modal.isConnected)modal.style.transform='';},230);}}
+  handle.addEventListener('pointerdown',down,{passive:false});
+  sheetCleanup=()=>{cleanupWindow();handle.removeEventListener('pointerdown',down);};
+};
+const __openModalPolish=openModal;
+openModal=function(html,opts={}){
+  __openModalPolish(html,opts);
+  const modal=$('#modal');
+  if(modal&&!modal.classList.contains('fullscreen')&&!modal.querySelector('.sheet-close-btn')){const btn=document.createElement('button');btn.className='sheet-close-btn';btn.type='button';btn.setAttribute('aria-label','Fechar');btn.textContent='×';btn.onclick=closeModal;modal.appendChild(btn);}
+  requestAnimationFrame(installSheetGesture);
+};
+
+/* 5) Anatomia: regiões destacadas seguem contornos mais orgânicos e o modelo externo perde o efeito de mosaico. */
+function smoothOverlayPath(stats,name,d,boost=1){const h=muscleHeat(stats,name);if(!h)return '';const o=Math.min(.84,(.42+h*.34)*boost);return `<path d="${d}" fill="#078EDD" fill-opacity="${o.toFixed(3)}" stroke="none"/>`;}
+frontPhotoOverlay=function(stats){return `<g style="mix-blend-mode:multiply">${smoothOverlayPath(stats,'Ombros','M26 83 C30 77 36 75 43 79 C47 83 47 91 43 97 C39 103 31 103 26 97 C23 93 23 87 26 83Z')}${smoothOverlayPath(stats,'Ombros','M120 83 C116 77 110 75 103 79 C99 83 99 91 103 97 C107 103 115 103 120 97 C123 93 123 87 120 83Z')}${smoothOverlayPath(stats,'Peito','M45 82 C53 77 62 76 70 79 L70 94 C61 98 52 98 45 94 C43 89 43 85 45 82Z')}${smoothOverlayPath(stats,'Peito','M45 95 C53 99 61 99 70 95 L70 108 C61 114 51 112 46 105 C44 102 43 98 45 95Z')}${smoothOverlayPath(stats,'Peito','M101 82 C93 77 84 76 76 79 L76 94 C85 98 94 98 101 94 C103 89 103 85 101 82Z')}${smoothOverlayPath(stats,'Peito','M101 95 C93 99 85 99 76 95 L76 108 C85 114 95 112 100 105 C102 102 103 98 101 95Z')}${smoothOverlayPath(stats,'Bíceps','M29 104 C24 110 24 120 26 132 C27 141 28 150 31 153 C35 151 37 143 38 133 C40 119 38 109 34 105 C32 104 31 104 29 104Z')}${smoothOverlayPath(stats,'Bíceps','M117 104 C122 110 122 120 120 132 C119 141 118 150 115 153 C111 151 109 143 108 133 C106 119 108 109 112 105 C114 104 115 104 117 104Z')}${smoothOverlayPath(stats,'Tríceps','M23 107 C20 116 20 130 22 143 C23 150 25 153 27 148 C29 139 30 126 30 115 C29 110 27 107 23 107Z')}${smoothOverlayPath(stats,'Tríceps','M123 107 C126 116 126 130 124 143 C123 150 121 153 119 148 C117 139 116 126 116 115 C117 110 119 107 123 107Z')}${smoothOverlayPath(stats,'Antebraços','M22 146 C19 159 18 171 21 184 C22 189 25 189 27 183 L31 155 C29 150 27 147 22 146Z')}${smoothOverlayPath(stats,'Antebraços','M124 146 C127 159 128 171 125 184 C124 189 121 189 119 183 L115 155 C117 150 119 147 124 146Z')}${smoothOverlayPath(stats,'Abdômen','M58 111 C63 108 68 109 71 112 L71 176 C67 180 62 179 58 176 C54 156 54 132 58 111Z')}${smoothOverlayPath(stats,'Abdômen','M88 111 C83 108 78 109 75 112 L75 176 C79 180 84 179 88 176 C92 156 92 132 88 111Z')}${smoothOverlayPath(stats,'Oblíquos','M51 113 C55 112 57 116 57 124 L55 168 C53 176 50 176 48 169 C45 150 45 129 51 113Z')}${smoothOverlayPath(stats,'Oblíquos','M95 113 C91 112 89 116 89 124 L91 168 C93 176 96 176 98 169 C101 150 101 129 95 113Z')}${smoothOverlayPath(stats,'Adutores','M62 184 C67 181 70 185 71 193 L68 244 C66 251 62 252 59 246 L57 208 C57 196 59 188 62 184Z')}${smoothOverlayPath(stats,'Adutores','M84 184 C79 181 76 185 75 193 L78 244 C80 251 84 252 87 246 L89 208 C89 196 87 188 84 184Z')}${smoothOverlayPath(stats,'Quadríceps','M45 183 C50 178 55 178 59 184 C61 195 59 223 55 244 C53 254 48 258 44 251 C40 233 38 207 41 193 C42 188 43 185 45 183Z')}${smoothOverlayPath(stats,'Quadríceps','M59 184 C63 180 67 183 68 191 L65 240 C64 249 60 253 56 247 C58 225 60 204 59 184Z')}${smoothOverlayPath(stats,'Quadríceps','M101 183 C96 178 91 178 87 184 C85 195 87 223 91 244 C93 254 98 258 102 251 C106 233 108 207 105 193 C104 188 103 185 101 183Z')}${smoothOverlayPath(stats,'Quadríceps','M87 184 C83 180 79 183 78 191 L81 240 C82 249 86 253 90 247 C88 225 86 204 87 184Z')}${smoothOverlayPath(stats,'Panturrilhas','M47 261 C52 254 56 257 59 267 C60 279 58 303 56 317 C54 326 50 329 47 320 C44 304 43 278 47 261Z')}${smoothOverlayPath(stats,'Panturrilhas','M99 261 C94 254 90 257 87 267 C86 279 88 303 90 317 C92 326 96 329 99 320 C102 304 103 278 99 261Z')}</g>`;};
+backPhotoOverlay=function(stats){return `<g style="mix-blend-mode:multiply">${smoothOverlayPath(stats,'Ombros','M27 80 C32 76 38 76 43 80 C47 84 46 91 42 96 C37 101 31 101 27 96 C24 91 24 84 27 80Z')}${smoothOverlayPath(stats,'Ombros','M116 80 C111 76 105 76 100 80 C96 84 97 91 101 96 C106 101 112 101 116 96 C119 91 119 84 116 80Z')}${smoothOverlayPath(stats,'Trapézio','M63 66 C68 61 73 59 78 61 C82 67 85 75 85 84 C82 94 77 101 72 108 C67 101 62 94 59 84 C59 75 60 69 63 66Z')}${smoothOverlayPath(stats,'Costas','M44 93 C53 87 61 88 67 96 C69 109 67 131 64 151 C61 164 55 169 49 162 C43 153 39 135 38 119 C38 108 40 99 44 93Z')}${smoothOverlayPath(stats,'Costas','M99 93 C90 87 82 88 76 96 C74 109 76 131 79 151 C82 164 88 169 94 162 C100 153 104 135 105 119 C105 108 103 99 99 93Z')}${smoothOverlayPath(stats,'Lombar','M64 142 C68 139 71 141 72 147 L71 173 C69 181 66 184 63 179 C61 165 61 151 64 142Z')}${smoothOverlayPath(stats,'Lombar','M79 142 C75 139 72 141 71 147 L72 173 C74 181 77 184 80 179 C82 165 82 151 79 142Z')}${smoothOverlayPath(stats,'Tríceps','M29 104 C24 112 24 126 26 141 C27 149 30 153 33 147 C36 134 38 117 35 109 C34 106 32 104 29 104Z')}${smoothOverlayPath(stats,'Tríceps','M114 104 C119 112 119 126 117 141 C116 149 113 153 110 147 C107 134 105 117 108 109 C109 106 111 104 114 104Z')}${smoothOverlayPath(stats,'Antebraços','M25 146 C21 158 20 174 23 187 C25 191 27 188 29 182 L33 154 C31 150 29 147 25 146Z')}${smoothOverlayPath(stats,'Antebraços','M118 146 C122 158 123 174 120 187 C118 191 116 188 114 182 L110 154 C112 150 114 147 118 146Z')}${smoothOverlayPath(stats,'Glúteos','M49 173 C56 166 64 166 70 175 C72 185 71 202 68 211 C63 220 55 221 50 214 C45 204 44 185 49 173Z')}${smoothOverlayPath(stats,'Glúteos','M94 173 C87 166 79 166 73 175 C71 185 72 202 75 211 C80 220 88 221 93 214 C98 204 99 185 94 173Z')}${smoothOverlayPath(stats,'Abdutores','M48 169 C54 164 60 163 65 166 C62 172 56 177 49 181 C46 179 46 173 48 169Z')}${smoothOverlayPath(stats,'Abdutores','M95 169 C89 164 83 163 78 166 C81 172 87 177 94 181 C97 179 97 173 95 169Z')}${smoothOverlayPath(stats,'Posteriores','M49 214 C54 210 59 212 63 220 C65 235 63 256 60 271 C57 280 52 283 49 276 C46 257 44 231 49 214Z')}${smoothOverlayPath(stats,'Posteriores','M64 218 C68 214 71 218 71 226 L68 269 C66 278 62 280 59 272 C62 253 64 235 64 218Z')}${smoothOverlayPath(stats,'Posteriores','M94 214 C89 210 84 212 80 220 C78 235 80 256 83 271 C86 280 91 283 94 276 C97 257 99 231 94 214Z')}${smoothOverlayPath(stats,'Posteriores','M79 218 C75 214 72 218 72 226 L75 269 C77 278 81 280 84 272 C81 253 79 235 79 218Z')}${smoothOverlayPath(stats,'Panturrilhas','M47 274 C52 266 57 270 59 280 C60 293 58 313 56 324 C53 333 49 334 46 325 C43 310 43 288 47 274Z')}${smoothOverlayPath(stats,'Panturrilhas','M96 274 C91 266 86 270 84 280 C83 293 85 313 87 324 C90 333 94 334 97 325 C100 310 100 288 96 274Z')}</g>`;};
+
+/* A versão por sexo continua disponível; removemos contornos internos pesados que criavam efeito de mosaico. */
+fetchGenderAnatomy=async function(view,stats,gender,dark){
+  if(!['male','female'].includes(gender))return null;const url=ANATOMY_ASSET_BASE+ANATOMY_ASSETS[gender][view];let raw=anatomyAssetCache.get(url);
+  if(!raw){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),3200);try{const res=await fetch(url,{signal:ctrl.signal,cache:'force-cache'});if(!res.ok)throw new Error(String(res.status));raw=await res.text();anatomyAssetCache.set(url,raw);}catch(e){return null;}finally{clearTimeout(timer);}}
+  const doc=new DOMParser().parseFromString(raw,'image/svg+xml'),svg=doc.documentElement;if(!svg||svg.nodeName.toLowerCase()!=='svg')return null;const base=dark?'#A3AAB0':'#C3C9CE',active='#0A83CC';
+  svg.setAttribute('shape-rendering','geometricPrecision');
+  svg.querySelectorAll('path,polygon,ellipse,circle').forEach(n=>{n.setAttribute('fill',base);n.setAttribute('stroke',base);n.setAttribute('stroke-width','.9');n.setAttribute('stroke-linejoin','round');n.setAttribute('stroke-linecap','round');n.setAttribute('opacity','.98');n.classList.add('body-chart-muscle');});
+  stats.forEach(row=>(ANATOMY_GROUP_IDS[row.group]||[]).forEach(id=>{const g=svg.querySelector(`#${CSS.escape(id)}`);if(!g)return;g.querySelectorAll('path,polygon,ellipse,circle').forEach(n=>{const tone=blendHex('0A5B94',active,.42+Number(row.heat||0)*.5);n.setAttribute('fill',tone);n.setAttribute('stroke',tone);n.setAttribute('stroke-width','1');n.setAttribute('stroke-linejoin','round');n.setAttribute('stroke-linecap','round');n.setAttribute('opacity','1');});}));
+  const viewBox=svg.getAttribute('viewBox')||`0 0 ${svg.getAttribute('width')||300} ${svg.getAttribute('height')||600}`;return{viewBox,inner:svg.innerHTML};
+};
+renderStudentAnatomy=async function(view,stats,studentId,dark=currentTheme()==='dark'){const gender=getStudentGender(studentId);if(['male','female'].includes(gender)){const detailed=await fetchGenderAnatomy(view,stats,gender,dark);if(detailed)return detailed;}return null;};
+
+/* 6) Remover a assinatura textual "TREINO" do canto inferior da imagem exportada. */
+const __buildSummaryShareSvgPolish=buildSummaryShareSvg;
+buildSummaryShareSvg=async function(participant){const built=await __buildSummaryShareSvgPolish(participant);built.svg=built.svg.replace(/<text\s+x="996"[^>]*text-anchor="end"[^>]*>TREINO<\/text>/i,'');return built;};
 
 /* Run the route decoration once after this patch. */
 requestAnimationFrame(()=>{try{render();}catch(e){console.error(e);}});
