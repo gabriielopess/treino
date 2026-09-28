@@ -865,6 +865,7 @@ function programCardHtml(program) {
   if (program.endDate) dateBits.push(`término ${fmtDate(program.endDate)}`);
   return `<div class="workout-card">
     <div class="workout-summary-toggle"><div><strong>${esc(program.name)}</strong><div class="workout-meta">${items.length} exercícios · ${sets} séries</div>${dateBits.length?`<div class="workout-date">${dateBits.join(' · ')}</div>`:''}</div></div>
+    <p class="workout-exercise-preview">${esc(items.map(item=>item.ex.name).join(", "))}</p>
     <div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-view="${esc(program.id)}">${eyeIcon()} Ver treino</button><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div>
   </div>`;
 }

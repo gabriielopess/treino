@@ -1359,6 +1359,13 @@ function openPerformanceSessionSummary(sessionId,studentId=''){
   const participants=studentId?session.participants.filter(p=>p.studentId===studentId):session.participants.slice();if(!participants.length)return toast('Registro deste aluno não está disponível.');
   openModal(`<div class="builder-head"><button class="icon-btn" id="performanceSummaryClose" aria-label="Fechar">${icons.back}</button><h2>Resumo da sessão</h2></div><div class="builder-body">${participants.map(p=>performanceParticipantCardHtml(session,p)).join('')}</div>`,{fullscreen:true});
   $('#performanceSummaryClose').onclick=closeModal;
+  const footer=document.createElement('button');footer.type='button';footer.className='btn btn-danger summary-delete';footer.innerHTML=`${icons.trash} Apagar ${studentId?'registro':'sessão'}`;$('#modal').appendChild(footer);
+  footer.onclick=()=>confirmModal('Apagar '+(studentId?'registro?':'sessão?'),'Esta ação remove o registro do histórico.','Apagar',()=>{
+    const target=db.sessions.find(s=>s.id===sessionId);if(!target)return;
+    if(studentId){target.participants=target.participants.filter(p=>p.studentId!==studentId);if(!target.participants.length)db.sessions=db.sessions.filter(s=>s.id!==sessionId);}
+    else db.sessions=db.sessions.filter(s=>s.id!==sessionId);
+    persist();closeModal();render();toast('Registro apagado.');
+  });
 }
 window.openSessionSummary=openPerformanceSessionSummary;
 
@@ -1453,5 +1460,122 @@ requestAnimationFrame(()=>{try{render();}catch(e){console.error(e);}});
 .performance-exercise-title strong{white-space:normal;overflow-wrap:anywhere}
 </style>
 
+<style id="session-ux">
+/* Focused exercise controls and session states */
+body.modal-focused,body.rest-expanded{overflow:hidden}
+.home-program-owner{font-size:11px;color:var(--muted);margin:12px 3px 6px}
+.workout-exercise-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--muted);font-size:12px;line-height:1.5;margin:9px 0 13px}
+.modal-backdrop,.rest-shade{background:rgba(0,0,0,.62)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important}
+.rest-shade{position:fixed;inset:0;z-index:80}
+body.workout-route .live-finish{display:none!important}
+html[data-theme] .set-row.is-done .set-input{background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:var(--text)!important}
+html[data-theme] .set-row.is-done .set-input:focus{border-bottom-color:var(--rp-accent)!important}
+.exercise-rest{display:flex;gap:7px;align-items:center;background:transparent;color:var(--blue-2);padding:10px 0 2px;font-size:12px;font-weight:700}
+.exercise-rest svg,.set-heading-icon svg{width:16px;height:16px;flex-shrink:0}
+.set-head .set-heading-icon{display:flex;justify-content:center;align-items:center;gap:3px}
+.set-heading-icon svg{width:12px;height:12px}
+.effort-head{padding-right:32px;display:flex;align-items:flex-start;gap:12px;justify-content:space-between;margin:2px 0 16px}
+.effort-head h2{font-size:20px!important;margin:0 0 6px!important}.effort-head p{font-size:12px;color:var(--muted);line-height:1.4;margin:0}
+.effort-options{display:grid;gap:7px}.effort-option{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);padding:10px 12px;min-height:54px}
+.effort-option>b{display:grid;place-items:center;flex:0 0 38px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue-2);font-size:17px}
+.effort-option>span{flex:1}.effort-option strong{display:block;font-size:12px;line-height:1.35}.effort-option small{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.35}.effort-option>svg{width:18px;height:18px;color:var(--blue-2)}
+.effort-option.is-selected{border-color:var(--blue-2)}.effort-clear{width:100%;margin-top:12px}
+.rest-timer{z-index:90!important;bottom:calc(86px + var(--safe-bottom))!important;animation:rest-enter .2s ease-out}
+.rest-sheet-head{display:none}.rest-resume{display:grid;place-items:center;background:var(--surface-2);color:var(--text);width:34px;height:34px;border-radius:11px;font-size:20px}
+body:not(.rest-expanded) .rest-timer{padding:10px 14px!important;gap:10px!important}
+body:not(.rest-expanded) .rest-timer-main{display:flex;align-items:center;gap:8px;flex:1}body:not(.rest-expanded) .rest-timer-main small{font-size:10px}body:not(.rest-expanded) .rest-timer-main strong{font-size:19px!important}
+body:not(.rest-expanded) .rest-timer-actions #restMinus,body:not(.rest-expanded) .rest-timer-actions #restPlus{display:none}
+body.rest-expanded .rest-timer.on-workout{left:50%!important;bottom:0!important;width:min(640px,100%)!important;max-width:640px!important;border-radius:26px 26px 0 0!important;padding:14px 18px calc(22px + var(--safe-bottom))!important;display:flex;flex-direction:column;gap:16px;background:var(--bg-elev)!important}
+body.rest-expanded .rest-sheet-head{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--muted);font-size:12px}
+.rest-sheet-head button{background:var(--surface-2);color:var(--text);border-radius:10px;padding:8px 10px;font-size:11px}
+body.rest-expanded .rest-timer-main{text-align:center}body.rest-expanded .rest-timer-main small{display:none}body.rest-expanded #restTimerValue{font-size:56px!important;line-height:1.2;font-variant-numeric:tabular-nums}
+body.rest-expanded .rest-timer-actions{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:10px}body.rest-expanded .rest-timer-actions button{height:45px!important;font-size:14px!important}
+body.rest-expanded .rest-resume{display:none}
+.summary-delete svg{width:18px;height:18px;flex:0 0 18px}
+.summary-delete{width:100%;margin-top:12px;flex-shrink:0}
+@keyframes rest-enter{from{opacity:0;translate:0 15px}to{opacity:1;translate:0 0}}
+@media(prefers-reduced-motion:reduce){.rest-timer{animation:none}}
+
+</style>
+<script id="session-ux-js">
+/* Session UX: one shared modal system for effort and adjustment controls. */
+(function(){
+  const repeatIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const clockIcon=icons.clock||'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  let restCollapsed=false,lastRoute=state.route,modalFocus=null;
+  const rest=$('#restTimer'),shade=document.createElement('div');shade.id='restShade';shade.className='rest-shade is-hidden';document.body.appendChild(shade);
+  rest.insertAdjacentHTML('afterbegin','<div class="rest-sheet-head"><button type="button" id="restCollapse" aria-label="Recolher descanso">⌄</button><span>Descanso</span><button type="button" id="restMinimize">Minimizar treino</button></div>');
+  rest.insertAdjacentHTML('beforeend','<button type="button" id="restResume" class="rest-resume" aria-label="Abrir descanso">⌃</button>');
+  function syncFocus(){
+    const modalOpen=!$('#modalLayer').classList.contains('is-hidden');
+    const running=!!live?.restEndAt&&!rest.classList.contains('is-hidden');
+    const expanded=running&&state.route==='workout'&&!restCollapsed;
+    document.body.classList.toggle('modal-focused',modalOpen);
+    document.body.classList.toggle('rest-expanded',expanded);
+    document.body.classList.toggle('rest-running',running);
+    shade.classList.toggle('is-hidden',!expanded||modalOpen);
+    document.querySelector('.app-shell').inert=modalOpen||expanded;
+    $('#activeWorkoutPill').inert=modalOpen||expanded;
+    rest.inert=modalOpen;
+    if(!modalOpen&&!expanded)syncActiveWorkoutPill();
+    if(running)$('#activeWorkoutPill').classList.add('is-hidden');
+  }
+  $('#restCollapse').onclick=e=>{e.stopPropagation();restCollapsed=true;syncFocus();};
+  $('#restMinimize').onclick=e=>{e.stopPropagation();navigate('home');};
+  $('#restResume').onclick=e=>{e.stopPropagation();if(state.route!=='workout')navigate('workout');restCollapsed=false;syncFocus();};
+  shade.onclick=()=>{restCollapsed=true;syncFocus();};
+  rest.onclick=e=>{if(e.target.closest('button'))return;if(state.route!=='workout')navigate('workout');restCollapsed=false;syncFocus();};
+  const baseOpen=openModal,baseClose=closeModal,baseSync=syncRestTimer,baseStart=startRest,baseStop=stopRest;
+  openModal=function(html,options){modalFocus=document.activeElement;$('#rpeDock')?.classList.add('is-hidden');activeRpePath=null;baseOpen(html,options);syncFocus();requestAnimationFrame(()=>$('#modal').querySelector('button,input,select,[tabindex]')?.focus({preventScroll:true}));};
+  closeModal=function(){baseClose();syncFocus();if(modalFocus?.isConnected&&!modalFocus.closest('[inert]'))modalFocus.focus({preventScroll:true});};
+  syncRestTimer=function(){if(lastRoute!==state.route){restCollapsed=false;lastRoute=state.route;}baseSync();syncFocus();};
+  startRest=function(seconds){restCollapsed=false;baseStart(seconds);syncFocus();};
+  stopRest=function(){baseStop();restCollapsed=false;syncFocus();};
+  new MutationObserver(syncFocus).observe(rest,{attributes:true,attributeFilter:['class']});
+  document.addEventListener('keydown',e=>{
+    if($('#modalLayer').classList.contains('is-hidden'))return;
+    if(e.key==='Escape'){e.preventDefault();closeModal();return;}
+    if(e.key!=='Tab')return;const items=[...$('#modal').querySelectorAll('button:not(:disabled),input,select,textarea,[tabindex="0"]')].filter(el=>el.getClientRects().length);if(!items.length)return;
+    if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}
+  });
+  const guide=[[10,'Esforço máximo','Não conseguiria fazer mais nenhuma repetição.'],[9.5,'Quase no limite','Talvez conseguisse fazer mais 1 repetição.'],[9,'1 repetição em reserva','Conseguiria fazer mais 1 repetição com certeza.'],[8.5,'1–2 repetições em reserva','Conseguiria fazer de 1 a 2 repetições a mais.'],[8,'2 repetições em reserva','Conseguiria fazer mais 2 repetições com certeza.'],[7,'3 repetições em reserva','Conseguiria fazer mais 3 repetições.'],[6,'Aquecimento / Carga leve',''],[5,'Aquecimento / Carga leve','']];
+  openRpePicker=function(path){
+    const set=liveSetAt(path);if(!set)return;
+    openModal(`<div class="effort-head"><div><h2>Percepção de esforço</h2><p>RIR · quantas repetições ainda conseguiria fazer?</p></div></div><div class="effort-options">${guide.map(([n,title,detail])=>`<button type="button" class="effort-option ${Number(set.rpe)===n?'is-selected':''}" data-effort="${n}"><b>${rpeLabel(n)}</b><span><strong>${title}</strong>${detail?`<small>${detail}</small>`:''}</span>${Number(set.rpe)===n?icons.check:''}</button>`).join('')}</div><button class="btn btn-secondary effort-clear" id="effortClear">Limpar RPE</button>`);
+    $('#effortClear').onclick=()=>{set.rpe='';persistDraft();const btn=$(`[data-set-rpe-trigger="${path}"]`);if(btn){btn.textContent='—';btn.classList.remove('has-value');}closeModal();};
+    $$('[data-effort]',$('#modal')).forEach(button=>button.onclick=()=>{
+      // Reuse completion validation, suggestions and rest; editing an already
+      // completed set must never toggle it off or restart the timer.
+      if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}
+      set.rpe=Number(button.dataset.effort);persistDraft();
+      const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}
+      closeModal();
+    });
+  };
+  const settings=openLiveExerciseSettings;
+  openLiveExerciseSettings=function(path){settings(path);const reps=$('[data-live-ex-action="reps"]'),restButton=$('[data-live-ex-action="rest"]');reps?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${repeatIcon}</span>`);restButton?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${clockIcon}</span>`);if(restButton)restButton.onclick=()=>editRest(path);};
+  function editRest(path){const ex=liveExerciseAt(path);if(!ex)return;openRestPicker(ex.restSec,seconds=>{ex.restSec=seconds;persistDraft();render();},()=>openLiveExerciseSettings(path),'Descanso do exercício');}
+  const exerciseHtml=liveExerciseHtml,bind=bindLiveHandlers;
+  liveExerciseHtml=function(participant,pi,ex,ei){return exerciseHtml(participant,pi,ex,ei).replace('<div class="set-head">',`<button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button><div class="set-head">`).replace('<span>Reps</span>',`<span class="set-heading-icon">${repeatIcon} Reps</span>`);};
+  bindLiveHandlers=function(){bind();$$('[data-exercise-rest]').forEach(btn=>btn.onclick=()=>editRest(btn.dataset.exerciseRest));};
+  const home=renderHome;
+  renderHome=function(main){
+    home(main);
+    const programs=db.programs.filter(p=>studentById(p.studentId));if(!programs.length)return;
+    const section=document.createElement('section');section.className='section home-programs';
+    section.innerHTML=`<div class="section-title"><h2>Treinos</h2><span>${programs.length}</span></div>${programs.map(p=>`<div class="home-program-owner">${esc(studentById(p.studentId)?.name||'')}</div>${programCardHtml(p)}`).join('')}`;
+    const screen=main.querySelector('.screen');screen.insertBefore(section,screen.querySelector('.home-metrics'));
+    $$('[data-program-start]',section).forEach(btn=>btn.onclick=()=>{const p=db.programs.find(p=>p.id===btn.dataset.programStart);if(p)prepareWorkout([{studentId:p.studentId,programId:p.id}]);});
+    $$('[data-program-edit]',section).forEach(btn=>btn.onclick=()=>openProgramActions(btn.dataset.programEdit));
+    $$('[data-program-view]',section).forEach(btn=>btn.onclick=()=>openProgramView(btn.dataset.programView));
+  };
+  const renderLive=renderActiveWorkout;
+  renderActiveWorkout=function(main){renderLive(main);$('.live-finish',main)?.remove();const action=$('#topActionBtn');if(action){action.innerHTML=icons.trash;action.setAttribute('aria-label','Descartar treino');action.title='Descartar treino';action.onclick=discardLiveWorkout;}syncFocus();};
+  const save=saveFinishedWorkout;
+  saveFinishedWorkout=function(){if(!live)return;const before=new Set(db.sessions.map(s=>s.id));save();const session=db.sessions.find(s=>!before.has(s.id));if(session)window.openSessionSummary(session.id);};
+  render();
+})();
+
+</script>
 </body>
 </html>
