@@ -518,6 +518,7 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
     const latest=db.sessions.slice().sort((a,b)=>sessionTimestamp(b)-sessionTimestamp(a)).slice(0,4),top=findTopImprovementAcrossStudents('90d');
     setHeader({title:'Início',action:'more',actionFn:openSettingsMenu});
     main.innerHTML=`<section class="screen"><div class="hero home-hero"><div><span class="hero-kicker">PERSONAL TRAINER</span><h1>${greeting}, ${esc(db.trainer.name.split(' ')[0]||'Professor')}</h1></div><p>Controle a sessão, acompanhe as últimas cargas e enxergue a evolução sem perder tempo durante o treino.</p></div><div class="home-start-wrap"><button class="home-start-card" id="homeQuickStart" type="button"><span class="home-start-icon">${icons.dumbbell}</span><span class="home-start-copy"><small>ATALHO RÁPIDO</small><strong>Iniciar treino</strong><em>Escolha o aluno e a ficha</em></span><span class="home-start-arrow">${chev()}</span></button></div><div class="section home-metrics" style="margin-top:18px"><div class="grid-2"><button class="metric-card metric-link" data-dashboard-metric="students" type="button"><div><small>Alunos</small><strong>${db.students.length}</strong></div><p>ver alunos cadastrados</p></button><button class="metric-card metric-link" data-dashboard-metric="sessions" type="button"><div><small>Treinos · 7 dias</small><strong>${dash.sessions.length}</strong></div><p>${dash.active} aluno${dash.active===1?' ativo':'s ativos'}</p></button><button class="metric-card metric-link" data-dashboard-metric="sets" type="button"><div><small>Séries · 7 dias</small><strong>${dash.sets}</strong></div><p>ver séries concluídas</p></button><button class="metric-card metric-link highlight" data-dashboard-metric="top" type="button"><div><small>Maior evolução</small><strong>${top?esc(top.student.name.split(' ')[0]):'—'}</strong></div><p>${top?`${esc(top.exerciseName)} · +${round(top.deltaKg)} kg`:'precisa de mais histórico'}</p></button></div></div><div class="section home-recent-section"><div class="section-title"><h2>Últimos treinos</h2><span>${latest.length}</span></div><div id="homeLatest">${latest.length?latest.map(recentSessionCardHtml).join(''):emptyHtml('Ainda não há treinos registrados.','Seu histórico aparecerá aqui depois da primeira sessão.')}</div></div><div class="section"><div class="section-title"><h2>Ações rápidas</h2></div><div class="quick-actions"><button class="quick-action" data-quick="student" type="button">${icons.users}<strong>Novo aluno</strong><small>Cadastrar e montar treinos</small></button><button class="quick-action" data-quick="exercise" type="button">${icons.dumbbell}<strong>Novo exercício</strong><small>Adicionar à biblioteca</small></button></div></div></section>`;
+    main.querySelector('.screen')?.prepend(main.querySelector('.home-start-wrap'));main.querySelector('.home-hero')?.remove();
     $('#homeQuickStart')?.addEventListener('click',openQuickStart);$('[data-quick="student"]')?.addEventListener('click',()=>openStudentForm());$('[data-quick="exercise"]')?.addEventListener('click',()=>openExerciseForm());$$('[data-dashboard-metric]',main).forEach(btn=>btn.onclick=()=>openDashboardMetric(btn.dataset.dashboardMetric));$$('[data-session-student]',main).forEach(el=>el.onclick=()=>navigate('student',{studentId:el.dataset.sessionStudent}));
   };
 
@@ -916,13 +917,21 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
     const frontSvg=front?nestedAnatomySvg(front,145,modelTop,300,modelH):fallbackFront,backSvg=back?nestedAnatomySvg(back,635,modelTop,300,modelH):fallbackBack;
     return {height,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}"><rect x="24" y="24" width="1032" height="${cardH}" rx="72" fill="${C.card}"/><text x="84" y="102" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="850" letter-spacing="3" fill="${C.blue}">TREINO CONCLUÍDO</text><text x="84" y="174" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="50" font-weight="820" fill="${C.text}">${xmlEsc(st?.name||'Aluno')}</text><g transform="translate(812 126)"><rect width="178" height="58" rx="29" fill="${C.surface}"/><text x="89" y="37" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="800" fill="${C.blue}">${xmlEsc(duration)}</text></g><text x="84" y="216" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="600" fill="${C.muted}">${xmlEsc(participant.programName||'Treino')} · ${xmlEsc(fmtDate(Date.now()))}</text><g transform="translate(84 260)">${[['SÉRIES',sets],['VOLUME',kgText(vol)],['RPE MÉDIO',avg]].map((item,i)=>`<g transform="translate(${i*306} 0)"><rect width="286" height="104" rx="24" fill="${C.surface}"/><text x="20" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="1" fill="${C.faint}">${item[0]}</text><text x="20" y="75" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="820" fill="${C.text}">${xmlEsc(item[1])}</text></g>`).join('')}</g><text x="84" y="422" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="29" font-weight="820" fill="${C.text}">Músculos trabalhados</text><text x="295" y="450" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="2" fill="${C.faint}">FRENTE</text><text x="785" y="450" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="2" fill="${C.faint}">COSTAS</text>${frontSvg}${backSvg}${chips.markup}<text x="996" y="${height-48}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="17" font-weight="750" fill="${C.faint}">TREINO</text></svg>`};
   }
+  async function pngAtDpi(blob,dpi=300){
+    const bytes=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);
+    view.setUint32(0,9);chunk.set([112,72,89,115],4);const ppm=Math.round(dpi/0.0254);view.setUint32(8,ppm);view.setUint32(12,ppm);chunk[16]=1;
+    let crc=0xffffffff;for(const byte of chunk.slice(4,17)){crc^=byte;for(let k=0;k<8;k++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}view.setUint32(17,(crc^0xffffffff)>>>0);
+    const parts=[bytes.slice(0,8)];let offset=8,inserted=false;
+    while(offset<bytes.length){const len=new DataView(bytes.buffer,bytes.byteOffset+offset,4).getUint32(0),end=offset+12+len,type=String.fromCharCode(...bytes.slice(offset+4,offset+8));if(type!=='pHYs')parts.push(bytes.slice(offset,end));if(type==='IHDR'&&!inserted){parts.push(chunk);inserted=true;}offset=end;}
+    return new Blob(parts,{type:'image/png'});
+  }
   saveWorkoutSummaryImage=async function(index){
     const participant=live?.participants?.[index];if(!participant)return;
     try{
       const built=await buildSummaryShareSvg(participant),blob=new Blob([built.svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),img=new Image();
       await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
-      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=built.height;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);
-      const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!png)throw new Error('PNG');
+      const canvas=document.createElement('canvas');canvas.width=4320;canvas.height=Math.round(built.height*4);const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);
+      const rawPng=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!rawPng)throw new Error('PNG');const png=await pngAtDpi(rawPng,300);
       const st=studentById(participant.studentId),file=new File([png],`treino-${String(st?.name||'aluno').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}-${localDateISO()}.png`,{type:'image/png'});
       if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:`Resumo do treino — ${st?.name||'Aluno'}`});}
       else{const out=URL.createObjectURL(png),a=document.createElement('a');a.href=out;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(out),1200);toast('Imagem salva.');}
@@ -1421,7 +1430,8 @@ function exerciseRecordSummary(entries){
   return {bestLoad,bestVolume,bestReps};
 }
 function exercisePointChart(entries){
-  if(!entries.length)return emptyHtml('Sem execuções registradas.');
+  entries=entries.filter(x=>x.best!==null&&x.best!==undefined&&x.best!==''&&Number.isFinite(Number(x.best)));
+  if(!entries.length)return {html:'<div class="empty">-</div>',points:[]};
   const points=entries.slice(-20).map(x=>({date:dateShort(x.session.endedAt),fullDate:fmtDate(x.session.endedAt),value:x.best,volume:x.volume})),vals=points.map(p=>p.value),vmin=Math.min(...vals),vmax=Math.max(...vals),span=Math.max(vmax-vmin,Math.max(1,vmax*.05)),pad=Math.max(1,span*.24),min=Math.max(0,vmin-pad),max=vmax+pad,range=Math.max(max-min,1),spacing=76,W=Math.max(360,58+(points.length-1)*spacing+38),H=220,L=52,R=W-22,T=24,B=164;
   const coords=points.map((p,i)=>({x:points.length===1?(L+R)/2:L+i*spacing,y:B-((p.value-min)/range)*(B-T)})),line=coords.map((p,i)=>`${i?'L':'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '),grid=[0,.5,1].map(fr=>{const y=B-fr*(B-T),val=min+range*fr;return `<line x1="${L}" x2="${R}" y1="${y}" y2="${y}" class="chart-grid-line"/><text x="${L-8}" y="${y+3}" text-anchor="end" class="chart-y-label">${round(val)}</text>`;}).join(''),dots=coords.map((p,i)=>`<g class="chart-point" data-ex-point="${i}" tabindex="0" role="button"><circle class="chart-point-hit" cx="${p.x}" cy="${p.y}" r="17"/><circle cx="${p.x}" cy="${p.y}" r="5"/><text x="${p.x}" y="${Math.max(14,p.y-12)}" text-anchor="middle" class="point-value">${points[i].value}kg</text><text x="${p.x}" y="${B+27}" text-anchor="middle" class="chart-x-label">${points[i].date}</text></g>`).join('');
   return {html:`<div class="chart-scroll"><svg class="detail-line-chart exercise-history-chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${grid}<path d="${line}" class="chart-line"/>${dots}</svg></div><div id="exercisePointDetail" class="exercise-point-detail">${points.length?`${points[points.length-1].fullDate} · ${points[points.length-1].value} kg · ${kgText(points[points.length-1].volume)} de volume`:''}</div>`,points};
@@ -1429,7 +1439,7 @@ function exercisePointChart(entries){
 openExerciseHistory=function(studentId,exerciseId){
   const st=studentById(studentId),exercise=exerciseById(exerciseId);if(!st||!exercise)return toast('Histórico deste exercício não encontrado.');
   const entries=exerciseHistoryEntries(studentId,exerciseId),recent=entries.slice().reverse().slice(0,16),records=exerciseRecordSummary(entries),latest=entries[entries.length-1]||null,first=entries[0]||null,delta=latest&&first?latest.best-first.best:0,chart=exercisePointChart(entries);
-  openModal(`<div class="exercise-detail-head"><button class="icon-btn" id="exerciseHistoryClose" type="button" aria-label="Fechar">${icons.close}</button><div class="exercise-detail-title"><small>HISTÓRICO DO EXERCÍCIO</small><strong>${esc(exercise.name)}</strong><span>${esc(st.name)}${latest?` · última execução ${fmtDate(latest.session.endedAt)}`:''}</span></div></div><div class="exercise-history-content"><div class="exercise-muscle-tags">${(exercise.muscleGroups||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div><div class="exercise-pr-grid"><div class="exercise-pr-card"><small>Maior carga</small><strong>${records.bestLoad.value?`${records.bestLoad.value} kg`:'—'}</strong><span>${records.bestLoad.date}</span></div><div class="exercise-pr-card"><small>Mais reps</small><strong>${records.bestReps.value?`${records.bestReps.value} reps`:'—'}</strong><span>${records.bestReps.value?`${records.bestReps.weight} kg · ${records.bestReps.date}`:'—'}</span></div><div class="exercise-pr-card"><small>Maior volume</small><strong>${records.bestVolume.value?kgText(records.bestVolume.value):'—'}</strong><span>${records.bestVolume.date}</span></div></div><div class="history-summary-grid"><div><small>Execuções</small><strong>${entries.length}</strong></div><div><small>Última carga</small><strong>${latest?`${latest.best} kg`:'—'}</strong></div><div><small>Variação</small><strong class="${delta>0?'text-good':delta<0?'text-warn':''}">${entries.length>1?`${delta>0?'+':''}${round(delta)} kg`:'—'}</strong></div></div><div class="chart-card history-chart-card"><div class="chart-card-head"><div><strong>Maior carga por sessão</strong><small>Toque em um ponto para ver a data e o volume.</small></div></div>${chart.html}</div><div class="section history-execution-section"><div class="section-title"><h2>Histórico</h2><span>${recent.length}${entries.length>recent.length?` de ${entries.length}`:''}</span></div>${recent.length?recent.map(row=>{const sets=completedSets(row.exercise),isLoadPR=row.best===records.bestLoad.value&&records.bestLoad.value>0;return `<div class="exercise-execution-card"><div class="execution-card-head"><div><strong>${fmtDate(row.session.endedAt)}${isLoadPR?'<span class="exercise-record-badge">PR</span>':''}</strong><small>${esc(participantForStudent(row.session,studentId)?.programName||'Treino')}</small></div><div><b>${row.best} kg</b><small>${kgText(row.volume)} volume</small></div></div><div class="execution-sets">${sets.map((set,si)=>`<span><b>${si+1}</b>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}</span>`).join('')}</div><div class="execution-footer"><span>${sets.length} ${sets.length===1?'série':'séries'}</span><span>${sets.reduce((a,s)=>a+parseInteger(s.reps),0)} reps</span></div></div>`;}).join(''):emptyHtml('Sem execuções registradas.')}</div></div>`,{fullscreen:true});
+  openModal(`<div class="exercise-detail-head"><button class="icon-btn" id="exerciseHistoryClose" type="button" aria-label="Fechar">${icons.close}</button><div class="exercise-detail-title"><small>HISTÓRICO DO EXERCÍCIO</small><strong>${esc(exercise.name)}</strong><span>${esc(st.name)}${latest?` · última execução ${fmtDate(latest.session.endedAt)}`:''}</span></div></div><div class="exercise-history-content"><div class="exercise-muscle-tags">${(exercise.muscleGroups||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div><div class="exercise-pr-grid"><div class="exercise-pr-card"><small>Maior carga</small><strong>${records.bestLoad.value?`${records.bestLoad.value} kg`:'—'}</strong><span>${records.bestLoad.date}</span></div><div class="exercise-pr-card"><small>Mais reps</small><strong>${records.bestReps.value?`${records.bestReps.value} reps`:'—'}</strong><span>${records.bestReps.value?`${records.bestReps.weight} kg · ${records.bestReps.date}`:'—'}</span></div><div class="exercise-pr-card"><small>Maior volume</small><strong>${records.bestVolume.value?kgText(records.bestVolume.value):'—'}</strong><span>${records.bestVolume.date}</span></div></div><div class="history-summary-grid"><div><small>Execuções</small><strong>${entries.length}</strong></div><div><small>Última carga</small><strong>${latest?`${latest.best} kg`:'—'}</strong></div><div><small>Variação</small><strong class="${delta>0?'text-good':delta<0?'text-warn':''}">${entries.length>1?`${delta>0?'+':''}${round(delta)} kg`:'—'}</strong></div></div><div class="chart-card history-chart-card"><div class="chart-card-head"><div><strong>Maior carga por sessão</strong><small>Toque em um ponto para ver a data e o volume.</small></div></div>${chart.html||'-'}</div><div class="section history-execution-section"><div class="section-title"><h2>Histórico</h2><span>${recent.length}${entries.length>recent.length?` de ${entries.length}`:''}</span></div>${recent.length?recent.map(row=>{const sets=completedSets(row.exercise),isLoadPR=row.best===records.bestLoad.value&&records.bestLoad.value>0;return `<div class="exercise-execution-card"><div class="execution-card-head"><div><strong>${fmtDate(row.session.endedAt)}${isLoadPR?'<span class="exercise-record-badge">PR</span>':''}</strong><small>${esc(participantForStudent(row.session,studentId)?.programName||'Treino')}</small></div><div><b>${row.best} kg</b><small>${kgText(row.volume)} volume</small></div></div><div class="execution-sets">${sets.map((set,si)=>`<span><b>${si+1}</b>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}</span>`).join('')}</div><div class="execution-footer"><span>${sets.length} ${sets.length===1?'série':'séries'}</span><span>${sets.reduce((a,s)=>a+parseInteger(s.reps),0)} reps</span></div></div>`;}).join(''):emptyHtml('Sem execuções registradas.')}</div></div>`,{fullscreen:true});
   $('#exerciseHistoryClose').onclick=closeModal;
   $$('[data-ex-point]',$('#modal')).forEach(pt=>{const show=()=>{const row=chart.points[+pt.dataset.exPoint];if(!row)return;const box=$('#exercisePointDetail');if(box)box.textContent=`${row.fullDate} · ${row.value} kg · ${kgText(row.volume)} de volume`;};pt.onclick=show;pt.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}};});
   requestAnimationFrame(()=>{const scroll=$('.history-chart-card .chart-scroll');if(scroll)scroll.scrollLeft=scroll.scrollWidth;});
@@ -1462,7 +1472,7 @@ requestAnimationFrame(()=>{try{render();}catch(e){console.error(e);}});
 
 <style id="session-ux">
 /* Focused exercise controls and session states */
-body.modal-focused,body.rest-expanded{overflow:hidden}
+body.modal-focused{overflow:hidden}
 .home-program-owner{font-size:11px;color:var(--muted);margin:12px 3px 6px}
 .workout-exercise-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--muted);font-size:12px;line-height:1.5;margin:9px 0 13px}
 .modal-backdrop,.rest-shade{background:rgba(0,0,0,.62)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important}
@@ -1513,9 +1523,10 @@ body.rest-expanded .rest-resume{display:none}
     document.body.classList.toggle('modal-focused',modalOpen);
     document.body.classList.toggle('rest-expanded',expanded);
     document.body.classList.toggle('rest-running',running);
-    shade.classList.toggle('is-hidden',!expanded||modalOpen);
-    document.querySelector('.app-shell').inert=modalOpen||expanded;
-    $('#activeWorkoutPill').inert=modalOpen||expanded;
+    shade.classList.add('is-hidden');
+    const nav=$('#bottomNav');const navHeight=nav&&getComputedStyle(nav).display!=='none'?nav.getBoundingClientRect().height:0;document.documentElement.style.setProperty('--visible-nav-height',`${navHeight}px`);
+    document.querySelector('.app-shell').inert=modalOpen;
+    $('#activeWorkoutPill').inert=modalOpen;
     rest.inert=modalOpen;
     if(!modalOpen&&!expanded)syncActiveWorkoutPill();
     if(running)$('#activeWorkoutPill').classList.add('is-hidden');
@@ -1538,37 +1549,37 @@ body.rest-expanded .rest-resume{display:none}
     if(e.key!=='Tab')return;const items=[...$('#modal').querySelectorAll('button:not(:disabled),input,select,textarea,[tabindex="0"]')].filter(el=>el.getClientRects().length);if(!items.length)return;
     if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}
   });
-  const guide=[[10,'Esforço máximo','Não conseguiria fazer mais nenhuma repetição.'],[9.5,'Quase no limite','Talvez conseguisse fazer mais 1 repetição.'],[9,'1 repetição em reserva','Conseguiria fazer mais 1 repetição com certeza.'],[8.5,'1–2 repetições em reserva','Conseguiria fazer de 1 a 2 repetições a mais.'],[8,'2 repetições em reserva','Conseguiria fazer mais 2 repetições com certeza.'],[7,'3 repetições em reserva','Conseguiria fazer mais 3 repetições.'],[6,'Aquecimento / Carga leve',''],[5,'Aquecimento / Carga leve','']];
+  function effortDefinition(n){
+    if(n>=10)return 'Esforço máximo; nenhuma repetição em reserva.';
+    if(n>=9.5)return 'Talvez conseguisse mais 1 repetição.';
+    if(n>=9)return 'Mais 1 repetição com certeza.';
+    if(n>=8.5)return 'Mais 1 a 2 repetições.';
+    if(n>=8)return 'Mais 2 repetições com certeza.';
+    if(n>=7)return 'Mais 3 repetições.';
+    return 'Aquecimento / Carga leve.';
+  }
   openRpePicker=function(path){
-    const set=liveSetAt(path);if(!set)return;
-    openModal(`<div class="effort-head"><div><h2>Percepção de esforço</h2><p>RIR · quantas repetições ainda conseguiria fazer?</p></div></div><div class="effort-options">${guide.map(([n,title,detail])=>`<button type="button" class="effort-option ${Number(set.rpe)===n?'is-selected':''}" data-effort="${n}"><b>${rpeLabel(n)}</b><span><strong>${title}</strong>${detail?`<small>${detail}</small>`:''}</span>${Number(set.rpe)===n?icons.check:''}</button>`).join('')}</div><button class="btn btn-secondary effort-clear" id="effortClear">Limpar RPE</button>`);
-    $('#effortClear').onclick=()=>{set.rpe='';persistDraft();const btn=$(`[data-set-rpe-trigger="${path}"]`);if(btn){btn.textContent='—';btn.classList.remove('has-value');}closeModal();};
-    $$('[data-effort]',$('#modal')).forEach(button=>button.onclick=()=>{
-      // Reuse completion validation, suggestions and rest; editing an already
-      // completed set must never toggle it off or restart the timer.
+    const set=liveSetAt(path);if(!set)return;const value=set.rpe===''||set.rpe==null?8:Number(set.rpe);
+    openModal(`<div class="effort-slider-content"><p id="effortLabel" aria-live="polite"></p><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${value}" aria-label="RPE"><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div></div>`);
+    const modal=$('#modal');modal.classList.add('effort-slider-sheet');modal.querySelector('.sheet-close-btn')?.remove();
+    const slider=$('#effortSlider'),label=$('#effortLabel');
+    const updateLabel=()=>{label.textContent=`RPE ${rpeLabel(slider.value)} - ${effortDefinition(Number(slider.value))}`;slider.setAttribute('aria-valuetext',label.textContent);};updateLabel();
+    const commit=()=>{
+      updateLabel();
       if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}
-      set.rpe=Number(button.dataset.effort);persistDraft();
-      const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}
-      closeModal();
-    });
+      set.rpe=Number(slider.value);persistDraft();const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}
+    };
+    slider.oninput=commit;slider.onchange=commit;
   };
+  // Effort selection stays open until its centered handle is dragged down.
+  $('#modalBackdrop').addEventListener('click',e=>{if($('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalLayer').classList.contains('is-hidden')&&$('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
   const settings=openLiveExerciseSettings;
   openLiveExerciseSettings=function(path){settings(path);const reps=$('[data-live-ex-action="reps"]'),restButton=$('[data-live-ex-action="rest"]');reps?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${repeatIcon}</span>`);restButton?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${clockIcon}</span>`);if(restButton)restButton.onclick=()=>editRest(path);};
   function editRest(path){const ex=liveExerciseAt(path);if(!ex)return;openRestPicker(ex.restSec,seconds=>{ex.restSec=seconds;persistDraft();render();},()=>openLiveExerciseSettings(path),'Descanso do exercício');}
-  const exerciseHtml=liveExerciseHtml,bind=bindLiveHandlers;
-  liveExerciseHtml=function(participant,pi,ex,ei){return exerciseHtml(participant,pi,ex,ei).replace('<div class="set-head">',`<button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button><div class="set-head">`).replace('<span>Reps</span>',`<span class="set-heading-icon">${repeatIcon} Reps</span>`);};
+  const bind=bindLiveHandlers;
+  liveExerciseHtml=function(participant,pi,ex,ei){return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><div class="live-title-block"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong></div><span class="history-mini">${icons.history}</span></button><button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button></div><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${compactLastSetsHtml(ex)}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;};
   bindLiveHandlers=function(){bind();$$('[data-exercise-rest]').forEach(btn=>btn.onclick=()=>editRest(btn.dataset.exerciseRest));};
-  const home=renderHome;
-  renderHome=function(main){
-    home(main);
-    const programs=db.programs.filter(p=>studentById(p.studentId));if(!programs.length)return;
-    const section=document.createElement('section');section.className='section home-programs';
-    section.innerHTML=`<div class="section-title"><h2>Treinos</h2><span>${programs.length}</span></div>${programs.map(p=>`<div class="home-program-owner">${esc(studentById(p.studentId)?.name||'')}</div>${programCardHtml(p)}`).join('')}`;
-    const screen=main.querySelector('.screen');screen.insertBefore(section,screen.querySelector('.home-metrics'));
-    $$('[data-program-start]',section).forEach(btn=>btn.onclick=()=>{const p=db.programs.find(p=>p.id===btn.dataset.programStart);if(p)prepareWorkout([{studentId:p.studentId,programId:p.id}]);});
-    $$('[data-program-edit]',section).forEach(btn=>btn.onclick=()=>openProgramActions(btn.dataset.programEdit));
-    $$('[data-program-view]',section).forEach(btn=>btn.onclick=()=>openProgramView(btn.dataset.programView));
-  };
   const renderLive=renderActiveWorkout;
   renderActiveWorkout=function(main){renderLive(main);$('.live-finish',main)?.remove();const action=$('#topActionBtn');if(action){action.innerHTML=icons.trash;action.setAttribute('aria-label','Descartar treino');action.title='Descartar treino';action.onclick=discardLiveWorkout;}syncFocus();};
   const save=saveFinishedWorkout;
@@ -1577,5 +1588,36 @@ body.rest-expanded .rest-resume{display:none}
 })();
 
 </script>
+
+<style id="compact-ui-revision">
+.home-start-wrap{margin-top:20px!important}
+.workout-entry{margin-bottom:20px}.workout-view-card{display:block;width:100%;text-align:left;color:var(--text);margin-bottom:8px!important;cursor:pointer}
+.workout-entry .workout-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.workout-entry .workout-actions .btn{width:100%;min-width:0}
+.live-title-block{flex:1;min-width:0}.live-title-block .live-exercise-history{width:100%}.live-title-block .exercise-rest{padding:5px 0 0;font-size:11px}
+html[data-theme] .set-row.is-done .set-index{background:var(--surface-2)!important;color:var(--muted)!important}
+html[data-theme="light"] .set-row.is-done .set-index{background:#F0F4F7!important}
+html[data-theme] .set-row.is-done .rpe-trigger{background:var(--green-soft)!important;color:var(--green)!important;border-color:var(--green)!important}
+body.rest-expanded .rest-timer.on-workout{bottom:var(--visible-nav-height,0px)!important}
+body.rest-expanded .screen{padding-bottom:250px!important}
+body.rest-expanded .rest-sheet-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;text-align:center;gap:8px}
+.rest-sheet-head button{display:grid;place-items:center;height:34px;line-height:1;margin:0}.rest-sheet-head button:first-child{justify-self:start;width:34px}.rest-sheet-head button:last-child{justify-self:end;width:100%;max-width:130px;font-size:10px;line-height:1.2;white-space:normal}.rest-sheet-head>span{display:grid;place-items:center;min-height:34px}
+.rest-shade{display:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.exercise-menu .action-icon{display:grid!important;place-items:center!important;padding:0!important;flex-shrink:0}.exercise-menu .action-icon svg{display:block;width:18px;height:18px}
+.builder-controls,.builder-default-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr)!important;gap:7px!important;align-items:end}
+.builder-default-grid>div:last-child{grid-column:auto!important}.builder-controls>div{min-width:0}.builder-reps-field{margin:0!important}
+.builder-controls .control-label,.builder-default-grid .control-label{font-size:8px!important;letter-spacing:0!important;white-space:normal;min-height:20px;display:flex;align-items:end;margin-bottom:5px}
+.builder-controls .form-input,.builder-default-grid .form-input,.builder-controls .select-pill,.builder-default-grid .select-pill,.builder-controls .stepper,.builder-default-grid .stepper{height:36px!important;min-height:36px!important;padding:0 6px!important;font-size:12px!important}
+.builder-controls .select-pill>span,.builder-default-grid .select-pill>span{display:none}.builder-controls .stepper button,.builder-default-grid .stepper button{width:24px!important;height:32px!important;flex-shrink:0}
+.builder-exercise{padding:9px 10px!important;margin-bottom:8px!important;border-radius:14px!important}.builder-exercise-head{margin-bottom:5px!important}.builder-tags{margin:5px 0!important;gap:4px!important}.builder-tags .tag{padding:3px 5px!important;font-size:8px!important}
+.effort-slider-sheet{padding:12px 20px calc(22px + var(--safe-bottom))!important}.effort-slider-sheet .modal-handle{width:48px;height:7px;margin:2px auto 22px;touch-action:none;cursor:grab}
+.effort-slider-content #effortLabel{font-size:15px;line-height:1.5;min-height:46px;margin:0 0 14px;color:var(--text);text-align:center}
+#effortSlider{appearance:none;-webkit-appearance:none;width:100%;height:42px;background:transparent;border:0;outline:0;padding:0;margin:0;touch-action:pan-x;cursor:pointer}
+#effortSlider::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:var(--line-strong)}
+#effortSlider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--blue-2);border:3px solid var(--bg-elev);box-shadow:0 0 0 1px var(--blue-2);margin-top:-9px}
+#effortSlider::-moz-range-track{height:6px;border-radius:99px;background:var(--line-strong)}
+#effortSlider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--blue-2);border:3px solid var(--bg-elev)}
+#effortSlider:focus-visible{outline:2px solid var(--blue-2);outline-offset:4px;border-radius:12px}.effort-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+</style>
+
 </body>
 </html>

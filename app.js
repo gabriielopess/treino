@@ -863,11 +863,10 @@ function programCardHtml(program) {
   const dateBits = [];
   if (program.startDate) dateBits.push(`início ${fmtDate(program.startDate)}`);
   if (program.endDate) dateBits.push(`término ${fmtDate(program.endDate)}`);
-  return `<div class="workout-card">
+  return `<div class="workout-entry"><button class="workout-card workout-view-card" type="button" data-program-view="${esc(program.id)}" aria-label="Ver treino ${esc(program.name)}">
     <div class="workout-summary-toggle"><div><strong>${esc(program.name)}</strong><div class="workout-meta">${items.length} exercícios · ${sets} séries</div>${dateBits.length?`<div class="workout-date">${dateBits.join(' · ')}</div>`:''}</div></div>
-    <p class="workout-exercise-preview">${esc(items.map(item=>item.ex.name).join(", "))}</p>
-    <div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-view="${esc(program.id)}">${eyeIcon()} Ver treino</button><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div>
-  </div>`;
+    <p class="workout-exercise-preview">${esc(items.map(item=>item.ex.name).join(', '))}</p>
+  </button><div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div></div>`;
 }
 
 
@@ -1053,7 +1052,7 @@ function openProgramBuilder(studentId, programId=null) {
     openModal(`
       <div class="builder-head"><button class="icon-btn" id="builderClose">${icons.back}</button><h2>${existing?'Editar treino':'Criar treino'}</h2></div>
       <div class="builder-body">
-        <button class="builder-quick-create" id="builderQuickCreate" type="button">${icons.plus}<div><strong>Criar exercício</strong></div>${chev()}</button>
+
         <div class="form-row"><label class="form-label">Nome do treino</label><input id="programName" class="form-input" value="${esc(draft.name)}"></div>
         <div class="form-row">
           <label class="form-label">Padrões para os exercícios</label>
@@ -1076,7 +1075,7 @@ function openProgramBuilder(studentId, programId=null) {
     const addPickedExercise=(exId)=>{draft.exercises.push({exerciseId:exId,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:''});renderBuilder();};
     $('#builderClose').onclick=closeModal; $('#builderCancel').onclick=closeModal;
     $('#programName').oninput=e=>draft.name=e.target.value; $('#programStart').onchange=e=>draft.startDate=e.target.value; $('#programEnd').onchange=e=>draft.endDate=e.target.value;
-    $('#builderQuickCreate').onclick=()=>{syncFields();openExerciseForm(null,id=>addPickedExercise(id),renderBuilder);};
+
     $('#builderAddExercise').onclick=()=>{syncFields();openExercisePicker(addPickedExercise, renderBuilder);};
     $('#builderDefaultReps').oninput=e=>draft.defaultTargetReps=e.target.value;
     $('#defaultSetsMinus').onclick=()=>{syncFields();draft.defaultSets=Math.max(1,draft.defaultSets-1);renderBuilder();};
@@ -1125,9 +1124,8 @@ function builderExerciseHtml(pe,index,total=1){
     <div class="builder-controls">
       <div><span class="control-label">Séries</span><div class="stepper"><button type="button" data-builder-minus="${index}">−</button><span>${pe.sets}</span><button type="button" data-builder-plus="${index}">+</button></div></div>
       <div><span class="control-label">Descanso</span><button class="select-pill compact" type="button" data-builder-rest="${index}"><span>Intervalo</span><strong>${fmtRest(pe.restSec)}</strong>${chev()}</button></div>
+      <div class="builder-reps-field"><span class="control-label">Faixa de repetições</span><input class="form-input" data-builder-reps="${index}" value="${esc(pe.targetReps||'')}"></div>
     </div>
-    <div class="builder-reps-field"><span class="control-label">Carga de referência (kg)</span><input class="form-input" inputmode="decimal" aria-label="Carga de referência em kg" data-builder-weight="${index}" value="${esc(pe.referenceWeight??'')}"></div>
-    <div class="builder-reps-field"><span class="control-label">Faixa de repetições</span><input class="form-input" data-builder-reps="${index}" value="${esc(pe.targetReps||'')}"></div>
   </div>`;
 }
 
