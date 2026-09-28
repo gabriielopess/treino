@@ -20,6 +20,10 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 const icons = {
+  swap: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  repeat: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  moreHorizontal: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   more: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="19" r="1.7" fill="currentColor"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -508,6 +512,7 @@ function setHeader({ eyebrow='TREINO', title='', back=null, action='more', actio
 }
 
 function navigate(route, opts = {}) {
+  if (modalIsOpen()) closeModal({ skipCloseHook: true, all: true });
   state.route = route;
   Object.assign(state, opts);
   render();
@@ -537,7 +542,7 @@ function render() {
 
 function syncActiveWorkoutPill() {
   const pill = $('#activeWorkoutPill');
-  if (!live || state.route === 'workout') {
+  if (!live || state.route === 'workout' || (live.restEndAt && live.restEndAt > Date.now())) {
     pill.classList.add('is-hidden');
     return;
   }
@@ -559,27 +564,221 @@ function updateGlobalClocks() {
 
 /* ----------------------------- modal ----------------------------- */
 
-function openModal(html, { fullscreen=false, onClose=null } = {}) {
-  const layer = $('#modalLayer');
-  const modal = $('#modal');
-  modalCloseHook = onClose;
-  modal.className = `modal${fullscreen ? ' fullscreen' : ''}`;
-  modal.innerHTML = fullscreen ? html : `<div class="modal-handle"></div>${html}`;
-  layer.classList.remove('is-hidden');
-  layer.setAttribute('aria-hidden','false');
+/* One modal host; child sheets keep the actual parent DOM, values and scroll. */
+let modalParents = [];
+let modalRootFocus = null;
+let modalPagePosition = null;
+let modalGestureCleanup = null;
+let modalRevision = 0;
+
+function modalIsOpen() {
+  return !$('#modalLayer').classList.contains('is-hidden');
 }
 
-function closeModal() {
-  const layer = $('#modalLayer');
-  layer.classList.add('is-hidden');
-  layer.setAttribute('aria-hidden','true');
-  $('#modal').innerHTML = '';
-  if (modalCloseHook) {
-    const fn = modalCloseHook;
-    modalCloseHook = null;
-    fn();
-  }
+function modalScrollSnapshot(modal) {
+  return [modal, ...modal.querySelectorAll('*')]
+    .filter(el => el === modal || el.scrollTop || el.scrollLeft)
+    .map(el => ({ el, top: el.scrollTop, left: el.scrollLeft }));
 }
+
+function restoreModalScroll(rows) {
+  rows.forEach(({ el, top, left }) => { el.scrollTop = top; el.scrollLeft = left; });
+}
+
+function lockModalPage() {
+  if (!modalPagePosition) {
+    modalRootFocus = document.activeElement;
+    modalPagePosition = {
+      x: window.scrollX, y: window.scrollY,
+      style: document.body.getAttribute('style')
+    };
+    // A fixed body also prevents background scrolling in standalone mobile mode.
+    Object.assign(document.body.style, {
+      position: 'fixed', top: `-${modalPagePosition.y}px`,
+      left: `-${modalPagePosition.x}px`, width: '100%'
+    });
+  }
+  document.body.classList.add('modal-open', 'modal-focused');
+}
+
+function unlockModalPage() {
+  document.body.classList.remove('modal-open', 'modal-focused');
+  if (!modalPagePosition) return;
+  const saved = modalPagePosition;
+  modalPagePosition = null;
+  if (saved.style == null) document.body.removeAttribute('style');
+  else document.body.setAttribute('style', saved.style);
+  window.scrollTo(saved.x, saved.y);
+}
+
+function focusModalElement(preferred = null) {
+  const modal = $('#modal');
+  const target = preferred?.isConnected && modal.contains(preferred)
+    ? preferred : modal.querySelector('.modal-handle,button:not(:disabled),input,select,textarea,[tabindex="0"]') || modal;
+  target.focus({ preventScroll: true });
+}
+
+function installModalGesture() {
+  modalGestureCleanup?.();
+  modalGestureCleanup = null;
+  const modal = $('#modal'), handle = modal.querySelector('.modal-handle');
+  if (!handle || modal.classList.contains('fullscreen')) return;
+  const revision = modalRevision;
+  let pointerId = null, startY = 0, startTime = 0, dy = 0, timer = null;
+  const removeWindowListeners = () => {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', cancel);
+  };
+  const reset = () => {
+    pointerId = null;
+    removeWindowListeners();
+    modal.classList.remove('is-dragging');
+    modal.style.transform = '';
+  };
+  function down(e) {
+    if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    pointerId = e.pointerId;
+    startY = e.clientY;
+    startTime = performance.now();
+    dy = 0;
+    modal.classList.add('is-dragging');
+    try { handle.setPointerCapture(pointerId); } catch (_) {}
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', cancel);
+    e.preventDefault();
+  }
+  function move(e) {
+    if (e.pointerId !== pointerId || revision !== modalRevision) return;
+    dy = Math.max(0, e.clientY - startY);
+    modal.style.transform = `translate3d(0,${dy}px,0)`;
+    if (e.cancelable) e.preventDefault();
+  }
+  function up(e) {
+    if (e.pointerId !== pointerId) return;
+    const distance = dy;
+    const elapsed = Math.max(1, performance.now() - startTime);
+    const dismiss = distance > Math.min(100, Math.max(42, modal.offsetHeight * .22))
+      || (distance > 24 && distance / elapsed > .65);
+    reset();
+    // Small drags snap back. A cancelled gesture must never dismiss a sheet.
+    if (!dismiss || revision !== modalRevision) return;
+    handle.dataset.dragged = 'true';
+    modal.style.transform = `translate3d(0,${modal.offsetHeight + 24}px,0)`;
+    timer = setTimeout(() => {
+      if (revision === modalRevision && modalIsOpen()) closeModal();
+    }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 170);
+  }
+  function cancel(e) { if (e.pointerId === pointerId) reset(); }
+  function click(e) {
+    if (handle.dataset.dragged === 'true' || dy > 6) { e.preventDefault(); return; }
+    closeModal();
+  }
+  handle.addEventListener('pointerdown', down, { passive: false });
+  handle.addEventListener('click', click);
+  modalGestureCleanup = () => {
+    clearTimeout(timer);
+    reset();
+    handle.removeEventListener('pointerdown', down);
+    handle.removeEventListener('click', click);
+    delete handle.dataset.dragged;
+  };
+}
+
+function openModal(html, { fullscreen = false, onClose = null, preserveParent = false } = {}) {
+  const layer = $('#modalLayer'), modal = $('#modal');
+  modalGestureCleanup?.();
+  modalGestureCleanup = null;
+  if (preserveParent && modalIsOpen()) {
+    const parent = {
+      nodes: [...modal.childNodes], className: modal.className,
+      style: modal.getAttribute('style'), label: modal.getAttribute('aria-label'),
+      scroll: modalScrollSnapshot(modal), focus: document.activeElement,
+      onClose: modalCloseHook
+    };
+    // Keep nodes, rather than innerHTML, so unsaved fields and handlers survive.
+    const fragment = document.createDocumentFragment();
+    parent.nodes.forEach(node => fragment.appendChild(node));
+    modalParents.push(parent);
+  }
+  lockModalPage();
+  if (typeof closeRpePicker === 'function') closeRpePicker();
+  modalCloseHook = onClose;
+  modal.className = `modal${fullscreen ? ' fullscreen' : ''}`;
+  modal.removeAttribute('style');
+  modal.setAttribute('tabindex', '-1');
+  modal.innerHTML = fullscreen ? html
+    : `<button class="modal-handle" type="button" aria-label="Fechar e voltar à tela anterior"></button>${html}`;
+  modal.setAttribute('aria-label', modal.querySelector('h2')?.textContent || 'Opções');
+  modal.scrollTop = 0;
+  layer.classList.remove('is-hidden');
+  layer.setAttribute('aria-hidden', 'false');
+  const revision = ++modalRevision;
+  syncFloatingUI();
+  installModalGesture();
+  requestAnimationFrame(() => {
+    if (revision === modalRevision && modalIsOpen()) focusModalElement();
+  });
+}
+
+function closeModal({ skipCloseHook = false, all = false } = {}) {
+  if (!modalIsOpen()) return;
+  const layer = $('#modalLayer'), modal = $('#modal');
+  const hook = skipCloseHook ? null : modalCloseHook;
+  modalCloseHook = null;
+  modalGestureCleanup?.();
+  modalGestureCleanup = null;
+  ++modalRevision;
+  modal.removeAttribute('style');
+  if (all) modalParents = [];
+  const parent = modalParents.pop();
+  if (parent) {
+    modal.className = parent.className;
+    modal.replaceChildren(...parent.nodes);
+    if (parent.style != null) modal.setAttribute('style', parent.style);
+    if (parent.label != null) modal.setAttribute('aria-label', parent.label);
+    modalCloseHook = parent.onClose;
+    lockModalPage();
+    restoreModalScroll(parent.scroll);
+    syncFloatingUI();
+    installModalGesture();
+    focusModalElement(parent.focus);
+    restoreModalScroll(parent.scroll);
+  } else {
+    layer.classList.add('is-hidden');
+    layer.setAttribute('aria-hidden', 'true');
+    modal.replaceChildren();
+    unlockModalPage();
+    syncFloatingUI();
+    if (modalRootFocus?.isConnected && !modalRootFocus.closest('[inert]')) {
+      modalRootFocus.focus({ preventScroll: true });
+    }
+    modalRootFocus = null;
+  }
+  if (typeof hook === 'function') hook();
+}
+
+/* Measure only the navigation that is really visible, not a hard-coded gap. */
+function syncFloatingUI() {
+  const modalOpen = modalIsOpen();
+  const nav = $('#bottomNav');
+  const navVisible = !!nav && getComputedStyle(nav).display !== 'none'
+    && getComputedStyle(nav).visibility !== 'hidden' && nav.getClientRects().length > 0;
+  const navHeight = navVisible ? Math.max(0, window.innerHeight - nav.getBoundingClientRect().top) : 0;
+  const value = `${Math.round(navHeight * 100) / 100}px`;
+  if (document.documentElement.style.getPropertyValue('--visible-nav-height') !== value) {
+    document.documentElement.style.setProperty('--visible-nav-height', value);
+  }
+  const running = !!live?.restEndAt && live.restEndAt > Date.now();
+  document.body.classList.toggle('has-bottom-nav', navHeight > 0);
+  document.body.classList.toggle('rest-running', running);
+  document.body.classList.remove('rest-expanded');
+  $('#app').inert = modalOpen;
+  $('#restTimer').inert = modalOpen;
+  syncActiveWorkoutPill();
+}
+
 
 function confirmModal(title, message, confirmLabel, onConfirm, danger=true) {
   openModal(`
@@ -853,22 +1052,29 @@ function renderStudentProfile(main, studentId) {
   $('#pairWorkoutBtn').onclick = () => openPairSetup(st.id);
   $('#fullHistoryBtn').onclick = () => navigate('student-history', { historyStudentId:st.id });
   $$('[data-program-start]', main).forEach(btn => btn.onclick = () => prepareWorkout([{studentId:st.id, programId:btn.dataset.programStart}]));
-  $$('[data-program-edit]', main).forEach(btn => btn.onclick = () => openProgramActions(btn.dataset.programEdit));
+  $$('[data-program-edit]', main).forEach(btn => btn.onclick = () => openProgramBuilder(st.id, btn.dataset.programEdit));
   $$('[data-program-view]', main).forEach(btn => btn.onclick = () => openProgramView(btn.dataset.programView));
 }
 
 function programCardHtml(program) {
-  const items = program.exercises.map(pe => ({pe, ex:exerciseById(pe.exerciseId)})).filter(x=>x.ex);
-  const sets = program.exercises.reduce((sum,pe)=>sum+pe.sets,0);
-  const dateBits = [];
-  if (program.startDate) dateBits.push(`início ${fmtDate(program.startDate)}`);
-  if (program.endDate) dateBits.push(`término ${fmtDate(program.endDate)}`);
-  return `<div class="workout-entry"><button class="workout-card workout-view-card" type="button" data-program-view="${esc(program.id)}" aria-label="Ver treino ${esc(program.name)}">
-    <div class="workout-summary-toggle"><div><strong>${esc(program.name)}</strong><div class="workout-meta">${items.length} exercícios · ${sets} séries</div>${dateBits.length?`<div class="workout-date">${dateBits.join(' · ')}</div>`:''}</div></div>
-    <p class="workout-exercise-preview">${esc(items.map(item=>item.ex.name).join(', '))}</p>
-  </button><div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div></div>`;
+  const count = program.exercises.length;
+  const sets = program.exercises.reduce((sum, pe) => sum + peNumber(pe.sets), 0);
+  return `<article class="workout-entry">
+    <button class="workout-card workout-view-card" type="button" data-program-view="${esc(program.id)}" aria-label="Ver resumo de ${esc(program.name)}">
+      <span class="workout-card-heading"><strong>${esc(program.name)}</strong>${chev()}</span>
+      <span class="workout-card-stats">
+        <span><small>Exercícios</small><strong>${count}</strong></span>
+        <span><small>Séries</small><strong>${sets}</strong></span>
+        <span><small>Início</small><strong>${program.startDate ? fmtDate(program.startDate) : 'Não definido'}</strong></span>
+        <span><small>Término</small><strong>${program.endDate ? fmtDate(program.endDate) : 'Não definido'}</strong></span>
+      </span>
+    </button>
+    <div class="workout-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button>
+      <button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button>
+    </div>
+  </article>`;
 }
-
 
 function eyeIcon(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';}
 function lastProgramExercise(studentId,programId,pe,index){
@@ -1000,14 +1206,15 @@ function groupButtonsHtml(selected=[]) {
 
 function openExerciseForm(exerciseId = null, pickerCallback = null, pickerCancelCallback = null) {
   const existing = exerciseId ? exerciseById(exerciseId) : null;
+  const hasParent = modalIsOpen();
   openModal(`
     <h2>${existing?'Editar exercício':'Novo exercício'}</h2>
     
     <div class="form-row"><label class="form-label">Nome</label><input id="exerciseName" class="form-input" value="${esc(existing?.name || '')}"></div>
     <div class="form-row"><label class="form-label">Grupamentos</label><div id="groupGrid" class="group-grid">${groupButtonsHtml(existing?.muscleGroups || [])}</div></div>
-    <div class="modal-actions">${existing?'<button class="btn btn-danger" id="exerciseDelete">Excluir</button>':''}<button class="btn btn-secondary" id="exerciseCancel">Cancelar</button><button class="btn btn-primary" id="exerciseSave">Salvar</button></div>`);
+    <div class="modal-actions">${existing?'<button class="btn btn-danger" id="exerciseDelete">Excluir</button>':''}<button class="btn btn-secondary" id="exerciseCancel">Cancelar</button><button class="btn btn-primary" id="exerciseSave">Salvar</button></div>`, { preserveParent: !!pickerCallback, onClose: hasParent ? null : pickerCancelCallback });
   $$('[data-group]', $('#groupGrid')).forEach(btn => btn.onclick = ()=>btn.classList.toggle('is-selected'));
-  $('#exerciseCancel').onclick = () => { closeModal(); if (pickerCancelCallback) setTimeout(pickerCancelCallback, 0); };
+  $('#exerciseCancel').onclick = closeModal;
   if ($('#exerciseDelete')) $('#exerciseDelete').onclick = () => confirmDeleteExercise(existing.id);
   $('#exerciseSave').onclick = () => {
     const name = $('#exerciseName').value.trim();
@@ -1020,7 +1227,7 @@ function openExerciseForm(exerciseId = null, pickerCallback = null, pickerCancel
     if (existing) { existing.name=name; existing.muscleGroups=groups; saved=existing; }
     else { saved={id:uid('exercise'),name,muscleGroups:groups,createdAt:Date.now()}; db.exercises.push(saved); }
     db.sessions.forEach(s=>s.participants.forEach(p=>p.exercises.forEach(ex=>{if(ex.exerciseId===saved.id){ex.name=saved.name;ex.muscleGroups=saved.muscleGroups.slice();}})));
-    persist(); closeModal();
+    persist(); closeModal({ skipCloseHook: true });
     if (pickerCallback) pickerCallback(saved.id); else render();
     toast(existing?'Exercício atualizado.':'Exercício criado.');
   };
@@ -1048,18 +1255,23 @@ function openProgramBuilder(studentId, programId=null) {
     defaultTargetReps:String(student.defaultTargetReps||'8–12'),
     exercises:(existing?.exercises||[]).map(pe=>({...pe,targetReps:String(pe.targetReps||student.defaultTargetReps||'8–12')}))
   };
+  let builderPosition = { top: 0, bodyTop: 0 };
   const renderBuilder = () => {
+    if ($('#builderExercises')) {
+      builderPosition = { top: $('#modal').scrollTop, bodyTop: $('.builder-body')?.scrollTop || 0 };
+    }
+    const focusedId = $('#builderExercises') && $('#modal').contains(document.activeElement) ? document.activeElement.id : '';
     openModal(`
-      <div class="builder-head"><button class="icon-btn" id="builderClose">${icons.back}</button><h2>${existing?'Editar treino':'Criar treino'}</h2></div>
+      <div class="builder-head"><button class="icon-btn" id="builderClose" type="button" aria-label="Voltar">${icons.back}</button><h2>${existing?'Editar treino':'Criar treino'}</h2></div>
       <div class="builder-body">
 
         <div class="form-row"><label class="form-label">Nome do treino</label><input id="programName" class="form-input" value="${esc(draft.name)}"></div>
         <div class="form-row">
           <label class="form-label">Padrões para os exercícios</label>
           <div class="builder-default-grid">
-            <div><span class="control-label">Séries</span><div class="stepper"><button type="button" id="defaultSetsMinus">−</button><span>${draft.defaultSets}</span><button type="button" id="defaultSetsPlus">+</button></div></div>
+            <div><span class="control-label">Séries</span><div class="stepper"><button type="button" id="defaultSetsMinus" aria-label="Diminuir séries padrão">${icons.minus}</button><span aria-live="polite">${draft.defaultSets}</span><button type="button" id="defaultSetsPlus" aria-label="Aumentar séries padrão">${icons.plus}</button></div></div>
             <div><span class="control-label">Faixa de repetições</span><input id="builderDefaultReps" class="form-input" value="${esc(draft.defaultTargetReps)}"></div>
-            <div><span class="control-label">Descanso</span><button class="select-pill compact" id="builderDefaultRest" type="button"><span>Intervalo</span><strong>${fmtRest(draft.defaultRestSec)}</strong>${chev()}</button></div>
+            <div><span class="control-label">Descanso</span><button class="select-pill compact" id="builderDefaultRest" type="button" aria-label="Editar descanso padrão"><strong>${fmtRest(draft.defaultRestSec)}</strong></button></div>
           </div>
           ${draft.exercises.length?'<button class="btn btn-ghost btn-sm builder-apply-all" id="applyBuilderDefaults" type="button">Aplicar séries, repetições e descanso a todos</button>':''}
           
@@ -1070,8 +1282,17 @@ function openProgramBuilder(studentId, programId=null) {
         <button class="add-dashed" id="builderAddExercise" type="button">+ Adicionar exercício da biblioteca</button>
       </div>
       <div class="builder-foot"><div class="modal-actions" style="margin-top:0"><button class="btn btn-secondary" id="builderCancel">Cancelar</button><button class="btn btn-primary" id="builderSave">${existing?'Salvar alterações':'Criar treino'}</button></div></div>
-    `,{fullscreen:true,onClose:()=>{}});
-    const syncFields=()=>{draft.name=$('#programName')?.value||draft.name;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';draft.defaultTargetReps=$('#builderDefaultReps')?.value||draft.defaultTargetReps;};
+    `,{fullscreen:true});
+    const builderBody = $('.builder-body');
+    $('#modal').scrollTop = builderPosition.top;
+    if (builderBody) builderBody.scrollTop = builderPosition.bodyTop;
+    requestAnimationFrame(() => {
+      if (!$('#builderExercises') || $('.builder-body') !== builderBody) return;
+      $('#modal').scrollTop = builderPosition.top;
+      builderBody.scrollTop = builderPosition.bodyTop;
+      if (focusedId) document.getElementById(focusedId)?.focus({ preventScroll: true });
+    });
+    const syncFields=()=>{draft.name=$('#programName')?.value??draft.name;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';draft.defaultTargetReps=$('#builderDefaultReps')?.value||draft.defaultTargetReps;};
     const addPickedExercise=(exId)=>{draft.exercises.push({exerciseId:exId,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:''});renderBuilder();};
     $('#builderClose').onclick=closeModal; $('#builderCancel').onclick=closeModal;
     $('#programName').oninput=e=>draft.name=e.target.value; $('#programStart').onchange=e=>draft.startDate=e.target.value; $('#programEnd').onchange=e=>draft.endDate=e.target.value;
@@ -1080,7 +1301,7 @@ function openProgramBuilder(studentId, programId=null) {
     $('#builderDefaultReps').oninput=e=>draft.defaultTargetReps=e.target.value;
     $('#defaultSetsMinus').onclick=()=>{syncFields();draft.defaultSets=Math.max(1,draft.defaultSets-1);renderBuilder();};
     $('#defaultSetsPlus').onclick=()=>{syncFields();draft.defaultSets=Math.min(50,draft.defaultSets+1);renderBuilder();};
-    $('#builderDefaultRest').onclick=()=>{syncFields();openRestPicker(draft.defaultRestSec,sec=>{draft.defaultRestSec=sec;student.defaultRestSec=sec;persist();renderBuilder();},renderBuilder,'Descanso padrão');};
+    $('#builderDefaultRest').onclick=()=>{syncFields();openRestPicker(draft.defaultRestSec,sec=>{draft.defaultRestSec=sec;renderBuilder();},renderBuilder,'Descanso padrão');};
     if($('#applyBuilderDefaults'))$('#applyBuilderDefaults').onclick=()=>{syncFields();if(!String(draft.defaultTargetReps).trim())return toast('Defina a faixa de repetições padrão.');draft.exercises.forEach(pe=>{pe.sets=draft.defaultSets;pe.restSec=draft.defaultRestSec;pe.targetReps=draft.defaultTargetReps.trim();});renderBuilder();toast('Padrões aplicados a todos os exercícios.');};
     $$('[data-builder-remove]').forEach(btn=>btn.onclick=()=>{syncFields();draft.exercises.splice(+btn.dataset.builderRemove,1);renderBuilder();});
     $$('[data-builder-up]').forEach(btn=>btn.onclick=()=>{syncFields();const i=+btn.dataset.builderUp;if(i<=0)return;[draft.exercises[i-1],draft.exercises[i]]=[draft.exercises[i],draft.exercises[i-1]];renderBuilder();});
@@ -1122,9 +1343,9 @@ function builderExerciseHtml(pe,index,total=1){
     </div>
     ${ex?`<div class="tag-list builder-tags">${ex.muscleGroups.map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div>`:''}
     <div class="builder-controls">
-      <div><span class="control-label">Séries</span><div class="stepper"><button type="button" data-builder-minus="${index}">−</button><span>${pe.sets}</span><button type="button" data-builder-plus="${index}">+</button></div></div>
-      <div><span class="control-label">Descanso</span><button class="select-pill compact" type="button" data-builder-rest="${index}"><span>Intervalo</span><strong>${fmtRest(pe.restSec)}</strong>${chev()}</button></div>
+      <div><span class="control-label">Séries</span><div class="stepper"><button type="button" data-builder-minus="${index}" aria-label="Diminuir séries">${icons.minus}</button><span aria-live="polite">${pe.sets}</span><button type="button" data-builder-plus="${index}" aria-label="Aumentar séries">${icons.plus}</button></div></div>
       <div class="builder-reps-field"><span class="control-label">Faixa de repetições</span><input class="form-input" data-builder-reps="${index}" value="${esc(pe.targetReps||'')}"></div>
+      <div><span class="control-label">Descanso</span><button class="select-pill compact" type="button" data-builder-rest="${index}" aria-label="Editar descanso de ${esc(ex?.name||'exercício')}"><strong>${fmtRest(pe.restSec)}</strong></button></div>
     </div>
   </div>`;
 }
@@ -1133,6 +1354,7 @@ function openExercisePicker(onPick, onCancel = null) {
   let activeGroup='all';
   const picker=()=>{
     const list=db.exercises.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+    const hasParent = modalIsOpen();
     openModal(`<h2>Selecionar exercício</h2>
       <button class="picker-create-top" id="pickerNew" type="button">${icons.plus}<div><strong>Criar exercício</strong><small>Adicionar rapidamente à biblioteca</small></div>${chev()}</button>
       <div class="picker-filter-row" id="pickerGroups">
@@ -1141,18 +1363,18 @@ function openExercisePicker(onPick, onCancel = null) {
       </div>
       <div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="pickerSearch" placeholder="Buscar exercício"></div></div>
       <div id="pickerList" class="choice-list"></div>
-      <div class="modal-actions"><button class="btn btn-secondary" id="pickerCancel">Cancelar</button></div>`);
+      <div class="modal-actions"><button class="btn btn-secondary" id="pickerCancel" type="button">Cancelar</button></div>`, { preserveParent: true, onClose: hasParent ? null : onCancel });
     const renderList=()=>{
       const q=($('#pickerSearch')?.value||'').toLowerCase();
       const arr=list.filter(e=>e.name.toLowerCase().includes(q) && (activeGroup==='all'||e.muscleGroups.includes(activeGroup)));
       $('#pickerList').innerHTML=arr.map(e=>`<button class="choice" type="button" data-picker-id="${esc(e.id)}"><div class="row-main"><strong>${esc(e.name)}</strong><small>${esc(e.muscleGroups.join(' · '))}</small></div>${chev()}</button>`).join('')||emptyHtml('Nenhum exercício encontrado.','Troque o filtro ou crie um novo exercício.');
-      $$('[data-picker-id]', $('#pickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.pickerId;closeModal();onPick(id);});
+      $$('[data-picker-id]', $('#pickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.pickerId;closeModal({ skipCloseHook: true });onPick(id);});
     };
     renderList();
     $('#pickerSearch').oninput=renderList;
     $$('[data-picker-group]', $('#pickerGroups')).forEach(btn=>btn.onclick=()=>{activeGroup=btn.dataset.pickerGroup;$$('[data-picker-group]', $('#pickerGroups')).forEach(x=>x.classList.toggle('is-active',x===btn));renderList();});
-    $('#pickerCancel').onclick=()=>{closeModal(); if(onCancel)setTimeout(onCancel,0);};
-    $('#pickerNew').onclick=()=>{closeModal();setTimeout(()=>openExerciseForm(null,id=>onPick(id),()=>{if(onCancel)onCancel();}),60);};
+    $('#pickerCancel').onclick=closeModal;
+    $('#pickerNew').onclick=()=>openExerciseForm(null,id=>{closeModal({ skipCloseHook: true });onPick(id);});
   };
   picker();
 }
@@ -1168,11 +1390,19 @@ function openProgramActions(programId){
 function confirmDeleteProgram(programId){const p=programById(programId);if(!p)return;confirmModal(`Apagar ${p.name}?`,'O histórico já concluído será mantido, mas este treino deixará de aparecer no perfil.','Apagar treino',()=>{db.programs=db.programs.filter(x=>x.id!==p.id);persist();navigate('student',{studentId:p.studentId});toast('Treino apagado.');});}
 
 
-function openRestPicker(selected,onPick,onCancel=null,title='Selecionar descanso'){
-  const current=clamp(parseInteger(selected)||120,60,180);
-  openModal(`<h2>${esc(title)}</h2><div class="rest-choice-grid">${REST_OPTIONS.map(sec=>`<button class="rest-choice ${sec===current?'is-selected':''}" type="button" data-rest-choice="${sec}"><small>DESCANSO</small><strong>${fmtRest(sec)}</strong></button>`).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="restChoiceCancel">Cancelar</button></div>`);
-  $$('[data-rest-choice]').forEach(btn=>btn.onclick=()=>{const sec=+btn.dataset.restChoice;closeModal();onPick(sec);});
-  $('#restChoiceCancel').onclick=()=>{closeModal();if(onCancel)setTimeout(onCancel,0);};
+function openRestPicker(selected, onPick, onCancel = null, title = 'Selecionar descanso') {
+  const current = clamp(parseInteger(selected) || 120, 60, 180);
+  const hasParent = modalIsOpen();
+  openModal(`<h2>${esc(title)}</h2><div class="rest-choice-grid">${REST_OPTIONS.map(sec => `<button class="rest-choice ${sec === current ? 'is-selected' : ''}" type="button" data-rest-choice="${sec}" aria-pressed="${sec === current}"><strong>${fmtRest(sec)}</strong></button>`).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="restChoiceCancel" type="button">Cancelar</button></div>`, {
+    preserveParent: true,
+    onClose: hasParent ? null : onCancel
+  });
+  $$('[data-rest-choice]', $('#modal')).forEach(btn => btn.onclick = () => {
+    const sec = Number(btn.dataset.restChoice);
+    closeModal({ skipCloseHook: true });
+    onPick(sec);
+  });
+  $('#restChoiceCancel').onclick = closeModal;
 }
 
 function openEvolutionProgramPicker(studentId){
@@ -1449,15 +1679,15 @@ function openLiveExerciseAdjustments(path,field="both"){
   openModal(`<h2>Ajustar exercício</h2><p class="modal-sub">${esc(ex.name)} · altere a prescrição desta sessão.</p>
     <div class="form-row" ${field==='rest'?'hidden':''}><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}"></div>
     <div class="form-row" ${field==='reps'?'hidden':''}><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div>
-    <div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar ajustes</button></div>`);
-  $('#liveEditCancel').onclick=()=>{closeModal();setTimeout(()=>openLiveExerciseSettings(path),60);};
+    <div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar ajustes</button></div>`, { preserveParent: true });
+  $('#liveEditCancel').onclick=closeModal;
   $('#liveEditSave').onclick=()=>{
     const nextReps=$('#liveRepsEdit').value.trim();
     if(!nextReps)return toast('Informe a faixa de repetições.');
     ex.targetReps=nextReps;
     ex.restSec=clamp(parseRest($('#liveRestEdit').value),0,3600);
     ex.adjustmentSummary=`${ex.targetReps} reps · descanso ${fmtRest(ex.restSec)}`;
-    persistDraft();closeModal();
+    persistDraft();closeModal({ skipCloseHook: true, all: true });
     setTimeout(()=>askPersistLiveChanges(path,{targetReps:ex.targetReps,restSec:ex.restSec}),60);
   };
 }
@@ -1465,10 +1695,10 @@ function openLiveExerciseAdjustments(path,field="both"){
 function openLiveExerciseSettings(path){
   const ex=liveExerciseAt(path);if(!ex)return;
   openModal(`<h2 class="exercise-menu-title">${esc(ex.name)}</h2><div class="action-list exercise-menu">
-    <button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="row-main"><strong>Trocar exercício</strong><small>Substituir por outro da biblioteca</small></div>${chev()}</button>
+    <button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon">${icons.swap}</span><div class="row-main"><strong>Trocar exercício</strong><small>Substituir por outro da biblioteca</small></div>${chev()}</button>
     <div class="exercise-menu-row">
-      <button class="action-item" type="button" data-live-ex-action="reps"><div class="row-main"><strong>Repetições</strong><small>${esc(ex.targetReps||'—')} reps</small></div></button>
-      <button class="action-item" type="button" data-live-ex-action="rest"><div class="row-main"><strong>Descanso</strong><small>${fmtRest(ex.restSec)}</small></div></button>
+      <button class="action-item" type="button" data-live-ex-action="reps"><span class="action-icon">${icons.repeat}</span><div class="row-main"><strong>Repetições</strong><small>${esc(ex.targetReps||'—')} reps</small></div></button>
+      <button class="action-item" type="button" data-live-ex-action="rest"><span class="action-icon">${icons.clock}</span><div class="row-main"><strong>Descanso</strong><small>${fmtRest(ex.restSec)}</small></div></button>
     </div>
     <div class="exercise-menu-row">
       <button class="action-item" type="button" data-live-ex-action="remove-set" ${ex.sets.length<=1?'disabled':''}><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong></div></button>
@@ -1478,11 +1708,11 @@ function openLiveExerciseSettings(path){
   $$('[data-live-ex-action]',$('#modal')).forEach(btn=>btn.onclick=()=>{
     const action=btn.dataset.liveExAction;
     if(action==='replace'){
-      closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),60);
+      openExercisePicker(id=>{closeModal({ skipCloseHook: true });replaceLiveExercise(path,id);});
       return;
     }
     if(action==='reps'||action==='rest'){
-      closeModal();setTimeout(()=>openLiveExerciseAdjustments(path,action),60);
+      openLiveExerciseAdjustments(path,action);
       return;
     }
     if(action==='add-set'){
@@ -1543,22 +1773,47 @@ function beep(){
   try{unlockAudio();if(!audioCtx)return;const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.frequency.value=880;gain.gain.setValueAtTime(.0001,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.35);osc.connect(gain).connect(audioCtx.destination);osc.start();osc.stop(audioCtx.currentTime+.38);}catch(e){}
   try{navigator.vibrate?.([120,80,120]);}catch(e){}
 }
-function startRest(seconds){if(!live)return;live.restDuration=Math.max(0,Number(seconds)||0);live.restEndAt=Date.now()+live.restDuration*1000;persistDraft();syncRestTimer();}
-function stopRest(){if(restTicker){clearInterval(restTicker);restTicker=null;}if(live){live.restEndAt=null;live.restDuration=0;persistDraft();}$('#restTimer')?.classList.add('is-hidden');}
-function adjustRest(delta){if(!live?.restEndAt)return;const left=Math.max(0,Math.ceil((live.restEndAt-Date.now())/1000)+delta);if(!left)return stopRest();live.restEndAt=Date.now()+left*1000;live.restDuration=left;persistDraft();syncRestTimer();}
-function syncRestTimer(){
-  const bar=$('#restTimer');
-  if(!live?.restEndAt||live.restEndAt<=Date.now()){
-    if(live?.restEndAt&&live.restEndAt<=Date.now()){live.restEndAt=null;live.restDuration=0;persistDraft();beep();toast('Descanso finalizado.');}
-    bar.classList.add('is-hidden');bar.classList.remove('on-workout');
-    if(restTicker){clearInterval(restTicker);restTicker=null;}
-    return;
-  }
-  bar.classList.remove('is-hidden');
-  bar.classList.toggle('on-workout',state.route==='workout');
-  const tick=()=>{if(!live?.restEndAt)return stopRest();const left=Math.max(0,Math.ceil((live.restEndAt-Date.now())/1000));$('#restTimerValue').textContent=fmtClock(left);if(left<=0){live.restEndAt=null;live.restDuration=0;persistDraft();bar.classList.add('is-hidden');bar.classList.remove('on-workout');if(restTicker){clearInterval(restTicker);restTicker=null;}beep();toast('Descanso finalizado.');}};
-  tick();if(restTicker)clearInterval(restTicker);restTicker=setInterval(tick,250);
+function startRest(seconds) {
+  if (!live) return;
+  live.restDuration = Math.max(0, Number(seconds) || 0);
+  live.restEndAt = Date.now() + live.restDuration * 1000;
+  persistDraft();
+  syncRestTimer();
 }
+function stopRest() {
+  if (restTicker) { clearInterval(restTicker); restTicker = null; }
+  if (live) { live.restEndAt = null; live.restDuration = 0; persistDraft(); }
+  $('#restTimer').classList.add('is-hidden');
+  $('#restTimer').classList.remove('on-workout');
+  syncFloatingUI();
+}
+function adjustRest(delta) {
+  if (!live?.restEndAt) return;
+  const deadline = live.restEndAt + Number(delta) * 1000;
+  if (deadline <= Date.now()) return stopRest();
+  live.restEndAt = deadline;
+  live.restDuration = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+  persistDraft();
+  syncRestTimer();
+}
+function syncRestTimer() {
+  const bar = $('#restTimer');
+  function tick() {
+    if (!live?.restEndAt) { stopRest(); return false; }
+    const left = Math.max(0, Math.ceil((live.restEndAt - Date.now()) / 1000));
+    if (!left) { stopRest(); beep(); toast('Descanso finalizado.'); return false; }
+    $('#restTimerValue').textContent = fmtClock(left);
+    return true;
+  }
+  if (!live?.restEndAt) { stopRest(); return; }
+  if (!tick()) return;
+  bar.classList.remove('is-hidden');
+  bar.classList.toggle('on-workout', state.route === 'workout');
+  syncFloatingUI();
+  if (!restTicker) restTicker = setInterval(tick, 250);
+}
+
+
 
 /* ----------------------------- exercise history ----------------------------- */
 function exerciseHistoryEntries(studentId, exerciseId) {
@@ -1712,8 +1967,23 @@ function boot(){
   $('#themeToggle').onclick=()=>{toggleTheme();render();};
   $('#activeWorkoutPill').onclick=()=>navigate('workout');
   $('#modalBackdrop').onclick=closeModal;
+  document.addEventListener('keydown', e => {
+    if (!modalIsOpen() || document.querySelector('.photo-crop-layer')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeModal(); return; }
+    if (e.key !== 'Tab') return;
+    const items = [...$('#modal').querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')]
+      .filter(el => el.getClientRects().length);
+    if (!items.length) { e.preventDefault(); $('#modal').focus(); return; }
+    if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items[items.length-1].focus(); }
+    else if (!e.shiftKey && document.activeElement === items[items.length-1]) { e.preventDefault(); items[0].focus(); }
+  });
+  window.addEventListener('resize', syncFloatingUI);
+  window.visualViewport?.addEventListener('resize', syncFloatingUI);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(syncFloatingUI).observe($('#bottomNav'));
+  }
   $('#restMinus').onclick=e=>{e.stopPropagation();adjustRest(-15);};$('#restPlus').onclick=e=>{e.stopPropagation();adjustRest(15);};$('#restSkip').onclick=e=>{e.stopPropagation();stopRest();};
-  $('#restTimer').onclick=e=>{if(e.target.closest('.rest-timer-actions'))return;if(live)navigate('workout');};
+  $('#restTimer').onclick=e=>{if(e.target.closest('.rest-timer-actions'))return;if(live&&state.route!=='workout')navigate('workout');};
   $('#backupImportInput').onchange=e=>{const file=e.target.files?.[0];if(file)importBackupFile(file);e.target.value='';};
   document.addEventListener('click',e=>{
     const target=e.target.closest?.('[data-ex-history]'); if(!target)return;

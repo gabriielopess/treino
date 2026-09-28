@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="./styles.css">
 
   <!--
-    Alterações desta etapa ficam propositalmente apenas no index.html.
-    O bloco abaixo sobrescreve somente a camada visual do CSS externo.
+    Ajustes visuais sobre o CSS existente.
+    Use este index.html junto do app.js da mesma atualização.
   -->
   <style>
     :root{
@@ -298,7 +298,6 @@ body.workout-route .screen{padding-bottom:calc(118px + var(--safe-bottom))!impor
 body.workout-route .live-finish{position:fixed!important;left:50%!important;transform:translateX(-50%)!important;bottom:0!important;z-index:75!important;width:min(600px,100%)!important;margin:0!important;padding:10px 16px calc(10px + var(--safe-bottom))!important;background:color-mix(in srgb,var(--bg) 94%,transparent)!important;border-top:1px solid var(--line)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;display:grid!important;grid-template-columns:minmax(110px,.72fr) minmax(160px,1.28fr)!important;gap:9px!important}
 body.workout-route #liveFinish{order:2;height:50px!important;font-size:13.5px!important}
 body.workout-route #liveLeave{order:1;height:50px!important}
-body.workout-route .rest-timer.on-workout{bottom:calc(80px + var(--safe-bottom))!important}
 
 /* Builder: one predictable rhythm, no text collision in interval controls. */
 .builder-body{padding:16px 2px 20px!important;overflow-x:hidden!important}
@@ -399,8 +398,6 @@ html[data-theme="light"] .rpe-dock{background:rgba(255,255,255,.97)!important;bo
 .evo-choice-state .chev{width:13px!important;height:13px!important}
 
 /* Fechamento explícito dos sheets + área de arraste funcional. */
-.sheet-close-btn{position:absolute;right:14px;top:12px;z-index:6;width:34px;height:34px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);display:grid;place-items:center;font-size:18px;padding:0}
-.modal:not(.fullscreen)>h2:first-of-type{padding-right:46px}
 .modal-handle{width:52px!important;height:5px!important;margin-bottom:14px!important;background:var(--surface-3)!important;touch-action:none!important}
 
 /* Mais respiro antes dos primeiros chips/balões de série. */
@@ -467,15 +464,14 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
 
   <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
-  <div id="restTimer" class="rest-timer is-hidden">
-    <div class="rest-timer-main">
-      <small>DESCANSO</small>
-      <strong id="restTimerValue">00:00</strong>
-    </div>
+  <div id="restTimer" class="rest-timer is-hidden" role="group" aria-label="Controles do intervalo">
+    <button class="rest-timer-main" id="restOpenWorkout" type="button" aria-label="Voltar ao treino em andamento">
+      <strong id="restTimerValue" role="timer" aria-live="off">00:00</strong>
+    </button>
     <div class="rest-timer-actions">
-      <button id="restMinus" type="button">−15s</button>
-      <button id="restPlus" type="button">+15s</button>
+      <button id="restMinus" type="button" aria-label="Diminuir 15 segundos">−15 s</button>
       <button id="restSkip" class="rest-skip" type="button">Pular</button>
+      <button id="restPlus" type="button" aria-label="Adicionar 15 segundos">+15 s</button>
     </div>
   </div>
 
@@ -1024,25 +1020,11 @@ window.getStudentGender=getStudentGender;window.setStudentGender=setStudentGende
 const __setHeader=setHeader;
 setHeader=function(opts){__setHeader(opts);$('#themeToggle')?.classList.add('is-hidden');};
 
-/* Sheet locking + drag-to-dismiss from the handle. */
-const __openModal=openModal,__closeModal=closeModal;
-let sheetCleanup=null;
-function installSheetGesture(){
-  sheetCleanup?.();sheetCleanup=null;
-  const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!modal||!handle||modal.classList.contains('fullscreen'))return;
-  let active=false,startY=0,lastY=0,lastT=0,dy=0;
-  const down=e=>{active=true;startY=e.clientY;lastY=e.clientY;lastT=performance.now();dy=0;modal.classList.add('is-dragging');try{handle.setPointerCapture?.(e.pointerId);}catch(_){}};
-  const move=e=>{if(!active)return;dy=Math.max(0,e.clientY-startY);modal.style.transform=`translateY(${dy}px)`;lastY=e.clientY;lastT=performance.now();};
-  const up=e=>{if(!active)return;active=false;modal.classList.remove('is-dragging');const shouldClose=dy>Math.min(150,modal.offsetHeight*.24);if(shouldClose){modal.style.transform=`translateY(${modal.offsetHeight}px)`;setTimeout(()=>closeModal(),170);}else{modal.style.transform='translateY(0)';setTimeout(()=>{if(modal.isConnected)modal.style.transform='';},230);}};
-  handle.addEventListener('pointerdown',down);handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
-  sheetCleanup=()=>{handle.removeEventListener('pointerdown',down);handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);};
-}
-openModal=function(html,opts={}){__openModal(html,opts);document.body.classList.add('modal-open');requestAnimationFrame(installSheetGesture);};
-closeModal=function(){sheetCleanup?.();sheetCleanup=null;document.body.classList.remove('modal-open');__closeModal();};
+/* Child sheets, focus and gestures are managed centrally by app.js. */
 
 /* Workout mode owns the bottom area. */
 const __render=render;
-render=function(){__render();const on=state.route==='workout'&&!!live?.startedAt;document.body.classList.toggle('workout-route',on);};
+render=function(){const on=state.route==='workout'&&!!live?.startedAt;document.body.classList.toggle('workout-route',on);__render();syncFloatingUI();};
 
 /* Numeric-only set nomenclature. */
 compactLastSetsHtml=function(ex){const rows=(ex.sets||[]).map(s=>s.previous).filter(Boolean).slice(0,4);if(!rows.length)return '';return `<div class="live-last-strip"><small>Último</small>${rows.map((s,i)=>`<span class="live-last-chip"><b>${i+1}</b> ${parseDecimal(s.weight)} × ${parseInteger(s.reps)}</span>`).join('')}</div>`;};
@@ -1188,25 +1170,7 @@ openExerciseHistory=function(...args){
   requestAnimationFrame(()=>{$$('.execution-sets span',$('#modal')).forEach(span=>{const text=span.textContent.replace(/\s+/g,' ').trim();const m=text.match(/^(?:S)?(\d+)\s*([0-9.,]+)\s*kg\s*[×x]\s*(\d+)/i);if(!m)return;span.innerHTML=`<b>${m[1]}</b>${m[3]} reps · ${m[2]} kg`;});});
 };
 
-/* 4) Sheets: alça realmente arrastável + botão de fechar. */
-installSheetGesture=function(){
-  sheetCleanup?.();sheetCleanup=null;
-  const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!modal||!handle||modal.classList.contains('fullscreen'))return;
-  let active=false,startY=0,dy=0,startT=0,lastY=0,lastT=0,pid=null;
-  const cleanupWindow=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);};
-  const down=e=>{if(e.button!=null&&e.button!==0)return;active=true;pid=e.pointerId;startY=lastY=e.clientY;startT=lastT=performance.now();dy=0;modal.classList.add('is-dragging');try{handle.setPointerCapture?.(pid);}catch(_){}window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);e.preventDefault();};
-  function move(e){if(!active)return;dy=Math.max(0,e.clientY-startY);lastY=e.clientY;lastT=performance.now();modal.style.transform=`translate3d(0,${dy}px,0)`;if(e.cancelable)e.preventDefault();}
-  function up(e){if(!active)return;active=false;cleanupWindow();modal.classList.remove('is-dragging');const elapsed=Math.max(1,performance.now()-startT),velocity=dy/elapsed,threshold=Math.min(105,modal.offsetHeight*.18),shouldClose=dy>threshold||velocity>.72;if(shouldClose){modal.style.transform=`translate3d(0,${modal.offsetHeight}px,0)`;setTimeout(()=>closeModal(),175);}else{modal.style.transform='translate3d(0,0,0)';setTimeout(()=>{if(modal.isConnected)modal.style.transform='';},230);}}
-  handle.addEventListener('pointerdown',down,{passive:false});
-  sheetCleanup=()=>{cleanupWindow();handle.removeEventListener('pointerdown',down);};
-};
-const __openModalPolish=openModal;
-openModal=function(html,opts={}){
-  __openModalPolish(html,opts);
-  const modal=$('#modal');
-  if(modal&&!modal.classList.contains('fullscreen')&&!modal.querySelector('.sheet-close-btn')){const btn=document.createElement('button');btn.className='sheet-close-btn';btn.type='button';btn.setAttribute('aria-label','Fechar');btn.textContent='×';btn.onclick=closeModal;modal.appendChild(btn);}
-  requestAnimationFrame(installSheetGesture);
-};
+/* Sheets have one centered handle; no duplicate close button. */
 
 /* 5) Anatomia: regiões destacadas seguem contornos mais orgânicos e o modelo externo perde o efeito de mosaico. */
 function smoothOverlayPath(stats,name,d,boost=1){const h=muscleHeat(stats,name);if(!h)return '';const o=Math.min(.84,(.42+h*.34)*boost);return `<path d="${d}" fill="#078EDD" fill-opacity="${o.toFixed(3)}" stroke="none"/>`;}
@@ -1490,17 +1454,6 @@ html[data-theme] .set-row.is-done .set-input:focus{border-bottom-color:var(--rp-
 .effort-option>b{display:grid;place-items:center;flex:0 0 38px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue-2);font-size:17px}
 .effort-option>span{flex:1}.effort-option strong{display:block;font-size:12px;line-height:1.35}.effort-option small{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.35}.effort-option>svg{width:18px;height:18px;color:var(--blue-2)}
 .effort-option.is-selected{border-color:var(--blue-2)}.effort-clear{width:100%;margin-top:12px}
-.rest-timer{z-index:90!important;bottom:calc(86px + var(--safe-bottom))!important;animation:rest-enter .2s ease-out}
-.rest-sheet-head{display:none}.rest-resume{display:grid;place-items:center;background:var(--surface-2);color:var(--text);width:34px;height:34px;border-radius:11px;font-size:20px}
-body:not(.rest-expanded) .rest-timer{padding:10px 14px!important;gap:10px!important}
-body:not(.rest-expanded) .rest-timer-main{display:flex;align-items:center;gap:8px;flex:1}body:not(.rest-expanded) .rest-timer-main small{font-size:10px}body:not(.rest-expanded) .rest-timer-main strong{font-size:19px!important}
-body:not(.rest-expanded) .rest-timer-actions #restMinus,body:not(.rest-expanded) .rest-timer-actions #restPlus{display:none}
-body.rest-expanded .rest-timer.on-workout{left:50%!important;bottom:0!important;width:min(640px,100%)!important;max-width:640px!important;border-radius:26px 26px 0 0!important;padding:14px 18px calc(22px + var(--safe-bottom))!important;display:flex;flex-direction:column;gap:16px;background:var(--bg-elev)!important}
-body.rest-expanded .rest-sheet-head{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--muted);font-size:12px}
-.rest-sheet-head button{background:var(--surface-2);color:var(--text);border-radius:10px;padding:8px 10px;font-size:11px}
-body.rest-expanded .rest-timer-main{text-align:center}body.rest-expanded .rest-timer-main small{display:none}body.rest-expanded #restTimerValue{font-size:56px!important;line-height:1.2;font-variant-numeric:tabular-nums}
-body.rest-expanded .rest-timer-actions{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:10px}body.rest-expanded .rest-timer-actions button{height:45px!important;font-size:14px!important}
-body.rest-expanded .rest-resume{display:none}
 .summary-delete svg{width:18px;height:18px;flex:0 0 18px}
 .summary-delete{width:100%;margin-top:12px;flex-shrink:0}
 @keyframes rest-enter{from{opacity:0;translate:0 15px}to{opacity:1;translate:0 0}}
@@ -1508,86 +1461,131 @@ body.rest-expanded .rest-resume{display:none}
 
 </style>
 <script id="session-ux-js">
-/* Session UX: one shared modal system for effort and adjustment controls. */
-(function(){
-  const repeatIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const clockIcon=icons.clock||'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-  let restCollapsed=false,lastRoute=state.route,modalFocus=null;
-  const rest=$('#restTimer'),shade=document.createElement('div');shade.id='restShade';shade.className='rest-shade is-hidden';document.body.appendChild(shade);
-  rest.insertAdjacentHTML('afterbegin','<div class="rest-sheet-head"><button type="button" id="restCollapse" aria-label="Recolher descanso">⌄</button><span>Descanso</span><button type="button" id="restMinimize">Minimizar treino</button></div>');
-  rest.insertAdjacentHTML('beforeend','<button type="button" id="restResume" class="rest-resume" aria-label="Abrir descanso">⌃</button>');
-  function syncFocus(){
-    const modalOpen=!$('#modalLayer').classList.contains('is-hidden');
-    const running=!!live?.restEndAt&&!rest.classList.contains('is-hidden');
-    const expanded=running&&state.route==='workout'&&!restCollapsed;
-    document.body.classList.toggle('modal-focused',modalOpen);
-    document.body.classList.toggle('rest-expanded',expanded);
-    document.body.classList.toggle('rest-running',running);
-    shade.classList.add('is-hidden');
-    const nav=$('#bottomNav');const navHeight=nav&&getComputedStyle(nav).display!=='none'?nav.getBoundingClientRect().height:0;document.documentElement.style.setProperty('--visible-nav-height',`${navHeight}px`);
-    document.querySelector('.app-shell').inert=modalOpen;
-    $('#activeWorkoutPill').inert=modalOpen;
-    rest.inert=modalOpen;
-    if(!modalOpen&&!expanded)syncActiveWorkoutPill();
-    if(running)$('#activeWorkoutPill').classList.add('is-hidden');
+/* Session controls share the modal/return controller in app.js. */
+(function () {
+  'use strict';
+
+  function effortDefinition(value) {
+    if (value >= 10) return 'Máximo · nenhuma repetição a mais';
+    if (value >= 9.5) return 'Talvez mais 1 repetição';
+    if (value >= 9) return 'Mais 1 repetição';
+    if (value >= 8.5) return 'Mais 1–2 repetições';
+    if (value >= 8) return 'Mais 2 repetições';
+    if (value >= 7) return 'Mais 3 repetições';
+    return 'Aquecimento · carga leve';
   }
-  $('#restCollapse').onclick=e=>{e.stopPropagation();restCollapsed=true;syncFocus();};
-  $('#restMinimize').onclick=e=>{e.stopPropagation();navigate('home');};
-  $('#restResume').onclick=e=>{e.stopPropagation();if(state.route!=='workout')navigate('workout');restCollapsed=false;syncFocus();};
-  shade.onclick=()=>{restCollapsed=true;syncFocus();};
-  rest.onclick=e=>{if(e.target.closest('button'))return;if(state.route!=='workout')navigate('workout');restCollapsed=false;syncFocus();};
-  const baseOpen=openModal,baseClose=closeModal,baseSync=syncRestTimer,baseStart=startRest,baseStop=stopRest;
-  openModal=function(html,options){modalFocus=document.activeElement;$('#rpeDock')?.classList.add('is-hidden');activeRpePath=null;baseOpen(html,options);syncFocus();requestAnimationFrame(()=>$('#modal').querySelector('button,input,select,[tabindex]')?.focus({preventScroll:true}));};
-  closeModal=function(){baseClose();syncFocus();if(modalFocus?.isConnected&&!modalFocus.closest('[inert]'))modalFocus.focus({preventScroll:true});};
-  syncRestTimer=function(){if(lastRoute!==state.route){restCollapsed=false;lastRoute=state.route;}baseSync();syncFocus();};
-  startRest=function(seconds){restCollapsed=false;baseStart(seconds);syncFocus();};
-  stopRest=function(){baseStop();restCollapsed=false;syncFocus();};
-  new MutationObserver(syncFocus).observe(rest,{attributes:true,attributeFilter:['class']});
-  document.addEventListener('keydown',e=>{
-    if($('#modalLayer').classList.contains('is-hidden'))return;
-    if(e.key==='Escape'){e.preventDefault();closeModal();return;}
-    if(e.key!=='Tab')return;const items=[...$('#modal').querySelectorAll('button:not(:disabled),input,select,textarea,[tabindex="0"]')].filter(el=>el.getClientRects().length);if(!items.length)return;
-    if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}
-  });
-  function effortDefinition(n){
-    if(n>=10)return 'Esforço máximo; nenhuma repetição em reserva.';
-    if(n>=9.5)return 'Talvez conseguisse mais 1 repetição.';
-    if(n>=9)return 'Mais 1 repetição com certeza.';
-    if(n>=8.5)return 'Mais 1 a 2 repetições.';
-    if(n>=8)return 'Mais 2 repetições com certeza.';
-    if(n>=7)return 'Mais 3 repetições.';
-    return 'Aquecimento / Carga leve.';
-  }
-  openRpePicker=function(path){
-    const set=liveSetAt(path);if(!set)return;const value=set.rpe===''||set.rpe==null?8:Number(set.rpe);
-    openModal(`<div class="effort-slider-content"><p id="effortLabel" aria-live="polite"></p><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${value}" aria-label="RPE"><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div></div>`);
-    const modal=$('#modal');modal.classList.add('effort-slider-sheet');modal.querySelector('.sheet-close-btn')?.remove();
-    const slider=$('#effortSlider'),label=$('#effortLabel');
-    const updateLabel=()=>{label.textContent=`RPE ${rpeLabel(slider.value)} - ${effortDefinition(Number(slider.value))}`;slider.setAttribute('aria-valuetext',label.textContent);};updateLabel();
-    const commit=()=>{
-      updateLabel();
-      if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}
-      set.rpe=Number(slider.value);persistDraft();const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}
+
+  openRpePicker = function (path) {
+    const set = liveSetAt(path);
+    if (!set) return;
+    const value = set.rpe === '' || set.rpe == null ? 8 : Number(set.rpe);
+    openModal(`<div class="effort-slider-content">
+      <div class="effort-readout">
+        <output id="effortValue" class="effort-value" for="effortSlider" aria-live="off"></output>
+        <p id="effortLabel"></p>
+      </div>
+      <input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${clamp(value, 5, 10)}" aria-label="Percepção de esforço" aria-describedby="effortLabel">
+      <div class="effort-scale" aria-hidden="true"><span>5 · Leve</span><span>10 · Máximo</span></div>
+    </div>`, { preserveParent: true });
+    const modal = $('#modal');
+    modal.classList.add('effort-slider-sheet');
+    modal.setAttribute('aria-label', 'Percepção de esforço');
+    const slider = $('#effortSlider'), number = $('#effortValue'), label = $('#effortLabel');
+    const updateReadout = () => {
+      const n = Number(slider.value), description = effortDefinition(n);
+      number.textContent = rpeLabel(n);
+      label.textContent = description;
+      slider.setAttribute('aria-valuetext', `${rpeLabel(n)} · ${description}`);
+      slider.style.setProperty('--effort-progress', `${(n - 5) / 5 * 100}%`);
     };
-    slider.oninput=commit;slider.onchange=commit;
+    updateReadout();
+    const commit = () => {
+      updateReadout();
+      // Preserve the existing behavior: selecting effort completes a valid set.
+      if (!set.done) {
+        $(`[data-set-check="${path}"]`)?.click();
+        if (!set.done) return;
+      }
+      const next = Number(slider.value);
+      if (set.rpe !== next) { set.rpe = next; persistDraft(); }
+      const trigger = $(`[data-set-rpe-trigger="${path}"]`);
+      if (trigger) { trigger.textContent = rpeLabel(next); trigger.classList.add('has-value'); }
+    };
+    slider.oninput = commit;
+    slider.onchange = commit;
   };
-  // Effort selection stays open until its centered handle is dragged down.
-  $('#modalBackdrop').addEventListener('click',e=>{if($('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalLayer').classList.contains('is-hidden')&&$('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
-  const settings=openLiveExerciseSettings;
-  openLiveExerciseSettings=function(path){settings(path);const reps=$('[data-live-ex-action="reps"]'),restButton=$('[data-live-ex-action="rest"]');reps?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${repeatIcon}</span>`);restButton?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${clockIcon}</span>`);if(restButton)restButton.onclick=()=>editRest(path);};
-  function editRest(path){const ex=liveExerciseAt(path);if(!ex)return;openRestPicker(ex.restSec,seconds=>{ex.restSec=seconds;persistDraft();render();},()=>openLiveExerciseSettings(path),'Descanso do exercício');}
-  const bind=bindLiveHandlers;
-  liveExerciseHtml=function(participant,pi,ex,ei){return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><div class="live-title-block"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong></div><span class="history-mini">${icons.history}</span></button><button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button></div><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${compactLastSetsHtml(ex)}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;};
-  bindLiveHandlers=function(){bind();$$('[data-exercise-rest]').forEach(btn=>btn.onclick=()=>editRest(btn.dataset.exerciseRest));};
-  const renderLive=renderActiveWorkout;
-  renderActiveWorkout=function(main){renderLive(main);$('.live-finish',main)?.remove();const action=$('#topActionBtn');if(action){action.innerHTML=icons.trash;action.setAttribute('aria-label','Descartar treino');action.title='Descartar treino';action.onclick=discardLiveWorkout;}syncFocus();};
-  const save=saveFinishedWorkout;
-  saveFinishedWorkout=function(){if(!live)return;const before=new Set(db.sessions.map(s=>s.id));save();const session=db.sessions.find(s=>!before.has(s.id));if(session)window.openSessionSummary(session.id);};
+
+  function editRest(path) {
+    const ex = liveExerciseAt(path);
+    if (!ex) return;
+    openRestPicker(ex.restSec, seconds => {
+      ex.restSec = seconds;
+      persistDraft();
+      // Update in place: neither the exercise nor its parent menu loses scroll.
+      const label = $(`[data-exercise-rest="${path}"] span`);
+      if (label) label.textContent = `Descanso · ${fmtClock(seconds)}`;
+      const menuValue = $('[data-live-ex-action="rest"] .row-main small', $('#modal'));
+      if (menuValue) menuValue.textContent = fmtRest(seconds);
+    }, null, 'Descanso do exercício');
+  }
+
+  const settings = openLiveExerciseSettings;
+  openLiveExerciseSettings = function (path) {
+    settings(path);
+    const restButton = $('[data-live-ex-action="rest"]', $('#modal'));
+    if (restButton) restButton.onclick = () => editRest(path);
+  };
+
+  liveExerciseHtml = function (participant, pi, ex, ei) {
+    const path = `${pi}:${ei}`;
+    return `<div class="live-exercise-card" data-live-exercise="${path}">
+      <div class="live-exercise-head">
+        <div class="live-title-block">
+          <div class="row-main"><strong>${esc(ex.name)}</strong></div>
+          <button class="exercise-rest" type="button" data-exercise-rest="${path}" aria-label="Editar descanso de ${esc(ex.name)}">${icons.clock}<span>Descanso · ${fmtClock(ex.restSec || 0)}</span></button>
+        </div>
+        <div class="live-exercise-actions">
+          <button class="live-action-button live-history-button" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}" aria-label="Histórico de ${esc(ex.name)}" title="Histórico do exercício">${icons.history}</button>
+          <button class="live-action-button live-more" type="button" data-live-more="${path}" aria-label="Ações de ${esc(ex.name)}" title="Ações do exercício">${icons.moreHorizontal}</button>
+        </div>
+      </div>
+      ${compactLastSetsHtml(ex)}
+      <input class="live-note" data-live-note="${path}" value="${esc(ex.note || '')}" aria-label="Observação do exercício">
+      <div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>
+      ${ex.sets.map((set, si) => liveSetHtml(pi, ei, set, si, ex)).join('')}
+    </div>`;
+  };
+
+  const bind = bindLiveHandlers;
+  bindLiveHandlers = function () {
+    bind();
+    $$('[data-exercise-rest]').forEach(btn => btn.onclick = () => editRest(btn.dataset.exerciseRest));
+  };
+  const renderLive = renderActiveWorkout;
+  renderActiveWorkout = function (main) {
+    renderLive(main);
+    $('.live-finish', main)?.remove();
+    const action = $('#topActionBtn');
+    if (action) {
+      action.innerHTML = icons.trash;
+      action.setAttribute('aria-label', 'Descartar treino');
+      action.title = 'Descartar treino';
+      action.onclick = discardLiveWorkout;
+    }
+    syncFloatingUI();
+  };
+  const save = saveFinishedWorkout;
+  saveFinishedWorkout = function () {
+    if (!live) return;
+    const before = new Set(db.sessions.map(s => s.id));
+    save();
+    const session = db.sessions.find(s => !before.has(s.id));
+    if (session) window.openSessionSummary(session.id);
+  };
   render();
 })();
-
 </script>
+
 
 <style id="compact-ui-revision">
 .home-start-wrap{margin-top:20px!important}
@@ -1597,11 +1595,6 @@ body.rest-expanded .rest-resume{display:none}
 html[data-theme] .set-row.is-done .set-index{background:var(--surface-2)!important;color:var(--muted)!important}
 html[data-theme="light"] .set-row.is-done .set-index{background:#F0F4F7!important}
 html[data-theme] .set-row.is-done .rpe-trigger{background:var(--green-soft)!important;color:var(--green)!important;border-color:var(--green)!important}
-body.rest-expanded .rest-timer.on-workout{bottom:var(--visible-nav-height,0px)!important}
-body.rest-expanded .screen{padding-bottom:250px!important}
-body.rest-expanded .rest-sheet-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;text-align:center;gap:8px}
-.rest-sheet-head button{display:grid;place-items:center;height:34px;line-height:1;margin:0}.rest-sheet-head button:first-child{justify-self:start;width:34px}.rest-sheet-head button:last-child{justify-self:end;width:100%;max-width:130px;font-size:10px;line-height:1.2;white-space:normal}.rest-sheet-head>span{display:grid;place-items:center;min-height:34px}
-.rest-shade{display:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .exercise-menu .action-icon{display:grid!important;place-items:center!important;padding:0!important;flex-shrink:0}.exercise-menu .action-icon svg{display:block;width:18px;height:18px}
 .builder-controls,.builder-default-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr)!important;gap:7px!important;align-items:end}
 .builder-default-grid>div:last-child{grid-column:auto!important}.builder-controls>div{min-width:0}.builder-reps-field{margin:0!important}
@@ -1617,6 +1610,133 @@ body.rest-expanded .rest-sheet-head{display:grid;grid-template-columns:minmax(0,
 #effortSlider::-moz-range-track{height:6px;border-radius:99px;background:var(--line-strong)}
 #effortSlider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--blue-2);border:3px solid var(--bg-elev)}
 #effortSlider:focus-visible{outline:2px solid var(--blue-2);outline-offset:4px;border-radius:12px}.effort-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+</style>
+
+<style id="usability-20260928">
+/* Shared metrics for the compact floating controls and prescription fields. */
+:root{--safe-bottom:env(safe-area-inset-bottom,0px);--prescription-radius:10px;--visible-nav-height:0px}
+body{--floating-bottom:calc(8px + var(--safe-bottom))}
+body.has-bottom-nav{--floating-bottom:calc(8px + var(--visible-nav-height))}
+.modal-layer.is-hidden{display:none!important}
+
+/* One resting state: same dimensions inside the session and across the app. */
+body #restTimer.rest-timer{
+  position:fixed!important;left:50%!important;right:auto!important;bottom:var(--floating-bottom)!important;
+  transform:translateX(-50%)!important;translate:none!important;z-index:90!important;
+  box-sizing:border-box!important;width:min(312px,calc(100vw - 24px))!important;max-width:312px!important;
+  height:auto!important;min-height:0!important;margin:0!important;padding:10px 12px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;
+  border:0!important;outline:0!important;border-radius:16px!important;background:var(--panel-bg)!important;
+  color:var(--panel-text)!important;box-shadow:0 6px 24px rgba(0,0,0,.18)!important;
+  animation:none!important;transition:bottom .16s ease!important
+}
+body #restTimer.rest-timer.is-hidden{display:none!important}
+body #restTimer .rest-timer-main{
+  display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;
+  width:100%!important;height:32px!important;min-height:0!important;gap:0!important;margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;border-radius:8px!important;text-align:center!important;color:inherit!important
+}
+body #restTimer #restTimerValue{display:block!important;font-size:26px!important;line-height:32px!important;font-weight:850!important;font-variant-numeric:tabular-nums;letter-spacing:.3px;margin:0!important;color:var(--panel-text)!important}
+body #restTimer .rest-timer-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;width:100%!important;margin:0!important}
+body #restTimer .rest-timer-actions button{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;width:100%!important;min-width:0!important;height:40px!important;
+  padding:0!important;margin:0!important;border:0!important;border-radius:10px!important;
+  background:var(--panel-surface-2)!important;color:var(--panel-text)!important;
+  font-size:12px!important;font-weight:750!important;line-height:1!important;text-align:center!important;white-space:nowrap
+}
+body #restTimer .rest-timer-actions .rest-skip{background:var(--rp-navy)!important;color:#fff!important}
+body.modal-open #restTimer,body.modal-open #activeWorkoutPill{visibility:hidden!important;pointer-events:none!important}
+body #activeWorkoutPill{bottom:var(--floating-bottom)!important}
+body.rest-running #activeWorkoutPill{display:none!important}
+body.workout-route .app-shell{padding-bottom:0!important}
+body.workout-route .screen{padding-bottom:calc(24px + var(--safe-bottom))!important}
+body.rest-running #main .screen{padding-bottom:calc(124px + var(--visible-nav-height) + var(--safe-bottom))!important}
+
+/* A generous grab target with only a small centered bar visible. */
+#modal>.modal-handle{
+  position:relative!important;display:block!important;box-sizing:border-box!important;
+  width:64px!important;height:32px!important;min-height:32px!important;flex:0 0 32px!important;
+  margin:-2px auto 10px!important;padding:0!important;border:0!important;border-radius:10px!important;
+  background:transparent!important;touch-action:none!important;cursor:grab!important
+}
+#modal>.modal-handle::before{content:none!important}
+#modal>.modal-handle::after{content:"";position:absolute;width:44px;height:5px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:8px;background:var(--panel-line-strong)}
+#modal>.modal-handle:active{cursor:grabbing!important}
+#modal:not(.fullscreen)>h2:first-of-type{padding-right:0!important}
+#modal.is-dragging{transition:none!important}
+
+/* Effort: number only in the box; its concise definition is always one line. */
+#modal.effort-slider-sheet{box-sizing:border-box!important;width:min(460px,100%)!important;min-height:0!important;height:auto!important;padding:12px 20px calc(18px + var(--safe-bottom))!important}
+#modal .effort-readout{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;margin:0 0 5px;text-align:center;min-width:0}
+#modal .effort-value{display:grid;place-items:center;box-sizing:border-box;width:52px;height:44px;margin:0;padding:0;border-radius:10px;background:var(--panel-surface-2);color:var(--panel-text);font-size:25px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+#modal .effort-slider-content #effortLabel{display:block;width:100%;font-size:clamp(11px,3vw,13px)!important;line-height:19px!important;min-height:19px!important;height:19px!important;margin:0!important;text-align:center!important;white-space:nowrap!important;color:var(--panel-muted)!important;letter-spacing:0!important}
+#modal #effortSlider{display:block!important;height:44px!important;touch-action:pan-x}
+#modal #effortSlider::-webkit-slider-runnable-track{background:linear-gradient(to right,var(--blue-2) var(--effort-progress,60%),var(--panel-line-strong) var(--effort-progress,60%))!important}
+#modal #effortSlider::-moz-range-progress{height:6px;border-radius:99px;background:var(--blue-2)}
+#modal .effort-scale{font-size:10px;line-height:14px;margin-top:-2px}
+
+/* The student sees the complete summary card, not an exercise list. */
+#programList .workout-entry{box-sizing:border-box;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 12px}
+html[data-theme] #programList .workout-view-card{display:block!important;box-sizing:border-box!important;width:100%!important;margin:0!important;padding:0!important;border:0!important;border-radius:8px!important;background:transparent!important;box-shadow:none!important;text-align:left!important;color:var(--text)!important}
+.workout-card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.workout-card-heading>strong{font-size:17px;line-height:1.25;font-weight:850;overflow-wrap:anywhere}
+.workout-card-heading>.chev{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px}
+.workout-card-heading .chev svg{width:18px;height:18px}
+.workout-card-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin-top:13px}
+.workout-card-stats>span{min-width:0;display:block}
+.workout-card-stats small{display:block;color:var(--muted);font-size:10px;line-height:1.4;font-weight:650}
+.workout-card-stats strong{display:block;color:var(--text);font-size:13px;line-height:1.35;font-weight:800;margin-top:3px}
+#programList .workout-entry .workout-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0!important;margin:14px 0 0!important;border:0!important}
+#programList .workout-entry .workout-actions .btn{box-sizing:border-box;width:100%;min-width:0;min-height:40px;margin:0;padding:9px 8px}
+
+/* Consistent grid, corner radius, centering, and symmetric minus/plus controls. */
+#modal .builder-body .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#modal .builder-body .form-grid>.form-row{min-width:0!important}
+#modal .builder-body input[type="date"]{min-width:0!important;width:100%!important;max-width:100%!important}
+#modal .builder-controls,#modal .builder-default-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;align-items:end!important}
+#modal .builder-controls>div,#modal .builder-default-grid>div{min-width:0!important;grid-column:auto!important}
+#modal .builder-reps-field{grid-column:auto!important;margin:0!important}
+#modal .builder-controls .control-label,#modal .builder-default-grid .control-label{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;width:100%!important;height:26px!important;min-height:26px!important;margin:0 0 5px!important;font-size:9px!important;font-weight:700!important;line-height:1.15!important;white-space:normal!important}
+#modal .builder-controls .form-input,#modal .builder-default-grid .form-input,
+#modal .builder-controls .select-pill,#modal .builder-default-grid .select-pill,
+#modal .builder-controls .stepper,#modal .builder-default-grid .stepper{
+  box-sizing:border-box!important;width:100%!important;min-width:0!important;height:40px!important;min-height:40px!important;
+  margin:0!important;padding:0!important;border:1px solid var(--panel-line-strong)!important;border-radius:var(--prescription-radius)!important;
+  background:var(--panel-surface-2)!important;color:var(--panel-text)!important;font-size:12px!important;text-align:center!important
+}
+#modal .builder-controls .form-input,#modal .builder-default-grid .form-input{padding:0 3px!important;appearance:none;-webkit-appearance:none}
+#modal .builder-controls .select-pill,#modal .builder-default-grid .select-pill{display:grid!important;grid-template-columns:minmax(0,1fr)!important;place-items:center!important;gap:0!important}
+#modal .builder-controls .select-pill strong,#modal .builder-default-grid .select-pill strong{width:100%;text-align:center;line-height:1;letter-spacing:0;font-variant-numeric:tabular-nums}
+#modal .builder-controls .stepper,#modal .builder-default-grid .stepper{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center!important;gap:0!important;overflow:hidden}
+#modal .builder-controls .stepper button,#modal .builder-default-grid .stepper button{display:grid!important;place-items:center!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;line-height:1!important}
+#modal .stepper button svg{display:block;width:16px;height:16px}
+#modal .stepper>span{display:grid!important;place-items:center!important;min-width:0!important;margin:0!important;padding:0!important;text-align:center!important;font-weight:850;font-variant-numeric:tabular-nums;line-height:1}
+#modal .rest-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#modal .rest-choice{display:grid;place-items:center;min-height:48px;padding:8px;border:1px solid var(--panel-line-strong);border-radius:10px;background:var(--panel-surface-2);color:var(--panel-text);text-align:center;font-variant-numeric:tabular-nums}
+#modal .rest-choice.is-selected{border-color:var(--rp-accent);background:var(--rp-accent-soft)}
+
+/* Separate, equal-sized history and overflow actions on the same centerline. */
+#main .live-exercise-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important}
+#main .live-title-block{min-width:0}
+#main .live-title-block>.row-main strong{display:block;white-space:normal;overflow-wrap:anywhere}
+#main .live-title-block .exercise-rest{text-align:left;line-height:1.3;min-height:28px;padding:5px 0 0;font-size:10.5px}
+#main .live-title-block .exercise-rest span{min-width:0}
+#main .live-exercise-actions{display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0}
+html[data-theme] #main .live-exercise-actions .live-action-button{
+  display:grid!important;place-items:center!important;box-sizing:border-box!important;
+  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;flex:0 0 44px!important;
+  margin:0!important;padding:0!important;border:1px solid var(--line)!important;border-radius:11px!important;
+  background:var(--surface-2)!important;color:var(--blue-2)!important;line-height:1!important
+}
+#main .live-exercise-actions .live-action-button svg{display:block!important;width:20px!important;height:20px!important}
+#modal .exercise-menu .action-icon{display:grid!important;place-items:center!important;width:28px!important;height:28px!important;min-width:28px!important;flex:0 0 28px!important;padding:0!important;border-radius:8px!important}
+#modal .exercise-menu .action-icon svg{display:block!important;width:20px!important;height:20px!important}
+#modal .exercise-menu-row .action-item{display:flex;align-items:center;gap:8px;min-width:0}
+#modal .exercise-menu-row .row-main{min-width:0}
+#modal .exercise-menu-row .row-main strong{font-size:11px;overflow-wrap:anywhere}
+#modal .modal-handle:focus-visible,#main .live-action-button:focus-visible,#restTimer button:focus-visible,#programList button:focus-visible{outline:2px solid var(--rp-accent)!important;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){body #restTimer.rest-timer,#modal{transition:none!important}}
 </style>
 
 </body>
