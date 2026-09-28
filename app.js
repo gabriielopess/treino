@@ -1445,11 +1445,11 @@ function replaceLiveExercise(path,newExerciseId){
   } else apply();
 }
 
-function openLiveExerciseAdjustments(path){
+function openLiveExerciseAdjustments(path,field="both"){
   const ex=liveExerciseAt(path);if(!ex)return;
   openModal(`<h2>Ajustar exercício</h2><p class="modal-sub">${esc(ex.name)} · altere a prescrição desta sessão.</p>
-    <div class="form-row"><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}"></div>
-    <div class="form-row"><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div>
+    <div class="form-row" ${field==='rest'?'hidden':''}><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}"></div>
+    <div class="form-row" ${field==='reps'?'hidden':''}><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div>
     <div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar ajustes</button></div>`);
   $('#liveEditCancel').onclick=()=>{closeModal();setTimeout(()=>openLiveExerciseSettings(path),60);};
   $('#liveEditSave').onclick=()=>{
@@ -1465,11 +1465,16 @@ function openLiveExerciseAdjustments(path){
 
 function openLiveExerciseSettings(path){
   const ex=liveExerciseAt(path);if(!ex)return;
-  openModal(`<h2>${esc(ex.name)}</h2><div class="action-list">
-    <button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Trocar exercício</strong><small>Substituir este exercício por outro da biblioteca</small></div>${chev()}</button>
-    <button class="action-item" type="button" data-live-ex-action="adjust"><span class="action-icon">${icons.sliders}</span><div class="row-main"><strong>Repetições e descanso</strong><small>${esc(ex.targetReps||'—')} reps · ${fmtRest(ex.restSec)} de descanso</small></div>${chev()}</button>
-    <button class="action-item" type="button" data-live-ex-action="add-set"><span class="action-icon">${icons.plus}</span><div class="row-main"><strong>Adicionar série</strong><small>Passar de ${ex.sets.length} para ${ex.sets.length+1} séries nesta sessão</small></div></button>
-    <button class="action-item" type="button" data-live-ex-action="remove-set"><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong><small>${ex.sets.length>1?`Remover a última das ${ex.sets.length} séries`:'O exercício precisa manter pelo menos 1 série'}</small></div></button>
+  openModal(`<h2 class="exercise-menu-title">${esc(ex.name)}</h2><div class="action-list exercise-menu">
+    <button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="row-main"><strong>Trocar exercício</strong><small>Substituir por outro da biblioteca</small></div>${chev()}</button>
+    <div class="exercise-menu-row">
+      <button class="action-item" type="button" data-live-ex-action="reps"><div class="row-main"><strong>Repetições</strong><small>${esc(ex.targetReps||'—')} reps</small></div></button>
+      <button class="action-item" type="button" data-live-ex-action="rest"><div class="row-main"><strong>Descanso</strong><small>${fmtRest(ex.restSec)}</small></div></button>
+    </div>
+    <div class="exercise-menu-row">
+      <button class="action-item" type="button" data-live-ex-action="remove-set" ${ex.sets.length<=1?'disabled':''}><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong></div></button>
+      <button class="action-item" type="button" data-live-ex-action="add-set"><span class="action-icon">${icons.plus}</span><div class="row-main"><strong>Adicionar série</strong></div></button>
+    </div>
   </div>`);
   $$('[data-live-ex-action]',$('#modal')).forEach(btn=>btn.onclick=()=>{
     const action=btn.dataset.liveExAction;
@@ -1477,8 +1482,8 @@ function openLiveExerciseSettings(path){
       closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),60);
       return;
     }
-    if(action==='adjust'){
-      closeModal();setTimeout(()=>openLiveExerciseAdjustments(path),60);
+    if(action==='reps'||action==='rest'){
+      closeModal();setTimeout(()=>openLiveExerciseAdjustments(path,action),60);
       return;
     }
     if(action==='add-set'){
