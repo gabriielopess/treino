@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Treino">
   <meta name="format-detection" content="telephone=no">
   <title>Treino Pro</title>
-  <meta name="treino-build" content="20260928-refino2">
+  <meta name="treino-build" content="20260928-final3">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
@@ -431,6 +431,7 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
     <header class="topbar">
       <div class="topbar-leading">
         <button id="backBtn" class="icon-btn is-hidden" aria-label="Voltar"></button>
+        <img id="headerBrand" class="header-brand" alt="" aria-hidden="true" width="30" height="28">
         <div class="topbar-title">
           <small id="topEyebrow">TREINO</small>
           <strong id="topTitle">Início</strong>
@@ -444,10 +445,13 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
 
     <main id="main" class="main"></main>
 
-    <button id="activeWorkoutPill" class="active-workout-pill is-hidden" type="button" aria-label="Voltar ao treino em andamento">
+    <button id="activeWorkoutPill" class="active-workout-pill workout-status-bar is-hidden" type="button" aria-label="Voltar ao treino em andamento">
       <span class="pulse-dot"></span>
       <span class="active-workout-copy"><small>Treino em andamento</small><strong id="activeWorkoutLabel">Abrir treino</strong></span>
-      <span id="activeWorkoutClock" class="active-workout-clock">00:00</span>
+      <span class="status-clocks">
+        <span class="status-clock status-workout-clock" role="timer" aria-label="Tempo de treino"><span data-icon="clock" aria-hidden="true"></span><span id="activeWorkoutClock" class="active-workout-clock">00:00</span></span>
+        <span id="activeWorkoutRest" class="status-clock status-rest-clock is-hidden" role="timer" aria-label="Descanso restante" aria-hidden="true"><span data-icon="clock" aria-hidden="true"></span><span id="activeRestClock">00:00</span></span>
+      </span>
     </button>
 
     <nav id="bottomNav" class="bottom-nav" aria-label="Navegação principal">
@@ -465,14 +469,14 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
 
   <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
-  <div id="restTimer" class="rest-timer is-hidden" role="group" aria-label="Controles do intervalo">
-    <button class="rest-timer-main" id="restOpenWorkout" type="button" aria-label="Voltar ao treino em andamento">
-      <strong id="restTimerValue" role="timer" aria-live="off">00:00</strong>
-    </button>
+  <div id="restTimer" class="rest-timer workout-status-bar is-hidden" aria-hidden="true" role="group" aria-label="Descanso do treino">
+    <div class="rest-timer-main status-rest-clock" role="timer" aria-label="Tempo de descanso restante">
+      <span data-icon="clock" aria-hidden="true"></span><strong id="restTimerValue">00:00</strong>
+    </div>
     <div class="rest-timer-actions">
-      <button id="restMinus" type="button" aria-label="Diminuir 15 segundos">−15 s</button>
+      <button id="restMinus" type="button" aria-label="Diminuir descanso em 15 segundos">−15 s</button>
+      <button id="restPlus" type="button" aria-label="Aumentar descanso em 15 segundos">+15 s</button>
       <button id="restSkip" class="rest-skip" type="button">Pular</button>
-      <button id="restPlus" type="button" aria-label="Adicionar 15 segundos">+15 s</button>
     </div>
   </div>
 
@@ -480,7 +484,7 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
   <input id="backupImportInput" class="is-hidden" type="file" accept="application/json,.json">
 
   <!-- Carregado de forma síncrona no fim do body para permitir as sobrescritas abaixo. -->
-  <script src="./app.js?v=20260928-refino2"></script>
+  <script src="./app.js?v=20260928-final3"></script>
   <script>
   'use strict';
 
@@ -1136,7 +1140,8 @@ liveSetHtml=function(pi,ei,set,si,ex){
 
 openProgramView=function(programId){
   const p=programById(programId);if(!p)return;const st=studentById(p.studentId);
-  openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><p class="modal-sub">${esc(st?.name||'')} · ${p.exercises.length} exercícios</p>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=prev?completedSets(prev).map((set,j)=>`<span class="series-chip"><b>${j+1}</b><span>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg</span></span>`).join(''):'<span class="series-chip">Sem registro</span>';return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="series-inline">${setChips}</div></div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
+  openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><p class="modal-sub">${esc(st?.name||'')} · ${p.exercises.length} exercícios</p>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=compactSeriesHtml(prev?completedSets(prev):[],{includeRpe:false});return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}${setChips}</div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
+  $('#modal').classList.add('program-summary-sheet');
   $('#viewClose').onclick=closeModal;$('#viewEdit').onclick=()=>{closeModal();setTimeout(()=>openProgramBuilder(p.studentId,p.id),50);};$('#viewCopy').onclick=()=>openProgramCopy(programId);$('#viewDelete').onclick=()=>{closeModal();setTimeout(()=>confirmDeleteProgram(programId),50);};
 };
 
@@ -1296,26 +1301,59 @@ function performanceExerciseData(ex){
 function performanceExerciseCardHtml(ex){
   const d=performanceExerciseData(ex),max=Math.max(d.maxLoad,1),count=d.sets.length;
   if(!count)return '';
-  const chips=d.sets.map((s,i)=>`<span class="series-chip"><b>${i+1}</b><span>${parseInteger(s.reps)} reps · ${parseDecimal(s.weight)} kg${s.rpe?` · RPE ${rpeLabel(s.rpe)}`:''}</span></span>`).join('');
-  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${count}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong></div></div><div class="performance-series">${chips}</div></div>`;
+  const chips=compactSeriesHtml(d.sets,{className:'performance-series'});
+  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${count}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong></div></div>${chips}</div>`;
 }
 function performanceParticipantCardHtml(session,p){
   const st=studentById(p.studentId),sets=participantSetCount(p),vol=participantVolume(p),rpes=(p.exercises||[]).flatMap(ex=>completedSets(ex).map(s=>Number(s.rpe)).filter(Number.isFinite)),avg=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—',doneExercises=(p.exercises||[]).filter(ex=>completedSets(ex).length);
-  return `<div class="finish-card"><div class="session-summary-head">${avatarHtml(st)}<div class="session-summary-title"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(session.endedAt||session.startedAt)}</small></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avg}</strong></div></div><div class="section-title" style="margin:18px 0 8px"><h2>Exercícios</h2><span>${doneExercises.length}</span></div><div class="performance-exercises">${doneExercises.length?doneExercises.map(performanceExerciseCardHtml).join(''):'<div class="session-summary-empty">Detalhamento indisponível neste registro.</div>'}</div></div>`;
+  return `<div class="finish-card"><div class="session-summary-head">${avatarHtml(st)}<div class="session-summary-title"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(session.endedAt||session.startedAt)}</small></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avg}</strong></div></div><div class="section-title performance-section-title"><h2>Exercícios</h2><span>${doneExercises.length}</span></div><div class="performance-exercises">${doneExercises.length?doneExercises.map(performanceExerciseCardHtml).join(''):'<div class="session-summary-empty">Detalhamento indisponível neste registro.</div>'}</div></div>`;
 }
 
-openFinishWorkout=function(){
-  if(!live)return;
-  const completed=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).length,0),0);if(!completed)return toast('Marque pelo menos uma série como concluída.');
-  const planned=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.length,0),0),pending=Math.max(0,planned-completed),now=Date.now(),session={endedAt:now,startedAt:live.startedAt||now,durationSec:Math.max(0,Math.round((now-(live.startedAt||now))/1000))};
-  openModal(`<div class="finish-celebration"><small>TREINO CONCLUÍDO</small><h2>Parabéns!</h2></div>${live.participants.map((p,i)=>`${performanceParticipantCardHtml(session,p)}<button class="btn btn-secondary finish-share-btn" type="button" data-save-summary="${i}">Salvar imagem</button>`).join('')}${pending?`<div class="finish-pending-note">${pending} série${pending===1?' não realizada será ignorada':'s não realizadas serão ignoradas'} ao salvar.</div>`:''}<div class="modal-actions"><button class="btn btn-secondary" id="finishCancel">Voltar</button><button class="btn btn-primary" id="finishSave">Salvar treino</button></div>`,{fullscreen:true});
-  $('#finishCancel').onclick=closeModal;$('#finishSave').onclick=saveFinishedWorkout;$$('[data-save-summary]',$('#modal')).forEach(btn=>btn.onclick=()=>saveWorkoutSummaryImage(+btn.dataset.saveSummary));
+openFinishWorkout = function () {
+  if (!live) return;
+  const completed = live.participants.reduce((n, p) => n + p.exercises.reduce((m, ex) => m + ex.sets.filter(s => s.done).length, 0), 0);
+  if (!completed) return toast('Marque pelo menos uma série como concluída.');
+  const planned = live.participants.reduce((n, p) => n + p.exercises.reduce((m, ex) => m + ex.sets.length, 0), 0);
+  const pending = Math.max(0, planned - completed), now = Date.now();
+  const session = { endedAt: now, startedAt: live.startedAt || now, durationSec: Math.max(0, Math.round((now - (live.startedAt || now)) / 1000)) };
+  openModal(`<div class="finish-celebration"><small>TREINO CONCLUÍDO</small><h2>Parabéns!</h2></div>
+    <div class="finish-summary-body">${live.participants.map(p => performanceParticipantCardHtml(session, p)).join('')}
+      ${pending ? `<div class="finish-pending-note">${pending} série${pending === 1 ? ' não realizada será ignorada' : 's não realizadas serão ignoradas'} ao salvar.</div>` : ''}
+    </div>
+    <div class="finish-actions">
+      <button class="btn btn-secondary" id="finishCancel" type="button">Voltar</button>
+      <button class="btn btn-secondary" id="finishShare" type="button">Salvar imagem</button>
+      <button class="btn btn-primary" id="finishSave" type="button">Salvar treino</button>
+    </div>`, { fullscreen: true });
+  $('#modal').classList.add('compact-finish-sheet');
+  $('#finishCancel').onclick = closeModal;
+  $('#finishSave').onclick = () => { $('#finishSave').disabled = true; saveFinishedWorkout(); };
+  const shareButton = $('#finishShare');
+  const shareImage = async index => {
+    if (!live || shareButton.disabled) return;
+    shareButton.disabled = true;
+    shareButton.setAttribute('aria-busy', 'true');
+    try { await saveWorkoutSummaryImage(index); }
+    finally { shareButton.disabled = false; shareButton.removeAttribute('aria-busy'); }
+  };
+  shareButton.onclick = () => {
+    if (!live) return;
+    if (live.participants.length === 1) return shareImage(0);
+    // Paired workouts still export each person's image individually.
+    openModal(`<h2>Salvar imagem</h2><p class="modal-sub">Escolha o aluno.</p><div class="choice-list">${live.participants.map((p, i) => `<button class="choice" type="button" data-finish-image-person="${i}">${avatarHtml(studentById(p.studentId))}<span class="row-main"><strong>${esc(studentById(p.studentId)?.name || 'Aluno')}</strong><small>${esc(p.programName || 'Treino')}</small></span>${chev()}</button>`).join('')}</div>`, { preserveParent: true });
+    $$('[data-finish-image-person]', $('#modal')).forEach(button => button.onclick = () => {
+      const index = Number(button.dataset.finishImagePerson);
+      closeModal();
+      shareImage(index);
+    });
+  };
 };
 
 function openPerformanceSessionSummary(sessionId,studentId=''){
   const session=db.sessions.find(s=>s.id===sessionId);if(!session)return toast('Sessão não encontrada.');
   const participants=studentId?session.participants.filter(p=>p.studentId===studentId):session.participants.slice();if(!participants.length)return toast('Registro deste aluno não está disponível.');
   openModal(`<div class="builder-head"><button class="icon-btn" id="performanceSummaryClose" aria-label="Fechar">${icons.back}</button><h2>Resumo da sessão</h2></div><div class="builder-body">${participants.map(p=>performanceParticipantCardHtml(session,p)).join('')}</div>`,{fullscreen:true});
+  $('#modal').classList.add('compact-session-summary');
   $('#performanceSummaryClose').onclick=closeModal;
   const footer=document.createElement('button');footer.type='button';footer.className='btn btn-danger summary-delete';footer.innerHTML=`${icons.trash} Apagar ${studentId?'registro':'sessão'}`;$('#modal').appendChild(footer);
   footer.onclick=()=>confirmModal('Apagar '+(studentId?'registro?':'sessão?'),'Esta ação remove o registro do histórico.','Apagar',()=>{
@@ -1359,7 +1397,7 @@ buildSummaryShareSvg=async function(participant){
     y+=rowH+14;
   });
   const height=Math.max(820,y+74),cardH=height-48;
-  return {height,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}"><rect x="24" y="24" width="1032" height="${cardH}" rx="72" fill="${C.card}"/><text x="84" y="102" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="850" letter-spacing="3" fill="${C.blue}">TREINO CONCLUÍDO</text><text x="84" y="174" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="50" font-weight="820" fill="${C.text}">${xmlEsc(st?.name||'Aluno')}</text>${summaryBrandLogoSvg(dark)}<g transform="translate(812 126)"><rect width="178" height="58" rx="29" fill="${C.surface}"/><text x="89" y="37" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="800" fill="${C.blue}">${xmlEsc(duration)}</text></g><text x="84" y="216" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="600" fill="${C.muted}">${xmlEsc(participant.programName||'Treino')} · ${xmlEsc(fmtDate(Date.now()))}</text><g transform="translate(84 260)">${[['SÉRIES',sets],['VOLUME',kgText(vol)],['RPE MÉDIO',avg]].map((item,i)=>`<g transform="translate(${i*306} 0)"><rect width="286" height="104" rx="24" fill="${C.surface}"/><text x="20" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="1" fill="${C.faint}">${item[0]}</text><text x="20" y="75" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="820" fill="${C.text}">${xmlEsc(item[1])}</text></g>`).join('')}</g><text x="84" y="404" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="29" font-weight="820" fill="${C.text}">Exercícios</text>${exerciseMarkup}</svg>`};
+  return {height,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}"><rect x="24" y="24" width="1032" height="${cardH}" rx="72" fill="${C.card}"/><text x="84" y="102" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="850" letter-spacing="3" fill="${C.blue}">TREINO CONCLUÍDO</text><text x="84" y="174" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="50" font-weight="820" fill="${C.text}">${xmlEsc(st?.name||'Aluno')}</text><g transform="translate(812 126)"><rect width="178" height="58" rx="29" fill="${C.surface}"/><text x="89" y="37" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="800" fill="${C.blue}">${xmlEsc(duration)}</text></g><text x="84" y="216" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="600" fill="${C.muted}">${xmlEsc(participant.programName||'Treino')} · ${xmlEsc(fmtDate(Date.now()))}</text><g transform="translate(84 260)">${[['SÉRIES',sets],['VOLUME',kgText(vol)],['RPE MÉDIO',avg]].map((item,i)=>`<g transform="translate(${i*306} 0)"><rect width="286" height="104" rx="24" fill="${C.surface}"/><text x="20" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="1" fill="${C.faint}">${item[0]}</text><text x="20" y="75" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="820" fill="${C.text}">${xmlEsc(item[1])}</text></g>`).join('')}</g><text x="84" y="404" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="29" font-weight="820" fill="${C.text}">Exercícios</text>${exerciseMarkup}</svg>`};
 };
 
 /* Compact Finish action beside the more menu during a live session. */
@@ -1388,7 +1426,7 @@ function exercisePointChart(entries){
 openExerciseHistory=function(studentId,exerciseId){
   const st=studentById(studentId),exercise=exerciseById(exerciseId);if(!st||!exercise)return toast('Histórico deste exercício não encontrado.');
   const entries=exerciseHistoryEntries(studentId,exerciseId),recent=entries.slice().reverse().slice(0,16),records=exerciseRecordSummary(entries),latest=entries[entries.length-1]||null,first=entries[0]||null,delta=latest&&first?latest.best-first.best:0,chart=exercisePointChart(entries);
-  openModal(`<div class="exercise-detail-head"><button class="icon-btn" id="exerciseHistoryClose" type="button" aria-label="Fechar">${icons.close}</button><div class="exercise-detail-title"><small>HISTÓRICO DO EXERCÍCIO</small><strong>${esc(exercise.name)}</strong><span>${esc(st.name)}${latest?` · última execução ${fmtDate(latest.session.endedAt)}`:''}</span></div></div><div class="exercise-history-content"><div class="exercise-muscle-tags">${(exercise.muscleGroups||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div><div class="exercise-pr-grid"><div class="exercise-pr-card"><small>Maior carga</small><strong>${records.bestLoad.value?`${records.bestLoad.value} kg`:'—'}</strong><span>${records.bestLoad.date}</span></div><div class="exercise-pr-card"><small>Mais reps</small><strong>${records.bestReps.value?`${records.bestReps.value} reps`:'—'}</strong><span>${records.bestReps.value?`${records.bestReps.weight} kg · ${records.bestReps.date}`:'—'}</span></div><div class="exercise-pr-card"><small>Maior volume</small><strong>${records.bestVolume.value?kgText(records.bestVolume.value):'—'}</strong><span>${records.bestVolume.date}</span></div></div><div class="history-summary-grid"><div><small>Execuções</small><strong>${entries.length}</strong></div><div><small>Última carga</small><strong>${latest?`${latest.best} kg`:'—'}</strong></div><div><small>Variação</small><strong class="${delta>0?'text-good':delta<0?'text-warn':''}">${entries.length>1?`${delta>0?'+':''}${round(delta)} kg`:'—'}</strong></div></div><div class="chart-card history-chart-card"><div class="chart-card-head"><div><strong>Maior carga por sessão</strong><small>Toque em um ponto para ver a data e o volume.</small></div></div>${chart.html||'-'}</div><div class="section history-execution-section"><div class="section-title"><h2>Histórico</h2><span>${recent.length}${entries.length>recent.length?` de ${entries.length}`:''}</span></div>${recent.length?recent.map(row=>{const sets=completedSets(row.exercise),isLoadPR=row.best===records.bestLoad.value&&records.bestLoad.value>0;return `<div class="exercise-execution-card"><div class="execution-card-head"><div><strong>${fmtDate(row.session.endedAt)}${isLoadPR?'<span class="exercise-record-badge">PR</span>':''}</strong><small>${esc(participantForStudent(row.session,studentId)?.programName||'Treino')}</small></div><div><b>${row.best} kg</b><small>${kgText(row.volume)} volume</small></div></div><div class="execution-sets">${sets.map((set,si)=>`<span><b>${si+1}</b>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}</span>`).join('')}</div><div class="execution-footer"><span>${sets.length} ${sets.length===1?'série':'séries'}</span><span>${sets.reduce((a,s)=>a+parseInteger(s.reps),0)} reps</span></div></div>`;}).join(''):emptyHtml('Sem execuções registradas.')}</div></div>`,{fullscreen:true});
+  openModal(`<div class="exercise-detail-head"><button class="icon-btn" id="exerciseHistoryClose" type="button" aria-label="Fechar">${icons.close}</button><div class="exercise-detail-title"><small>HISTÓRICO DO EXERCÍCIO</small><strong>${esc(exercise.name)}</strong><span>${esc(st.name)}${latest?` · última execução ${fmtDate(latest.session.endedAt)}`:''}</span></div></div><div class="exercise-history-content"><div class="exercise-muscle-tags">${(exercise.muscleGroups||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div><div class="exercise-pr-grid"><div class="exercise-pr-card"><small>Maior carga</small><strong>${records.bestLoad.value?`${records.bestLoad.value} kg`:'—'}</strong><span>${records.bestLoad.date}</span></div><div class="exercise-pr-card"><small>Mais reps</small><strong>${records.bestReps.value?`${records.bestReps.value} reps`:'—'}</strong><span>${records.bestReps.value?`${records.bestReps.weight} kg · ${records.bestReps.date}`:'—'}</span></div><div class="exercise-pr-card"><small>Maior volume</small><strong>${records.bestVolume.value?kgText(records.bestVolume.value):'—'}</strong><span>${records.bestVolume.date}</span></div></div><div class="history-summary-grid"><div><small>Execuções</small><strong>${entries.length}</strong></div><div><small>Última carga</small><strong>${latest?`${latest.best} kg`:'—'}</strong></div><div><small>Variação</small><strong class="${delta>0?'text-good':delta<0?'text-warn':''}">${entries.length>1?`${delta>0?'+':''}${round(delta)} kg`:'—'}</strong></div></div><div class="chart-card history-chart-card"><div class="chart-card-head"><div><strong>Maior carga por sessão</strong><small>Toque em um ponto para ver a data e o volume.</small></div></div>${chart.html||'-'}</div><div class="section history-execution-section"><div class="section-title"><h2>Histórico</h2><span>${recent.length}${entries.length>recent.length?` de ${entries.length}`:''}</span></div>${recent.length?recent.map(row=>{const sets=completedSets(row.exercise),isLoadPR=row.best===records.bestLoad.value&&records.bestLoad.value>0;return `<div class="exercise-execution-card"><div class="execution-card-head"><div><strong>${fmtDate(row.session.endedAt)}${isLoadPR?'<span class="exercise-record-badge">PR</span>':''}</strong><small>${esc(participantForStudent(row.session,studentId)?.programName||'Treino')}</small></div><div><b>${row.best} kg</b><small>${kgText(row.volume)} volume</small></div></div>${compactSeriesHtml(sets,{className:'execution-sets'})}<div class="execution-footer"><span>${sets.length} ${sets.length===1?'série':'séries'}</span><span>${sets.reduce((a,s)=>a+parseInteger(s.reps),0)} reps</span></div></div>`;}).join(''):emptyHtml('Sem execuções registradas.')}</div></div>`,{fullscreen:true});
   $('#exerciseHistoryClose').onclick=closeModal;
   $$('[data-ex-point]',$('#modal')).forEach(pt=>{const show=()=>{const row=chart.points[+pt.dataset.exPoint];if(!row)return;const box=$('#exercisePointDetail');if(box)box.textContent=`${row.fullDate} · ${row.value} kg · ${kgText(row.volume)} de volume`;};pt.onclick=show;pt.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}};});
   requestAnimationFrame(()=>{const scroll=$('.history-chart-card .chart-scroll');if(scroll)scroll.scrollLeft=scroll.scrollWidth;});
@@ -1633,7 +1671,7 @@ body #restTimer .rest-timer-actions button{
 body #restTimer .rest-timer-actions .rest-skip{background:var(--rp-navy)!important;color:#fff!important}
 body.modal-open #restTimer,body.modal-open #activeWorkoutPill{visibility:hidden!important;pointer-events:none!important}
 body #activeWorkoutPill{bottom:var(--floating-bottom)!important}
-body.rest-running #activeWorkoutPill{display:none!important}
+/* Rest is now part of the ongoing-workout bar on other pages. */
 body.workout-route .app-shell{padding-bottom:0!important}
 body.workout-route .screen{padding-bottom:calc(24px + var(--safe-bottom))!important}
 body.rest-running #main .screen{padding-bottom:calc(124px + var(--visible-nav-height) + var(--safe-bottom))!important}
@@ -1842,6 +1880,206 @@ html[data-theme="dark"] #studentBirthDate{color-scheme:dark}
 }
 #modal .exercise-menu .action-item>.chev{display:grid!important;place-items:center!important;width:16px!important;height:16px!important;margin:0!important}
 #modal .exercise-menu .action-item>.chev svg{width:16px!important;height:16px!important}
+</style>
+
+<style id="final-density-and-status">
+/* Final focused pass: quiet inputs, complete theme coverage, one status bar,
+   and dense in-app summaries. Does not style or change the exported PNG. */
+html[data-theme="light"]{--status-blue:#0A6FB6;--status-red:#C23C48;--note-bg:#F0F4F7;--note-line:#D4DEE6}
+html[data-theme="dark"]{--status-blue:#69C2EB;--status-red:#FF858D;--note-bg:var(--surface,#14181E);--note-line:var(--panel-line)}
+
+/* Brand belongs only in the global header, not in finish/summary cards. */
+.topbar-leading{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.header-brand{display:block;flex:0 0 30px;width:30px;height:28px;object-fit:contain;border:0;border-radius:0;background:transparent;margin:0}
+.topbar-title{min-width:0}
+.topbar-title>strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:360px){.header-brand{width:26px;height:24px;flex-basis:26px}.topbar-leading{gap:7px}}
+
+/* Match the quiet outlines and surfaces of Duração / Volume / Séries. */
+html[data-theme] #main .live-exercise-card .live-note{
+  background:var(--note-bg)!important;border:1px solid var(--note-line)!important;
+  color:var(--panel-text)!important;box-shadow:none!important;outline:0!important;
+  border-radius:8px!important;height:31px!important;min-height:31px!important;
+  padding:0 9px!important;font-weight:400!important
+}
+html[data-theme] #main .live-exercise-card .live-note::placeholder{color:var(--panel-muted)!important;opacity:.85!important}
+html[data-theme] #main .live-exercise-card .live-note:focus{border-color:var(--rp-accent)!important;outline:1px solid var(--rp-accent)!important;outline-offset:0!important}
+
+/* Both visible bars share their dimensions, surface, inset, and baseline. */
+body #activeWorkoutPill.workout-status-bar,body #restTimer.rest-timer.workout-status-bar{
+  position:fixed!important;left:50%!important;right:auto!important;bottom:var(--floating-bottom)!important;
+  transform:translateX(-50%)!important;translate:none!important;box-sizing:border-box!important;
+  width:calc(min(600px,100vw) - 24px)!important;max-width:576px!important;
+  height:56px!important;min-height:56px!important;margin:0!important;padding:8px 12px!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+  gap:9px!important;border:1px solid var(--panel-line)!important;border-radius:15px!important;outline:0!important;
+  background:var(--panel-bg)!important;color:var(--panel-text)!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.12)!important;z-index:90!important;
+  animation:none!important;transition:none!important
+}
+body #activeWorkoutPill.workout-status-bar.is-hidden,body #restTimer.rest-timer.workout-status-bar.is-hidden{display:none!important}
+body #activeWorkoutPill .pulse-dot{width:6px;height:6px;flex:0 0 6px}
+body #activeWorkoutPill .active-workout-copy{display:block;flex:1;min-width:0;text-align:left;line-height:1.25}
+body #activeWorkoutPill .active-workout-copy small{display:block;white-space:nowrap;color:var(--panel-muted);font-size:8px!important}
+body #activeWorkoutPill .active-workout-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px!important;color:var(--panel-text);margin-top:3px}
+.status-clocks{display:flex;align-items:center;gap:9px;flex:0 0 auto;min-width:0}
+.status-clock{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1;font-size:12px;font-weight:700}
+.status-clock svg,body #restTimer .rest-timer-main svg{display:block;width:15px;height:15px;flex:0 0 15px}
+.status-clock>[data-icon],body #restTimer .rest-timer-main>[data-icon]{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+body #activeWorkoutPill .status-workout-clock,body #activeWorkoutPill #activeWorkoutClock{color:var(--status-blue)!important}
+body #activeWorkoutPill .status-rest-clock,body #restTimer .rest-timer-main,body #restTimer #restTimerValue{color:var(--status-red)!important}
+#activeWorkoutRest.is-hidden{display:none!important}
+body #restTimer.rest-timer .rest-timer-main{
+  width:auto!important;height:auto!important;min-width:0!important;flex:1 1 auto!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+  gap:7px!important;margin:0!important;padding:0!important;background:transparent!important
+}
+body #restTimer.rest-timer #restTimerValue{font-size:18px!important;line-height:24px!important;font-weight:750!important;letter-spacing:0!important}
+body #restTimer.rest-timer .rest-timer-actions{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  gap:6px!important;width:auto!important;flex:0 0 auto!important;margin:0!important;padding:0!important
+}
+body #restTimer.rest-timer .rest-timer-actions button{
+  width:49px!important;min-width:49px!important;height:36px!important;min-height:36px!important;
+  border-radius:9px!important;padding:0 5px!important;background:var(--panel-surface-2)!important;
+  color:var(--panel-text)!important;line-height:1!important;font-size:11.5px!important;font-weight:600!important
+}
+body #restTimer.rest-timer .rest-timer-actions .rest-skip{width:54px!important;min-width:54px!important;background:var(--rp-navy)!important;color:#fff!important}
+body.rest-running #main .screen,body.has-floating-status #main .screen{padding-bottom:calc(80px + var(--floating-bottom))!important}
+body.modal-open #restTimer,body.modal-open #activeWorkoutPill{visibility:hidden!important;pointer-events:none!important}
+@media(max-width:360px){
+  body #activeWorkoutPill.workout-status-bar,body #restTimer.rest-timer.workout-status-bar{gap:7px!important;padding-left:10px!important;padding-right:10px!important}
+  .status-clocks{gap:7px}.status-clock{gap:3px;font-size:11px}
+  .status-clock svg{width:13px;height:13px;flex-basis:13px}
+}
+
+/* No hard-coded dark surfaces in exercises, records, menus or set badges. */
+html[data-theme] #modal .exercise-execution-card,html[data-theme] #modal .execution-card,
+html[data-theme] #modal .exercise-pr-card,html[data-theme] #modal .session-exercise,
+html[data-theme] #main .exercise-list-card{
+  background:var(--panel-surface)!important;border-color:var(--panel-line)!important;color:var(--panel-text)!important;box-shadow:none!important
+}
+html[data-theme] #modal .performance-exercise-card,html[data-theme] #modal .exercise-point-detail,
+html[data-theme] #modal .history-summary-grid>div,html[data-theme] #modal .execution-sets>span,
+html[data-theme] #modal .series-chip,html[data-theme] #main .series-chip,
+html[data-theme] #modal .group-button:not(.is-selected),html[data-theme] #modal .filter-chip:not(.is-active){
+  background:var(--panel-surface-2)!important;background-image:none!important;
+  border-color:var(--panel-line)!important;color:var(--panel-text)!important;box-shadow:none!important
+}
+html[data-theme] #modal .execution-sets>span>b,html[data-theme] #modal .series-chip>b,
+html[data-theme] #main .series-chip>b{
+  background:transparent!important;border:0!important;color:var(--panel-text)!important;
+  font-size:10px!important;font-weight:650!important;min-width:14px!important;min-height:0!important;
+  height:auto!important;width:auto!important;padding:0!important;margin:0!important;border-radius:0!important
+}
+html[data-theme] #modal .exercise-execution-card .execution-card-head strong,
+html[data-theme] #modal .exercise-pr-card strong{color:var(--panel-text)!important}
+html[data-theme] #modal .exercise-execution-card .execution-card-head small,
+html[data-theme] #modal .execution-footer,html[data-theme] #modal .performance-exercise-title small,
+html[data-theme] #modal .performance-max small{color:var(--panel-muted)!important}
+html[data-theme="light"] #main .live-action-button,
+html[data-theme="light"] #modal .exercise-detail-head .icon-btn{background:var(--panel-surface-2)!important;color:#0A427E!important;border-color:var(--panel-line)!important}
+
+/* Single-line strips: identical consecutive sets share their number range.
+   Different sets stay readable and scroll horizontally instead of wrapping. */
+html[data-theme] #modal .compact-series-strip,html[data-theme] #main .compact-series-strip,
+#modal .view-exercise>.series-inline.compact-series-strip{
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;
+  min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+  gap:4px!important;margin:5px 0 0!important;padding:0 0 2px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;white-space:nowrap!important
+}
+html[data-theme] #modal .compact-series-strip .compact-set-chip,
+html[data-theme] #main .compact-series-strip .compact-set-chip{
+  display:inline-flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:flex-start!important;
+  gap:5px!important;box-sizing:border-box!important;min-width:0!important;width:auto!important;max-width:none!important;
+  height:24px!important;min-height:24px!important;padding:3px 6px!important;margin:0!important;
+  border:0!important;border-radius:6px!important;font-size:10px!important;font-weight:400!important;
+  line-height:16px!important;white-space:nowrap!important;background:var(--panel-surface-2)!important;color:var(--panel-text)!important
+}
+html[data-theme] #modal .compact-series-strip .compact-set-chip>span,
+html[data-theme] #main .compact-series-strip .compact-set-chip>span{
+  display:inline!important;margin:0!important;padding:0!important;border:0!important;
+  background:transparent!important;color:var(--panel-muted)!important;font-size:10px!important;font-weight:400!important;
+  line-height:16px!important;white-space:nowrap!important;min-height:0!important
+}
+.compact-series-strip:focus-visible{outline:1px solid var(--rp-accent);outline-offset:2px;border-radius:7px}
+
+/* Slightly tighter workout cards and the exercise preview. */
+#programList .workout-entry{padding:12px!important;margin-bottom:8px!important;border-radius:14px!important;background:var(--panel-surface)!important;border-color:var(--panel-line)!important}
+#programList .workout-card-stats{gap:6px 12px!important;margin-top:8px!important}
+#programList .workout-card-stats small{font-size:9px!important;line-height:1.3!important}
+#programList .workout-card-stats strong{font-size:12px!important;line-height:1.3!important;margin-top:2px!important}
+#programList .workout-entry .workout-actions{gap:7px!important;margin-top:9px!important}
+#programList .workout-entry .workout-actions .btn{height:36px!important;min-height:36px!important;padding:6px 8px!important;font-size:11.5px!important}
+#modal.program-summary-sheet .builder-body{padding-top:10px!important;padding-bottom:12px!important}
+#modal .view-exercise{padding:8px 10px!important;gap:3px 5px!important;margin-bottom:6px!important;grid-template-columns:18px minmax(0,1fr)!important;border-radius:10px!important}
+#modal .view-exercise>h3{font-size:13px!important;line-height:1.3!important}
+#modal .view-exercise>small{font-size:9px!important;line-height:17px!important}
+#modal .view-exercise>p{font-size:10.5px!important;line-height:1.35!important}
+#modal .view-exercise>.compact-series-strip{grid-column:1/-1!important;margin-top:3px!important}
+#modal .view-exercise>.previous-note{font-size:10.5px!important;padding:4px 6px!important;margin:1px 0!important}
+
+/* Recent history: shorter cards and less space between them, not a new layout. */
+#main .history-session{padding:10px 12px!important;margin:0 0 7px!important;border-radius:12px!important;color:var(--panel-text)!important;background:var(--panel-surface)!important;border-color:var(--panel-line)!important}
+#main .history-session-head{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:0!important}
+#main .history-session-head>div:first-child{min-width:0}
+#main .history-session-head strong{font-size:12.5px!important;line-height:1.3!important}
+#main .history-session-head small{display:block;font-size:10px!important;line-height:1.4!important;margin-top:3px!important}
+#main .history-session-head>span{font-size:11px!important;white-space:nowrap;flex-shrink:0}
+#main .recent-session-card{padding:11px 12px!important;margin-bottom:8px!important;border-radius:13px!important;min-height:0!important}
+#main .recent-session-top{gap:9px!important}
+#main .recent-session-top .avatar{width:32px!important;height:32px!important;flex-basis:32px!important}
+#main .recent-session-top .row-main strong{font-size:13px!important;line-height:1.3!important}
+#main .recent-session-top .row-main small{font-size:10px!important;margin-top:3px!important}
+#main .recent-session-stats{margin-top:8px!important;padding-top:7px!important;gap:8px!important}
+#main .recent-session-stats strong{font-size:12px!important;line-height:1.3!important;margin-top:2px!important}
+#main .recent-session-stats small{font-size:8px!important}
+#main .home-recent-section{margin-top:18px!important}
+#main .profile-actions{margin-bottom:14px!important}
+#main .profile-actions~.section{margin-top:16px!important}
+
+/* Compact in-app summaries; export sizing, quality and layout are separate. */
+#modal .finish-card{padding:11px!important;margin-bottom:8px!important;border-radius:14px!important}
+#modal .session-summary-head{gap:8px;margin:0 0 8px!important;align-items:center}
+#modal .session-summary-head .avatar{width:34px!important;height:34px!important;flex-basis:34px!important}
+#modal .session-summary-title strong{font-size:15px!important;line-height:1.3!important;white-space:normal;overflow-wrap:anywhere}
+#modal .session-summary-title small{font-size:9.5px!important;margin-top:2px!important;line-height:1.35}
+#modal .finish-duration-pill{min-height:28px!important;padding:0 8px!important;font-size:10px!important;border-radius:9px!important}
+#modal .finish-stats{gap:6px!important;margin-top:8px!important}
+#modal .finish-stats>div{padding:7px!important;border-radius:9px!important;background:var(--panel-surface-2)!important;border-color:var(--panel-line)!important}
+#modal .finish-stats strong{font-size:12px!important;margin-top:3px!important}
+#modal .performance-section-title{display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px!important}
+#modal .performance-section-title h2{font-size:13px!important;margin:0!important}
+#modal .performance-section-title>span{font-size:10px;color:var(--panel-muted)}
+#modal .performance-exercises{gap:6px!important;margin-top:0!important;min-width:0}
+#modal .performance-exercise-card{min-width:0!important;padding:8px 9px!important;border-radius:10px!important}
+#modal .performance-exercise-top{gap:8px!important}
+#modal .performance-exercise-title strong{font-size:12px!important;line-height:1.3!important}
+#modal .performance-exercise-title small{font-size:9.5px!important;margin-top:2px!important;line-height:1.3!important}
+#modal .performance-max strong{font-size:12px!important;margin-top:2px!important;color:var(--status-blue)!important}
+#modal .performance-max small{font-size:7px!important}
+#modal .exercise-execution-card,#modal .execution-card{padding:10px!important;margin-bottom:7px!important;border-radius:11px!important}
+#modal .exercise-execution-card .execution-card-head{margin-bottom:0!important}
+#modal .execution-card-head strong,#modal .execution-card-head b{font-size:12px!important}
+#modal .execution-card-head small{font-size:9.5px!important;margin-top:3px!important}
+#modal .execution-footer{margin-top:5px!important;padding-top:5px!important;font-size:9px!important}
+#modal.compact-session-summary .builder-body{padding-top:10px!important;padding-bottom:12px!important}
+
+/* Equal footer actions: Voltar | Salvar imagem | Salvar treino. */
+#modal.compact-finish-sheet{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
+#modal.compact-finish-sheet .finish-celebration{flex:0 0 auto;padding:8px 2px 10px!important}
+#modal.compact-finish-sheet .finish-celebration h2{font-size:24px!important;margin:3px 0 0!important}
+#modal .finish-summary-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 1px 8px;overscroll-behavior:contain}
+#modal .finish-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center;flex:0 0 auto;gap:6px;padding:10px 0 calc(2px + var(--safe-bottom));margin-top:0;background:var(--panel-bg);border-top:1px solid var(--panel-line)}
+#modal .finish-actions .btn{display:flex!important;align-items:center;justify-content:center;box-sizing:border-box!important;width:100%!important;min-width:0!important;height:40px!important;min-height:40px!important;padding:0 4px!important;margin:0!important;border-radius:10px!important;font-size:clamp(10.5px,2.9vw,12px)!important;font-weight:600!important;line-height:1.2!important;white-space:nowrap!important;box-shadow:none!important}
+#modal .finish-actions .btn:disabled{opacity:.55;cursor:wait}
+@media(prefers-reduced-motion:reduce){body #activeWorkoutPill.workout-status-bar,body #restTimer.rest-timer.workout-status-bar{transition:none!important}}
+
+/* Low-contrast chips remain distinct from their surrounding summary card. */
+html[data-theme] #modal .performance-exercise-card .compact-series-strip .compact-set-chip{background:var(--panel-surface)!important}
+
 </style>
 
 </body>
