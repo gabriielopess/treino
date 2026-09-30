@@ -2766,5 +2766,118 @@ html[data-theme="dark"] .student-sex-option.is-selected{
 })();
 </script>
 
+
+<style id="student-menu-search-evolution-only-fix">
+/* Menu de ações do aluno: todos os itens têm a mesma altura, ícone e tipografia. */
+.student-actions-menu .action-item{
+  min-height:58px!important;
+  padding:11px 12px!important;
+  gap:10px!important;
+  align-items:center!important;
+}
+.student-actions-menu .action-icon{
+  width:34px!important;
+  height:34px!important;
+  flex:0 0 34px!important;
+}
+.student-actions-menu .action-icon svg{
+  width:17px!important;
+  height:17px!important;
+}
+.student-actions-menu .row-main{
+  min-width:0!important;
+  min-height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  flex:1 1 auto!important;
+}
+.student-actions-menu .row-main strong{
+  margin:0!important;
+  font-size:12.5px!important;
+  line-height:1.2!important;
+  font-weight:720!important;
+}
+.student-actions-menu .chev{
+  width:18px!important;
+  height:18px!important;
+  flex:0 0 18px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.student-actions-menu .chev svg{width:16px!important;height:16px!important}
+
+/* Buscar aluno/exercício: mantém o fundo do próprio site e usa só um contorno discreto. */
+html[data-theme="light"] .search-field{
+  background:var(--surface)!important;
+  border-color:#C9D1DA!important;
+  box-shadow:none!important;
+}
+html[data-theme="light"] .search-field:focus-within{
+  background:var(--surface)!important;
+  border-color:#AEB9C5!important;
+  box-shadow:none!important;
+}
+html[data-theme="light"] .search-field input{color:var(--text)!important}
+html[data-theme="light"] .search-field svg{color:var(--muted)!important}
+html[data-theme="dark"] .search-field{
+  background:var(--surface)!important;
+  border-color:var(--line-strong)!important;
+  box-shadow:none!important;
+}
+
+/* O cálculo do volume continua igual; apenas removemos a explicação de carga relativa. */
+.muscle-volume-card .chart-card-head small{display:none!important}
+.series-muscle-list{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.series-muscle-row{
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+}
+.series-muscle-row span{font-size:12px;font-weight:650;color:var(--text)}
+.series-muscle-row strong{font-size:15px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+</style>
+
+<script id="student-menu-search-evolution-only-fix-js">
+(function(){
+  /* Menu de ações: mesmo conteúdo/fluxo, somente apresentação alinhada e nome PDF. */
+  openStudentActions=function(studentId){
+    const st=studentById(studentId);if(!st)return;
+    openModal(`<h2>${esc(st.name)}</h2><p class="modal-sub">Ações do aluno</p><div class="action-list student-actions-menu"><button class="action-item" data-action="edit"><span class="action-icon">${icons.edit}</span><div class="row-main"><strong>Editar aluno</strong></div>${chev()}</button><button class="action-item" data-action="evo"><span class="action-icon">${icons.chart}</span><div class="row-main"><strong>Ver evolução</strong></div>${chev()}</button><button class="action-item" data-action="history"><span class="action-icon">${icons.history}</span><div class="row-main"><strong>Histórico completo</strong></div>${chev()}</button><button class="action-item" data-action="pdf"><span class="action-icon">${icons.download}</span><div class="row-main"><strong>PDF</strong></div>${chev()}</button><button class="action-item danger" data-action="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Excluir aluno</strong></div></button></div>`);
+    $$('[data-action]',$('#modal')).forEach(btn=>btn.onclick=()=>{
+      const action=btn.dataset.action;closeModal();
+      if(action==='edit')setTimeout(()=>openStudentForm(st.id),80);
+      if(action==='evo')navigate('evolution-detail',{evolutionStudentId:st.id});
+      if(action==='history')navigate('student-history',{historyStudentId:st.id});
+      if(action==='pdf')setTimeout(()=>openStudentPrintSelector(st.id),80);
+      if(action==='delete')setTimeout(()=>confirmDeleteStudent(st.id),80);
+    });
+  };
+
+  /* Mantém o índice equalizado; na linha exibimos só a quantidade de séries e os pontos. */
+  muscleRowHtml=function(row,_,arr){
+    const max=Math.max(...arr.map(x=>x.score||0),1),count=round(row.sets),score=Math.round((row.score||0)*10)/10,scoreText=String(score).replace('.',',');
+    return `<div class="progress-row"><div class="progress-row-head"><div><strong>${esc(row.group)}</strong><small>${count} ${count===1?'série':'séries'}</small></div><b>${scoreText} pts</b></div><div class="progress-track"><span style="width:${clamp(((row.score||0)/max)*100,3,100)}%"></span></div></div>`;
+  };
+
+  /* Ao tocar em Séries, mostra diretamente a distribuição por grupamento. */
+  const previousExplainEvolutionMetric=explainEvolutionMetric;
+  explainEvolutionMetric=function(kind,ctx){
+    if(kind!=='sets')return previousExplainEvolutionMetric(kind,ctx);
+    const studentId=state.evolutionStudentId;
+    const period=ctx?.period||state.evolutionPeriod||'90d';
+    const rows=studentId?muscleDistribution(studentId,period):[];
+    const label={'7d':'7 dias','30d':'30 dias','90d':'3 meses','180d':'6 meses','365d':'1 ano','all':'todo o histórico'}[period]||period;
+    openModal(`<h2>Séries por grupamento</h2><p class="modal-sub">${esc(label)}</p>${rows.length?`<div class="series-muscle-list">${rows.map(row=>{const count=round(row.sets);return `<div class="series-muscle-row"><span>${esc(row.group)}</span><strong>${count}</strong></div>`;}).join('')}</div>`:emptyHtml('Sem séries registradas neste período.')}<div class="modal-actions"><button class="btn btn-primary" id="metricExplainClose">Fechar</button></div>`);
+    $('#metricExplainClose').onclick=closeModal;
+  };
+})();
+</script>
+
 </body>
 </html>
