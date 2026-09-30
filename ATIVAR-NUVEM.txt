@@ -1,0 +1,37 @@
+ATUALIZAÇÃO DO APP DE TREINOS — 30/09/2026
+
+BASE E ARQUIVOS
+O index.html foi reconstruído a partir do arquivo index(10).html anexado nesta conversa. O app.js e o styles.css publicados foram consultados para verificar compatibilidade, mas não precisam ser substituídos neste pacote.
+
+Substitua index.html, sw.js e manifest.webmanifest. Adicione recovery-ui.js, cloud-sync.js e a pasta api (com cloud.js) na raiz do mesmo repositório. Preserve os outros arquivos e ícones. Faça o deploy na Vercel.
+
+NUVEM: CONFIGURAÇÃO ÚNICA
+A integração está implementada; ela só fica ativa depois de conectar o banco e publicar. O ZIP sozinho não cria um banco.
+
+1. No projeto do treino na Vercel, conecte um banco Upstash Redis pelo Marketplace/Storage.
+2. Confira as variáveis UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN. A integração também aceita KV_REST_API_URL e KV_REST_API_TOKEN.
+3. Crie a variável TREINO_ACCESS_KEY com uma chave aleatória de no mínimo 32 caracteres. Use o gerador de senhas do seu aparelho ou execute: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+4. Publique novamente (Redeploy).
+5. Abra https://treino-delta-two.vercel.app/#chave=SUA_CHAVE no celular que contém seus dados atuais. Espere aparecer “Salvo na nuvem”.
+6. Abra esse mesmo link privado no computador e nos outros aparelhos. Não existe cadastro nem tela de login. Quem possuir esse link poderá ler e alterar os dados: guarde-o para seu uso.
+7. Para o atalho do iPhone, adicione à Tela de Início a partir desse link privado. O manifesto usa a URL de instalação como início. Se já existia um atalho antigo, mantenha-o até confirmar seus dados na nuvem; depois crie o novo a partir do link privado. O comportamento de instalação precisa ser conferido no iPhone real.
+
+O link público sem chave continua abrindo a interface, mas não dá acesso ao banco. Não coloque a chave privada em arquivos do GitHub. As credenciais do Redis ficam apenas nas variáveis da Vercel.
+
+COMPORTAMENTO
+- Cadastro/edição/exclusão de alunos, fichas, exercícios e sessões concluídas disparam salvamento automático.
+- Marcação de séries, RPE e cronômetro mantêm o rascunho local. O treino em andamento não migra para outro aparelho.
+- O app consulta a nuvem na abertura, ao voltar à aba, ao recuperar internet e a cada 30 segundos enquanto visível.
+- Sem internet, as alterações permanecem locais e voltam a ser enviadas quando a conexão retorna.
+- Um aparelho novo carrega os dados da nuvem. Se ele já tiver dados locais e nunca foi sincronizado, aparece uma escolha para usar a nuvem ou combinar os dados. A cópia local anterior fica preservada.
+- Alterações diferentes são combinadas; quando dois aparelhos editam o mesmo campo, o app pede escolha e não sobrescreve silenciosamente.
+- O indicador informa “ativação pendente” ou erro quando a nuvem não está disponível. “Salvo na nuvem” só aparece após resposta válida do servidor.
+- Limite deste pacote: aproximadamente 3,5 MB por banco incluindo fotos (limite da requisição). O app sinaliza quando for excedido. Fotos grandes exigirão armazenamento de imagens separado.
+
+VALIDAÇÃO
+Testes em navegador móvel simulado e serviço de armazenamento simulado: duas sessões de navegador isoladas, salvamento/consulta, falta de internet/reabertura, histórico, inclusão de exercícios, ausência de gravação por série, RPE e balão compacto. O banco real e o Safari do iPhone precisam da verificação após ativação.
+
+REFERÊNCIAS TÉCNICAS
+https://vercel.com/docs/functions/runtimes/node-js
+https://upstash.com/docs/redis/features/restapi
+https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/start_url

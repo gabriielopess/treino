@@ -1494,7 +1494,7 @@ body.rest-expanded .rest-resume{display:none}
 (function(){
   const repeatIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const clockIcon=icons.clock||'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-  let restCollapsed=false,lastRoute=state.route,modalFocus=null;
+  let restCollapsed=true,lastRoute=state.route,modalFocus=null;
   const rest=$('#restTimer'),shade=document.createElement('div');shade.id='restShade';shade.className='rest-shade is-hidden';document.body.appendChild(shade);
   rest.insertAdjacentHTML('afterbegin','<div class="rest-sheet-head"><button type="button" id="restCollapse" aria-label="Recolher descanso">⌄</button><span>Descanso</span><button type="button" id="restMinimize">Minimizar treino</button></div>');
   rest.insertAdjacentHTML('beforeend','<button type="button" id="restResume" class="rest-resume" aria-label="Abrir descanso">⌃</button>');
@@ -1511,7 +1511,7 @@ body.rest-expanded .rest-resume{display:none}
     $('#activeWorkoutPill').inert=modalOpen;
     rest.inert=modalOpen;
     if(!modalOpen&&!expanded)syncActiveWorkoutPill();
-    if(running)$('#activeWorkoutPill').classList.add('is-hidden');
+    if(running&&state.route==='workout')$('#activeWorkoutPill').classList.add('is-hidden');
   }
   $('#restCollapse').onclick=e=>{e.stopPropagation();restCollapsed=true;syncFocus();};
   $('#restMinimize').onclick=e=>{e.stopPropagation();navigate('home');};
@@ -1521,8 +1521,8 @@ body.rest-expanded .rest-resume{display:none}
   const baseOpen=openModal,baseClose=closeModal,baseSync=syncRestTimer,baseStart=startRest,baseStop=stopRest;
   openModal=function(html,options){modalFocus=document.activeElement;$('#rpeDock')?.classList.add('is-hidden');activeRpePath=null;baseOpen(html,options);syncFocus();requestAnimationFrame(()=>$('#modal').querySelector('button,input,select,[tabindex]')?.focus({preventScroll:true}));};
   closeModal=function(){baseClose();syncFocus();if(modalFocus?.isConnected&&!modalFocus.closest('[inert]'))modalFocus.focus({preventScroll:true});};
-  syncRestTimer=function(){if(lastRoute!==state.route){restCollapsed=false;lastRoute=state.route;}baseSync();syncFocus();};
-  startRest=function(seconds){restCollapsed=false;baseStart(seconds);syncFocus();};
+  syncRestTimer=function(){if(lastRoute!==state.route){restCollapsed=true;lastRoute=state.route;}baseSync();syncFocus();};
+  startRest=function(seconds){restCollapsed=true;baseStart(seconds);syncFocus();};
   stopRest=function(){baseStop();restCollapsed=false;syncFocus();};
   new MutationObserver(syncFocus).observe(rest,{attributes:true,attributeFilter:['class']});
   document.addEventListener('keydown',e=>{
@@ -1542,7 +1542,7 @@ body.rest-expanded .rest-resume{display:none}
   }
   openRpePicker=function(path){
     const set=liveSetAt(path);if(!set)return;const value=set.rpe===''||set.rpe==null?8:Number(set.rpe);
-    openModal(`<div class="effort-slider-content"><p id="effortLabel" aria-live="polite"></p><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${value}" aria-label="RPE"><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div></div>`);
+    openModal(`<div class="effort-slider-content"><p id="effortLabel" aria-live="polite"></p><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${value}" aria-label="RPE"><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div><button type="button" id="effortDone" class="btn btn-primary">Voltar ao treino</button></div>`);
     const modal=$('#modal');modal.classList.add('effort-slider-sheet');modal.querySelector('.sheet-close-btn')?.remove();
     const slider=$('#effortSlider'),label=$('#effortLabel');
     const updateLabel=()=>{label.textContent=`RPE ${rpeLabel(slider.value)} - ${effortDefinition(Number(slider.value))}`;slider.setAttribute('aria-valuetext',label.textContent);};updateLabel();
@@ -1551,16 +1551,16 @@ body.rest-expanded .rest-resume{display:none}
       if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}
       set.rpe=Number(slider.value);persistDraft();const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}
     };
-    slider.oninput=commit;slider.onchange=commit;
+    slider.oninput=commit;slider.onchange=commit;$('#effortDone').onclick=()=>{commit();if(set.done)closeModal();};
   };
   // Effort selection stays open until its centered handle is dragged down.
-  $('#modalBackdrop').addEventListener('click',e=>{if($('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalLayer').classList.contains('is-hidden')&&$('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
+  $('#modalBackdrop').addEventListener('click',e=>{if($('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();closeModal();}},true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalLayer').classList.contains('is-hidden')&&$('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();closeModal();}},true);
   const settings=openLiveExerciseSettings;
   openLiveExerciseSettings=function(path){settings(path);const reps=$('[data-live-ex-action="reps"]'),restButton=$('[data-live-ex-action="rest"]');reps?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${repeatIcon}</span>`);restButton?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${clockIcon}</span>`);if(restButton)restButton.onclick=()=>editRest(path);};
   function editRest(path){const ex=liveExerciseAt(path);if(!ex)return;openRestPicker(ex.restSec,seconds=>{ex.restSec=seconds;persistDraft();render();},()=>openLiveExerciseSettings(path),'Descanso do exercício');}
   const bind=bindLiveHandlers;
-  liveExerciseHtml=function(participant,pi,ex,ei){return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><div class="live-title-block"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong></div><span class="history-mini">${icons.history}</span></button><button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button></div><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${compactLastSetsHtml(ex)}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;};
+  liveExerciseHtml=function(participant,pi,ex,ei){return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><div class="live-title-block"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong></div><span class="history-mini">${icons.history}</span></button><button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button></div><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${compactLastSetsHtml(ex)}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Adicionar observação" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;};
   bindLiveHandlers=function(){bind();$$('[data-exercise-rest]').forEach(btn=>btn.onclick=()=>editRest(btn.dataset.exerciseRest));};
   const renderLive=renderActiveWorkout;
   renderActiveWorkout=function(main){renderLive(main);$('.live-finish',main)?.remove();const action=$('#topActionBtn');if(action){action.innerHTML=icons.trash;action.setAttribute('aria-label','Descartar treino');action.title='Descartar treino';action.onclick=discardLiveWorkout;}syncFocus();};
@@ -1668,5 +1668,8 @@ input.form-input,input.set-input,textarea.form-textarea{-webkit-appearance:none;
 })();
 
 </script>
+
+<script src="./recovery-ui.js"></script>
+<script src="./cloud-sync.js"></script>
 </body>
 </html>

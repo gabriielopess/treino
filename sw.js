@@ -1,9 +1,11 @@
-const CACHE = 'treino-pro-v3';
+const CACHE = 'treino-recovery-cloud-v1';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './recovery-ui.js',
+  './cloud-sync.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png'
@@ -22,6 +24,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  if (new URL(event.request.url).pathname.startsWith('/api/')) return;
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
     fetch(event.request)
