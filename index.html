@@ -2291,6 +2291,14 @@ html[data-theme="light"] .search-field svg{color:#5F7484!important}
   const swapMenuIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8h12m0 0-3-3m3 3-3 3M19 16H7m0 0 3-3m-3 3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const repsMenuIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   const clockMenuIconFinal=icons.clock||'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const recentEvolutionProgramId=(studentId,period)=>{
+    const rows=sessionsForStudent(studentId,period).slice().reverse();
+    for(const session of rows){
+      const participant=participantForStudent(session,studentId);
+      if(participant?.programId&&programById(participant.programId)&&(participant.exercises||[]).some(ex=>completedSets(ex).length))return participant.programId;
+    }
+    return null;
+  };
 
   /* Sete dias passa a ser um período real em todos os cálculos que usam cutoffFromPeriod. */
   cutoffFromPeriod=function(period){
@@ -2371,7 +2379,7 @@ html[data-theme="light"] .search-field svg{color:#5F7484!important}
     if(!state.evolutionProgramId)state.evolutionProgramId=recentEvolutionProgramId(st.id,period);
     if(state.evolutionProgramId&&!programs.some(p=>p.id===state.evolutionProgramId))state.evolutionProgramId=recentEvolutionProgramId(st.id,period);
     const selectedProgram=state.evolutionProgramId?programById(state.evolutionProgramId):null,programParticipants=selectedProgram?participants.filter(x=>x.p.programId===selectedProgram.id):[],topGain=gains[0]||null,ctx={period,sessions,sets,uniqueExercises,topGain};
-    main.innerHTML=`<section class="screen"><div class="evo-person-head">${avatarHtml(st)}<div><small>EVOLUÇÃO INDIVIDUAL</small><h1>${esc(st.name)}</h1></div></div><div class="evo-period-wrap"><button class="evo-period-select" id="evoPeriodSelect" type="button"><span>Período</span><strong>${periodLabel(period)}</strong>${chev()}</button></div><div class="section evolution-summary" style="margin-top:0"><div class="grid-2"><button class="metric-card evo-metric-link" data-evo-metric="sessions"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></button><button class="metric-card evo-metric-link" data-evo-metric="sets"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></button><button class="metric-card evo-metric-link" data-evo-metric="exercises"><div><small>Exercícios</small><strong>${uniqueExercises}</strong></div><p>com registro</p></button><button class="metric-card highlight evo-metric-link" data-evo-metric="gain"><div><small>Maior evolução</small><strong>${topGain?`+${round(topGain.deltaKg)} kg`:'—'}</strong></div><p>${topGain?esc(topGain.exerciseName):'sem comparação'}</p></button></div></div>${evolutionVolumeChart(programParticipants,selectedProgram,programs.length)}<div class="chart-card muscle-volume-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong><small>Índice equalizado por número de séries e carga relativa de cada exercício.</small></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.')}</div><div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.')}</div></div></section>`;
+    main.innerHTML=`<section class="screen"><div class="evo-person-head">${avatarHtml(st)}<div><small>EVOLUÇÃO INDIVIDUAL</small><h1>${esc(st.name)}</h1></div></div><div class="evo-period-wrap"><button class="evo-period-select" id="evoPeriodSelect" type="button"><span>Período</span><strong>${periodLabel(period)}</strong>${chev()}</button></div><div class="section evolution-summary" style="margin-top:0"><div class="grid-2"><button class="metric-card evo-metric-link" data-evo-metric="sessions"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></button><button class="metric-card evo-metric-link" data-evo-metric="sets"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></button><button class="metric-card evo-metric-link" data-evo-metric="exercises"><div><small>Exercícios</small><strong>${uniqueExercises}</strong></div><p>com registro</p></button><button class="metric-card highlight evo-metric-link" data-evo-metric="gain"><div><small>Maior evolução</small><strong>${topGain?`+${round(topGain.deltaKg)} kg`:'—'}</strong></div><p>${topGain?esc(topGain.exerciseName):'sem comparação'}</p></button></div></div>${volumeChartHtml(programParticipants,selectedProgram,programs.length)}<div class="chart-card muscle-volume-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong><small>Índice equalizado por número de séries e carga relativa de cada exercício.</small></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.')}</div><div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.')}</div></div></section>`;
     $('#evoPeriodSelect')?.addEventListener('click',()=>openEvolutionPeriodPicker(st.id));
     $('#evoProgramSelect')?.addEventListener('click',()=>openEvolutionProgramPicker(st.id));
     $$('[data-evo-metric]',main).forEach(btn=>btn.onclick=()=>explainEvolutionMetric(btn.dataset.evoMetric,ctx));
@@ -2419,7 +2427,7 @@ html[data-theme="light"] .search-field svg{color:#5F7484!important}
   /* O descanso aberto pelos três pontos usa o mesmo seletor de tempos do cabeçalho. */
   openLiveExerciseSettings=function(path){
     const ex=liveExerciseAt(path);if(!ex)return;
-    openModal(`<h2 class="exercise-menu-title">${esc(ex.name)}</h2><div class="action-list exercise-menu"><div class="exercise-menu-row exercise-menu-primary-row"><button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon">${swapMenuIcon}</span><div class="row-main"><strong>Trocar exercício</strong><small>Somente nesta sessão</small></div>${menuChevron}</button><button class="action-item danger" type="button" data-live-ex-action="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Excluir exercício</strong><small>Somente nesta sessão</small></div></button></div><div class="exercise-menu-row"><button class="action-item" type="button" data-live-ex-action="reps"><span class="action-icon">${repsMenuIcon}</span><div class="row-main"><strong>Repetições</strong><small>${esc(ex.targetReps||'—')} reps</small></div>${menuChevron}</button><button class="action-item" type="button" data-live-ex-action="rest"><span class="action-icon">${clockMenuIconFinal}</span><div class="row-main"><strong>Descanso</strong><small>${fmtRest(ex.restSec)}</small></div>${menuChevron}</button></div><div class="exercise-menu-row"><button class="action-item" type="button" data-live-ex-action="remove-set" ${ex.sets.length<=1?'disabled':''}><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong></div></button><button class="action-item" type="button" data-live-ex-action="add-set"><span class="action-icon">${icons.plus}</span><div class="row-main"><strong>Adicionar série</strong></div></button></div></div>`);
+    openModal(`<h2 class="exercise-menu-title">${esc(ex.name)}</h2><div class="action-list exercise-menu"><div class="exercise-menu-row exercise-menu-primary-row"><button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon">${swapMenuIcon}</span><div class="row-main"><strong>Trocar exercício</strong></div></button><button class="action-item" type="button" data-live-ex-action="delete"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Excluir exercício</strong></div></button></div><div class="exercise-menu-row"><button class="action-item" type="button" data-live-ex-action="reps"><span class="action-icon">${repsMenuIcon}</span><div class="row-main"><strong>Repetições</strong><small>${esc(ex.targetReps||'—')} reps</small></div>${menuChevron}</button><button class="action-item" type="button" data-live-ex-action="rest"><span class="action-icon">${clockMenuIconFinal}</span><div class="row-main"><strong>Descanso</strong><small>${fmtRest(ex.restSec)}</small></div>${menuChevron}</button></div><div class="exercise-menu-row"><button class="action-item" type="button" data-live-ex-action="remove-set" ${ex.sets.length<=1?'disabled':''}><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong></div></button><button class="action-item" type="button" data-live-ex-action="add-set"><span class="action-icon">${icons.plus}</span><div class="row-main"><strong>Adicionar série</strong></div></button></div></div>`);
     $$('[data-live-ex-action]',$('#modal')).forEach(btn=>btn.onclick=()=>{
       const action=btn.dataset.liveExAction;
       if(action==='replace'){closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),40);return;}
@@ -2493,11 +2501,60 @@ html[data-theme="light"] .search-field svg{color:#5F7484!important}
   };
 
   /* Garante o texto enxuto mesmo se o builder for re-renderizado. */
-  const normalizeBuilder=()=>{const btn=$('#applyBuilderDefaults');if(btn)btn.textContent='Aplicar a todos';};
+  const normalizeBuilder=()=>{const btn=$('#applyBuilderDefaults');if(btn&&btn.textContent.trim()!=='Aplicar a todos')btn.textContent='Aplicar a todos';};
   normalizeBuilder();
   const builderModal=$('#modal');if(builderModal)new MutationObserver(normalizeBuilder).observe(builderModal,{childList:true,subtree:true});
 })();
 </script>
+
+
+<style id="stability-final-fix-css">
+/* Tema claro: grupamentos nunca herdam o fundo escuro do CSS-base. */
+html[data-theme="light"] .group-button{
+  background:#E8EEF3!important;
+  border-color:#C1CDD7!important;
+  color:#31495A!important;
+  box-shadow:none!important;
+}
+html[data-theme="light"] .group-button.is-selected{
+  background:#0A427E!important;
+  border-color:#0A427E!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+
+/* Cartões de treino: respiro moderado entre datas/conteúdo e ações. */
+.workout-entry .workout-view-card{padding-bottom:8px!important}
+.workout-entry .workout-actions{padding-top:5px!important}
+.workout-entry .workout-date{margin-top:4px!important;margin-bottom:2px!important}
+.workout-entry .workout-exercise-preview{margin-bottom:4px!important}
+
+/* Trocar/Excluir: mesma linguagem visual, sem destaque vermelho e conteúdo central. */
+.exercise-menu-primary-row .action-item{
+  justify-content:center!important;
+  text-align:center!important;
+  gap:7px!important;
+}
+.exercise-menu-primary-row .action-item .row-main{
+  flex:0 1 auto!important;
+  text-align:center!important;
+}
+.exercise-menu-primary-row .action-item .row-main strong{
+  text-align:center!important;
+  font-size:12px!important;
+  line-height:1.25!important;
+}
+.exercise-menu-primary-row .action-item .action-icon{
+  background:var(--surface-2)!important;
+  border-color:var(--line)!important;
+  color:var(--muted)!important;
+}
+html[data-theme="light"] .exercise-menu-primary-row .action-item .action-icon{
+  background:#E8EEF3!important;
+  border-color:#C1CDD7!important;
+  color:#31495A!important;
+}
+</style>
 
 </body>
 </html>
