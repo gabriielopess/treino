@@ -1769,13 +1769,15 @@ html[data-theme="light"] .workout-entry .workout-view-card{background:transparen
 
 
 <style id="github-final-polish-v4">
-/* Marca no cabeçalho das quatro áreas principais. */
+/* Marca no cabeçalho das quatro áreas principais: somente o ícone, sem moldura. */
 .header-logo{
-  width:34px;height:34px;flex:0 0 34px;display:block;object-fit:cover;
-  border-radius:10px;background:#000;border:1px solid rgba(255,255,255,.08)
+  width:34px;height:34px;flex:0 0 34px;display:block;object-fit:contain;
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  filter:none
 }
-html[data-theme="light"] .header-logo{border-color:#D2DBE2;box-shadow:0 1px 3px rgba(20,35,48,.08)}
-@media(max-width:370px){.header-logo{width:31px;height:31px;flex-basis:31px;border-radius:9px}.topbar-leading{gap:8px!important}}
+html[data-theme="dark"] .header-logo{filter:none}
+html[data-theme="light"] .header-logo{filter:brightness(0)}
+@media(max-width:370px){.header-logo{width:31px;height:31px;flex-basis:31px}.topbar-leading{gap:8px!important}}
 
 /* Menu dos três pontos: “Trocar exercício” usa exatamente a mesma métrica dos demais. */
 .exercise-menu>.action-item,.exercise-menu-row .action-item{
