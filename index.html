@@ -1669,7 +1669,104 @@ input.form-input,input.set-input,textarea.form-textarea{-webkit-appearance:none;
 
 </script>
 
+
+<style id="requested-final-fixes">
+/* Treino: ações pertencem ao mesmo cartão. */
+.workout-entry{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:0;overflow:hidden;margin-bottom:12px!important}
+.workout-entry .workout-view-card{background:transparent!important;border:0!important;border-radius:0!important;margin:0!important;padding:14px 14px 10px!important;box-shadow:none!important}
+.workout-entry .workout-actions{padding:0 14px 14px;gap:8px!important}
+
+/* Cabeçalho do exercício: histórico e menu no mesmo eixo. */
+.live-exercise-head{align-items:flex-start!important}
+.live-exercise-history{min-height:32px!important;align-items:center!important}
+.live-exercise-history .history-mini,.live-more{width:32px!important;height:32px!important;flex:0 0 32px!important;display:grid!important;place-items:center!important}
+.live-more{margin:0!important}
+.exercise-menu>.action-item,.exercise-menu-row .action-item{min-height:58px!important;align-items:center!important}
+.exercise-menu>.action-item .action-icon,.exercise-menu-row .action-item .action-icon{width:28px!important;height:28px!important;flex:0 0 28px!important;display:grid!important;place-items:center!important}
+.exercise-menu .menu-chevron{margin-left:auto;color:var(--faint);width:18px;height:18px;flex:0 0 18px}
+
+/* RPE: número em bloco central, definição abaixo, ações lado a lado. */
+.effort-rpe-value{display:grid;place-items:center;width:64px;height:58px;margin:0 auto 8px;border-radius:15px;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text);font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+.effort-rpe-definition{min-height:38px;margin:0 0 12px;text-align:center;color:var(--muted);font-size:12px;line-height:1.45}
+.effort-rpe-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+
+/* Descanso permanece no balão compacto; sem setas de expandir/recolher. */
+#restCollapse,#restResume,.rest-sheet-head{display:none!important}
+body.rest-expanded .rest-timer.on-workout{left:50%!important;bottom:calc(var(--visible-nav-height,0px) + 10px)!important;width:calc(min(600px,100%) - 24px)!important;max-width:576px!important;border-radius:18px!important;padding:10px 14px!important;display:flex!important;flex-direction:row!important;gap:10px!important}
+body.rest-expanded .rest-timer-main{display:flex!important;align-items:center!important;gap:8px!important;flex:1!important;text-align:left!important}
+body.rest-expanded .rest-timer-main small{display:block!important}
+body.rest-expanded #restTimerValue{font-size:var(--workout-clock-size)!important}
+body.rest-expanded .rest-timer-actions{display:flex!important;width:auto!important;gap:8px!important}
+body.rest-expanded .rest-timer-actions #restMinus,body.rest-expanded .rest-timer-actions #restPlus{display:none!important}
+body.rest-expanded .screen{padding-bottom:110px!important}
+
+/* Tema claro: elimina fundos escuros residuais em controles e histórico. */
+html[data-theme="light"] .picker-create-top,
+html[data-theme="light"] .builder-quick-create,
+html[data-theme="light"] .series-chip,
+html[data-theme="light"] .execution-sets>span,
+html[data-theme="light"] .performance-series .series-chip,
+html[data-theme="light"] .exercise-menu .action-item,
+html[data-theme="light"] .exercise-execution-card,
+html[data-theme="light"] .view-exercise,
+html[data-theme="light"] .history-mini{background:#F0F4F7!important;border-color:#D4DEE6!important;color:#183246!important}
+html[data-theme="light"] .workout-entry{background:#fff!important;border-color:#DCE3E9!important}
+html[data-theme="light"] .workout-entry .workout-view-card{background:transparent!important}
+</style>
+<script id="requested-final-fixes-js">
+(function(){
+  const simpleChevron='<svg class="menu-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const swapIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8h12m0 0-3-3m3 3-3 3M19 16H7m0 0 3-3m-3 3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const repsIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const clockMenuIcon=icons.clock||'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+  /* Um único bloco por treino, mantendo os dois botões dentro dele. */
+  programCardHtml=function(program){
+    const items=program.exercises.map(pe=>({pe,ex:exerciseById(pe.exerciseId)})).filter(x=>x.ex),sets=program.exercises.reduce((sum,pe)=>sum+pe.sets,0),dateBits=[];
+    if(program.startDate)dateBits.push(`início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`término ${fmtDate(program.endDate)}`);
+    return `<div class="workout-entry"><button class="workout-card workout-view-card" type="button" data-program-view="${esc(program.id)}" aria-label="Ver treino ${esc(program.name)}"><div class="workout-summary-toggle"><div><strong>${esc(program.name)}</strong><div class="workout-meta">${items.length} exercícios · ${sets} séries</div>${dateBits.length?`<div class="workout-date">${dateBits.join(' · ')}</div>`:''}</div></div><p class="workout-exercise-preview">${esc(items.map(item=>item.ex.name).join(', '))}</p></button><div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div></div>`;
+  };
+
+  /* RPE: só confirma ao tocar em Concluir. Voltar não altera a série. */
+  openRpePicker=function(path){
+    const set=liveSetAt(path);if(!set)return;const initial=set.rpe===''||set.rpe==null?8:Number(set.rpe);
+    openModal(`<div class="effort-slider-content"><div id="effortValue" class="effort-rpe-value">${rpeLabel(initial)}</div><p id="effortDefinition" class="effort-rpe-definition" aria-live="polite"></p><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${initial}" aria-label="RPE"><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div><div class="effort-rpe-actions"><button type="button" id="effortBack" class="btn btn-secondary">Voltar ao treino</button><button type="button" id="effortDone" class="btn btn-primary">Concluir</button></div></div>`);
+    const modal=$('#modal');modal.classList.add('effort-slider-sheet');modal.querySelector('.sheet-close-btn')?.remove();
+    const slider=$('#effortSlider'),valueEl=$('#effortValue'),definition=$('#effortDefinition');
+    const definitionFor=n=>n>=10?'Esforço máximo; nenhuma repetição em reserva.':n>=9.5?'Talvez conseguisse mais 1 repetição.':n>=9?'Mais 1 repetição com certeza.':n>=8.5?'Mais 1 a 2 repetições.':n>=8?'Mais 2 repetições com certeza.':n>=7?'Mais 3 repetições.':'Aquecimento / carga leve.';
+    const paint=()=>{const n=Number(slider.value);valueEl.textContent=rpeLabel(n);definition.textContent=definitionFor(n);slider.setAttribute('aria-valuetext',`RPE ${rpeLabel(n)} - ${definitionFor(n)}`);};paint();slider.oninput=paint;slider.onchange=paint;
+    $('#effortBack').onclick=closeModal;
+    $('#effortDone').onclick=()=>{if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}set.rpe=Number(slider.value);persistDraft();const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}closeModal();};
+  };
+
+  /* Ajustes durante o treino ficam apenas na sessão até a conclusão. */
+  addLiveExerciseSet=function(path){const ex=liveExerciseAt(path);if(!ex)return;const last=ex.sets[ex.sets.length-1]||{};ex.adjustmentSummary=`Séries ajustadas para ${ex.sets.length+1}`;ex.sets.push({weight:'',reps:'',rpe:'',done:false,previous:last.previous||null});persistDraft();renderActiveWorkout($('#main'));toast('Série adicionada nesta sessão.');};
+  removeLiveExerciseSet=function(path){const ex=liveExerciseAt(path);if(!ex)return;if(ex.sets.length<=1)return toast('O exercício precisa ter pelo menos 1 série.');const remove=()=>{ex.sets.pop();ex.adjustmentSummary=`Séries ajustadas para ${ex.sets.length}`;persistDraft();renderActiveWorkout($('#main'));toast('Série removida nesta sessão.');};if(ex.sets.at(-1)?.done)return confirmModal('Remover última série?','A última série já foi concluída. Ela será removida somente desta sessão.','Remover série',remove);remove();};
+  replaceLiveExercise=function(path,newExerciseId){const ex=liveExerciseAt(path),next=exerciseById(newExerciseId);if(!ex||!next)return;const doneCount=ex.sets.filter(s=>s.done).length,apply=()=>{const [pi]=parsePath(path),st=studentById(live.participants[pi].studentId),prev=getLastExercisePerformance(st.id,next.id),prevSets=prev?completedSets(prev):[],count=ex.sets.length;ex.adjustmentSummary=`${ex.name} → ${next.name}`;ex.exerciseId=next.id;ex.name=next.name;ex.muscleGroups=next.muscleGroups.slice();ex.sets=Array.from({length:count},(_,i)=>{const base=prevSets[i]||prevSets.at(-1)||null;return{weight:'',reps:'',rpe:'',done:false,previous:base?{weight:base.weight,reps:base.reps,rpe:base.rpe??null}:null};});persistDraft();renderActiveWorkout($('#main'));toast('Troca aplicada somente nesta sessão por enquanto.');};if(doneCount)return confirmModal('Trocar exercício?',`Já existem ${doneCount} série${doneCount===1?' concluída':'s concluídas'}. A troca vai limpar essas séries nesta sessão.`,`Trocar e limpar`,apply,false);apply();};
+  openLiveExerciseAdjustments=function(path,field='both'){const ex=liveExerciseAt(path);if(!ex)return;openModal(`<h2>Ajustar exercício</h2><p class="modal-sub">${esc(ex.name)} · ajuste somente esta sessão. Você decide ao concluir se salva na ficha.</p><div class="form-row" ${field==='rest'?'hidden':''}><label class="form-label">Faixa de repetições</label><input id="liveRepsEdit" class="form-input" value="${esc(ex.targetReps||'')}"></div><div class="form-row" ${field==='reps'?'hidden':''}><label class="form-label">Descanso</label><input id="liveRestEdit" class="form-input" value="${fmtRest(ex.restSec)}"></div><div class="modal-actions"><button class="btn btn-secondary" id="liveEditCancel">Cancelar</button><button class="btn btn-primary" id="liveEditSave">Aplicar</button></div>`);$('#liveEditCancel').onclick=()=>{closeModal();setTimeout(()=>openLiveExerciseSettings(path),40);};$('#liveEditSave').onclick=()=>{if(field!=='rest'){const next=$('#liveRepsEdit').value.trim();if(!next)return toast('Informe a faixa de repetições.');ex.targetReps=next;}if(field!=='reps')ex.restSec=clamp(parseRest($('#liveRestEdit').value),0,3600);ex.adjustmentSummary=`${ex.targetReps} reps · descanso ${fmtRest(ex.restSec)}`;persistDraft();closeModal();renderActiveWorkout($('#main'));};};
+
+  openLiveExerciseSettings=function(path){const ex=liveExerciseAt(path);if(!ex)return;openModal(`<h2 class="exercise-menu-title">${esc(ex.name)}</h2><div class="action-list exercise-menu"><button class="action-item" type="button" data-live-ex-action="replace"><span class="action-icon">${swapIcon}</span><div class="row-main"><strong>Trocar exercício</strong><small>Substituir nesta sessão</small></div>${simpleChevron}</button><div class="exercise-menu-row"><button class="action-item" type="button" data-live-ex-action="reps"><span class="action-icon">${repsIcon}</span><div class="row-main"><strong>Repetições</strong><small>${esc(ex.targetReps||'—')} reps</small></div>${simpleChevron}</button><button class="action-item" type="button" data-live-ex-action="rest"><span class="action-icon">${clockMenuIcon}</span><div class="row-main"><strong>Descanso</strong><small>${fmtRest(ex.restSec)}</small></div>${simpleChevron}</button></div><div class="exercise-menu-row"><button class="action-item" type="button" data-live-ex-action="remove-set" ${ex.sets.length<=1?'disabled':''}><span class="action-icon">${icons.minus}</span><div class="row-main"><strong>Remover série</strong></div></button><button class="action-item" type="button" data-live-ex-action="add-set"><span class="action-icon">${icons.plus}</span><div class="row-main"><strong>Adicionar série</strong></div></button></div></div>`);$$('[data-live-ex-action]',$('#modal')).forEach(btn=>btn.onclick=()=>{const action=btn.dataset.liveExAction;if(action==='replace'){closeModal();setTimeout(()=>openExercisePicker(id=>replaceLiveExercise(path,id),()=>renderActiveWorkout($('#main'))),40);return;}if(action==='reps'||action==='rest'){closeModal();setTimeout(()=>openLiveExerciseAdjustments(path,action),40);return;}if(action==='add-set'){closeModal();addLiveExerciseSet(path);return;}if(action==='remove-set'){closeModal();setTimeout(()=>removeLiveExerciseSet(path),30);}});};
+
+  const baseBind=bindLiveHandlers;
+  bindLiveHandlers=function(){baseBind();$$('[data-exercise-rest]').forEach(btn=>btn.onclick=()=>{const ex=liveExerciseAt(btn.dataset.exerciseRest);if(!ex)return;openRestPicker(ex.restSec,seconds=>{ex.restSec=seconds;ex.adjustmentSummary=`${ex.targetReps} reps · descanso ${fmtRest(ex.restSec)}`;persistDraft();render();},()=>openLiveExerciseSettings(btn.dataset.exerciseRest),'Descanso do exercício');});};
+
+  /* Impede que “Adicionar exercício” grave a ficha antes da conclusão. */
+  const baseRender=renderActiveWorkout;
+  renderActiveWorkout=function(main){baseRender(main);const rest=$('#restTimer');if(rest)rest.onclick=e=>{if(e.target.closest('button'))return;};$$('[data-live-add-exercise]',main).forEach(btn=>btn.onclick=()=>{const session=live,pi=Number(btn.dataset.liveAddExercise),participant=session?.participants?.[pi];if(!participant)return;openExercisePicker(id=>{if(live!==session)return;const ex=exerciseById(id);if(!ex)return;const st=studentById(participant.studentId),sets=clamp(parseInteger(st?.defaultSets)||3,1,50),restSec=clamp(parseInteger(st?.defaultRestSec)||90,60,180),targetReps=String(st?.defaultTargetReps||'8–12');participant.exercises.push({exerciseId:id,sourceExerciseId:id,programIndex:null,name:ex.name,muscleGroups:normalizeGroups(ex.muscleGroups),sets:Array.from({length:sets},()=>({weight:'',reps:'',rpe:'',done:false,autoWeight:true,autoReps:true})),restSec,targetReps,note:'',referenceWeight:null,adjustmentSummary:'Exercício adicionado nesta sessão'});persistDraft();closeModal();render();toast('Exercício adicionado somente nesta sessão por enquanto.');});});};
+
+  function sessionChanges(){
+    const out=[];
+    for(const p of live?.participants||[]){const program=programById(p.programId);if(!program)continue;const before=program.exercises||[],after=p.exercises||[],lines=[];const max=Math.max(before.length,after.length);for(let i=0;i<max;i++){const b=before[i],a=after[i];if(!b&&a){lines.push(`Adicionado: ${a.name}`);continue;}if(b&&!a){lines.push(`Removido: ${exerciseById(b.exerciseId)?.name||'exercício'}`);continue;}if(!a||!b)continue;const bName=exerciseById(b.exerciseId)?.name||'Exercício';if(a.exerciseId!==b.exerciseId)lines.push(`Troca: ${bName} → ${a.name}`);if(a.sets.length!==Number(b.sets))lines.push(`${a.name}: ${b.sets} → ${a.sets.length} séries`);if(String(a.targetReps||'')!==String(b.targetReps||''))lines.push(`${a.name}: repetições ${b.targetReps||'—'} → ${a.targetReps||'—'}`);if(Number(a.restSec||0)!==Number(b.restSec||0))lines.push(`${a.name}: descanso ${fmtRest(b.restSec||0)} → ${fmtRest(a.restSec||0)}`);}if(lines.length)out.push({participant:p,program,lines});}
+    return out;
+  }
+  function applySessionToPrograms(changes){for(const row of changes){row.program.exercises=row.participant.exercises.map(ex=>({exerciseId:ex.exerciseId,sets:ex.sets.length,restSec:ex.restSec,targetReps:ex.targetReps||'',note:ex.note||'',referenceWeight:ex.referenceWeight??null}));row.program.updatedAt=Date.now();}persist();}
+  const baseSaveFinishedWorkout=saveFinishedWorkout;
+  saveFinishedWorkout=function(){if(!live)return;const changes=sessionChanges();if(!changes.length)return baseSaveFinishedWorkout();const details=changes.map(row=>`<div class="previous-note"><small>${esc(row.program.name||'Ficha')}</small><div>${row.lines.map(x=>`• ${esc(x)}`).join('<br>')}</div></div>`).join('');openModal(`<h2>Alterações neste treino</h2><p class="modal-sub">Você alterou a sessão. Deseja atualizar a ficha para os próximos treinos ou manter essas mudanças somente hoje?</p>${details}<div class="modal-actions"><button class="btn btn-secondary" id="sessionOnlySave">Só esta sessão</button><button class="btn btn-primary" id="updateRoutineSave">Salvar na ficha</button></div>`);$('#sessionOnlySave').onclick=()=>baseSaveFinishedWorkout();$('#updateRoutineSave').onclick=()=>{applySessionToPrograms(changes);baseSaveFinishedWorkout();};};
+
+  render();
+})();
+</script>
+
 <script src="./recovery-ui.js"></script>
-<script src="./cloud-sync.js"></script>
 </body>
 </html>

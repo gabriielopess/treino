@@ -1,11 +1,10 @@
-const CACHE = 'treino-recovery-cloud-v1';
+const CACHE = 'treino-local-fixes-v2';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './recovery-ui.js',
-  './cloud-sync.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png'
