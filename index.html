@@ -9,14 +9,13 @@
   <meta name="apple-mobile-web-app-title" content="Treino">
   <meta name="format-detection" content="telephone=no">
   <title>Treino Pro</title>
-  <meta name="treino-build" content="20260928-final3">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
 
   <!--
-    Ajustes visuais sobre o CSS existente.
-    Use este index.html junto do app.js da mesma atualização.
+    Alterações desta etapa ficam propositalmente apenas no index.html.
+    O bloco abaixo sobrescreve somente a camada visual do CSS externo.
   -->
   <style>
     :root{
@@ -299,6 +298,7 @@ body.workout-route .screen{padding-bottom:calc(118px + var(--safe-bottom))!impor
 body.workout-route .live-finish{position:fixed!important;left:50%!important;transform:translateX(-50%)!important;bottom:0!important;z-index:75!important;width:min(600px,100%)!important;margin:0!important;padding:10px 16px calc(10px + var(--safe-bottom))!important;background:color-mix(in srgb,var(--bg) 94%,transparent)!important;border-top:1px solid var(--line)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;display:grid!important;grid-template-columns:minmax(110px,.72fr) minmax(160px,1.28fr)!important;gap:9px!important}
 body.workout-route #liveFinish{order:2;height:50px!important;font-size:13.5px!important}
 body.workout-route #liveLeave{order:1;height:50px!important}
+body.workout-route .rest-timer.on-workout{bottom:calc(80px + var(--safe-bottom))!important}
 
 /* Builder: one predictable rhythm, no text collision in interval controls. */
 .builder-body{padding:16px 2px 20px!important;overflow-x:hidden!important}
@@ -399,6 +399,8 @@ html[data-theme="light"] .rpe-dock{background:rgba(255,255,255,.97)!important;bo
 .evo-choice-state .chev{width:13px!important;height:13px!important}
 
 /* Fechamento explícito dos sheets + área de arraste funcional. */
+.sheet-close-btn{position:absolute;right:14px;top:12px;z-index:6;width:34px;height:34px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);display:grid;place-items:center;font-size:18px;padding:0}
+.modal:not(.fullscreen)>h2:first-of-type{padding-right:46px}
 .modal-handle{width:52px!important;height:5px!important;margin-bottom:14px!important;background:var(--surface-3)!important;touch-action:none!important}
 
 /* Mais respiro antes dos primeiros chips/balões de série. */
@@ -431,7 +433,6 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
     <header class="topbar">
       <div class="topbar-leading">
         <button id="backBtn" class="icon-btn is-hidden" aria-label="Voltar"></button>
-        <img id="headerBrand" class="header-brand" alt="" aria-hidden="true" width="30" height="28">
         <div class="topbar-title">
           <small id="topEyebrow">TREINO</small>
           <strong id="topTitle">Início</strong>
@@ -445,13 +446,10 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
 
     <main id="main" class="main"></main>
 
-    <button id="activeWorkoutPill" class="active-workout-pill workout-status-bar is-hidden" type="button" aria-label="Voltar ao treino em andamento">
+    <button id="activeWorkoutPill" class="active-workout-pill is-hidden" type="button" aria-label="Voltar ao treino em andamento">
       <span class="pulse-dot"></span>
       <span class="active-workout-copy"><small>Treino em andamento</small><strong id="activeWorkoutLabel">Abrir treino</strong></span>
-      <span class="status-clocks">
-        <span class="status-clock status-workout-clock" role="timer" aria-label="Tempo de treino"><span data-icon="clock" aria-hidden="true"></span><span id="activeWorkoutClock" class="active-workout-clock">00:00</span></span>
-        <span id="activeWorkoutRest" class="status-clock status-rest-clock is-hidden" role="timer" aria-label="Descanso restante" aria-hidden="true"><span data-icon="clock" aria-hidden="true"></span><span id="activeRestClock">00:00</span></span>
-      </span>
+      <span id="activeWorkoutClock" class="active-workout-clock">00:00</span>
     </button>
 
     <nav id="bottomNav" class="bottom-nav" aria-label="Navegação principal">
@@ -469,13 +467,14 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
 
   <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
-  <div id="restTimer" class="rest-timer workout-status-bar is-hidden" aria-hidden="true" role="group" aria-label="Descanso do treino">
-    <div class="rest-timer-main status-rest-clock" role="timer" aria-label="Tempo de descanso restante">
-      <span data-icon="clock" aria-hidden="true"></span><strong id="restTimerValue">00:00</strong>
+  <div id="restTimer" class="rest-timer is-hidden">
+    <div class="rest-timer-main">
+      <small>DESCANSO</small>
+      <strong id="restTimerValue">00:00</strong>
     </div>
     <div class="rest-timer-actions">
-      <button id="restMinus" type="button" aria-label="Diminuir descanso em 15 segundos">−15 s</button>
-      <button id="restPlus" type="button" aria-label="Aumentar descanso em 15 segundos">+15 s</button>
+      <button id="restMinus" type="button">−15s</button>
+      <button id="restPlus" type="button">+15s</button>
       <button id="restSkip" class="rest-skip" type="button">Pular</button>
     </div>
   </div>
@@ -484,7 +483,7 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
   <input id="backupImportInput" class="is-hidden" type="file" accept="application/json,.json">
 
   <!-- Carregado de forma síncrona no fim do body para permitir as sobrescritas abaixo. -->
-  <script src="./app.js?v=20260928-final3"></script>
+  <script src="./app.js"></script>
   <script>
   'use strict';
 
@@ -959,7 +958,17 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
     stage.addEventListener('wheel',e=>{e.preventDefault();z=clamp(z+(e.deltaY<0?.08:-.08),1,3);zoom.value=String(z);render();},{passive:false});
     $('#photoCropClose',layer).onclick=()=>finish(true);$('#photoCropCancel',layer).onclick=()=>finish(true);$('#photoCropSave',layer).onclick=()=>finish(false);
   }
-// Student editor is defined in app.js (photo, birth date and sex).
+  openStudentForm=function(studentId=null){
+    const existing=studentId?studentById(studentId):null;let photoDataUrl=existing?.photoDataUrl||'';
+    openModal(`<h2>${existing?'Editar aluno':'Novo aluno'}</h2><div class="form-row"><label class="form-label">Foto do aluno</label><div class="student-photo-pick"><div id="studentPhotoPreview">${photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(existing?.name||'Aluno'))}</div>`}</div><div class="student-photo-actions"><button class="btn btn-secondary btn-sm" id="studentPhotoChoose" type="button">${photoDataUrl?'Trocar foto':'Adicionar foto'}</button>${photoDataUrl?'<button class="btn btn-ghost btn-sm" id="studentPhotoRemove" type="button">Remover</button>':''}</div></div><input id="studentPhotoFile" class="is-hidden" type="file" accept="image/*"></div><div class="form-row"><label class="form-label">Nome</label><input id="studentName" class="form-input" value="${esc(existing?.name||'')}"></div><div class="form-row"><label class="form-label" for="studentModality">Modalidade</label><select id="studentModality" class="form-select">${['Presencial','Online','Ficha de Treinamento'].map(m=>`<option ${m===(existing?.modality||'Presencial')?'selected':''}>${m}</option>`).join('')}</select></div><div class="form-row"><label class="form-label" for="studentPaired">Dupla</label><select id="studentPaired" class="form-select"><option value="no">Não</option><option value="yes" ${existing?.paired?'selected':''}>Sim</option></select></div><div class="form-row"><label class="form-label">Objetivo</label><input id="studentGoal" class="form-input" value="${esc(existing?.goal||'')}"></div><div class="form-row"><label class="form-label">Observações</label><textarea id="studentNotes" class="form-textarea">${esc(existing?.notes||'')}</textarea></div><div class="modal-actions"><button class="btn btn-secondary" id="studentCancel">Cancelar</button><button class="btn btn-primary" id="studentSave">${existing?'Salvar':'Criar aluno'}</button></div>`);
+    const refreshPhotoPreview=()=>{const name=$('#studentName')?.value.trim()||existing?.name||'Aluno';$('#studentPhotoPreview').innerHTML=photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(name))}</div>`;};
+    $('#studentCancel').onclick=closeModal;$('#studentPhotoChoose').onclick=()=>$('#studentPhotoFile').click();
+    $('#studentPhotoFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;openPhotoCropper(file,data=>{photoDataUrl=data;refreshPhotoPreview();toast('Recorte pronto para salvar.');},()=>{});};
+    if($('#studentPhotoRemove'))$('#studentPhotoRemove').onclick=()=>{photoDataUrl='';refreshPhotoPreview();$('#studentPhotoRemove')?.classList.add('is-hidden');};
+    $('#studentName').oninput=()=>{if(!photoDataUrl)refreshPhotoPreview();};
+    $('#studentSave').onclick=()=>{const name=$('#studentName').value.trim();if(!name)return toast('Digite o nome do aluno.');if(existing){existing.name=name;existing.modality=$('#studentModality').value;existing.paired=$('#studentPaired').value==='yes';existing.goal=$('#studentGoal').value.trim();existing.notes=$('#studentNotes').value.trim();existing.photoDataUrl=photoDataUrl;}else{const st={id:uid('student'),name,modality:$('#studentModality').value,paired:$('#studentPaired').value==='yes',goal:$('#studentGoal').value.trim(),notes:$('#studentNotes').value.trim(),photoDataUrl,defaultRestSec:120,defaultSets:3,defaultTargetReps:'8–12',createdAt:Date.now()};db.students.push(st);state.studentId=st.id;}persist();closeModal();navigate('student',{studentId:existing?.id||state.studentId});toast(existing?'Aluno atualizado.':'Aluno criado.');};
+    setTimeout(()=>$('#studentName')?.focus(),120);
+  };
 
   /* 8. Global exercise deletion: remove every persisted/draft reference, never whole workouts. */
   confirmDeleteExercise=function(exerciseId){
@@ -1005,21 +1014,27 @@ window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var 
 (function(){
 'use strict';
 const GENDER_KEY='treinoStudentGenderV1';
-function loadGenderMap(){try{const map=JSON.parse(localStorage.getItem(GENDER_KEY)||'{}');return map&&typeof map==='object'&&!Array.isArray(map)?map:{};}catch(e){return {};}}
-function saveGenderMap(map){try{localStorage.setItem(GENDER_KEY,JSON.stringify(map));}catch(e){console.warn('Falha ao salvar preferência de sexo',e);}}
-function getStudentGender(id){return readStudentSex(studentById(id));}
-function setStudentGender(id,value){const sex=normalizeStudentSex(value),student=studentById(id);if(student)student.sex=sex;const map=loadGenderMap();if(sex!=='unspecified')map[id]=sex;else delete map[id];saveGenderMap(map);}
+function loadGenderMap(){try{return JSON.parse(localStorage.getItem(GENDER_KEY)||'{}')||{};}catch(e){return {};}}
+function saveGenderMap(map){try{localStorage.setItem(GENDER_KEY,JSON.stringify(map));}catch(e){console.warn('Falha ao salvar sexo do modelo',e);}}
+function getStudentGender(id){return loadGenderMap()[id]||'unspecified';}
+function setStudentGender(id,value){const map=loadGenderMap();if(value&&value!=='unspecified')map[id]=value;else delete map[id];saveGenderMap(map);}
 window.getStudentGender=getStudentGender;window.setStudentGender=setStudentGender;
 
 /* Theme toggle only lives in the three-dot menu. */
 const __setHeader=setHeader;
 setHeader=function(opts){__setHeader(opts);$('#themeToggle')?.classList.add('is-hidden');};
 
-/* Child sheets, focus and gestures are managed centrally by app.js. */
+/* Sheet locking + drag-to-dismiss from the handle. */
+const __openModal=openModal,__closeModal=closeModal;
+let sheetCleanup=null;
+function installSheetGesture(){window.installSheetGesture?.();}
+
+openModal=function(html,opts={}){__openModal(html,opts);document.body.classList.add('modal-open');requestAnimationFrame(installSheetGesture);};
+closeModal=function(){sheetCleanup?.();sheetCleanup=null;document.body.classList.remove('modal-open');__closeModal();};
 
 /* Workout mode owns the bottom area. */
 const __render=render;
-render=function(){const on=state.route==='workout'&&!!live?.startedAt;document.body.classList.toggle('workout-route',on);__render();syncFloatingUI();};
+render=function(){__render();const on=state.route==='workout'&&!!live?.startedAt;document.body.classList.toggle('workout-route',on);};
 
 /* Numeric-only set nomenclature. */
 compactLastSetsHtml=function(ex){const rows=(ex.sets||[]).map(s=>s.previous).filter(Boolean).slice(0,4);if(!rows.length)return '';return `<div class="live-last-strip"><small>Último</small>${rows.map((s,i)=>`<span class="live-last-chip"><b>${i+1}</b> ${parseDecimal(s.weight)} × ${parseInteger(s.reps)}</span>`).join('')}</div>`;};
@@ -1053,7 +1068,13 @@ openPhotoCropper=function(file,onConfirm,onCancel){
   $('#photoCropClose',layer).onclick=()=>finish(true);$('#photoCropCancel',layer).onclick=()=>finish(true);$('#photoCropSave',layer).onclick=()=>finish(false);
 };
 
-// Student editor is defined in app.js (photo, birth date and sex).
+openStudentForm=function(studentId=null){
+  const existing=studentId?studentById(studentId):null;let photoDataUrl=existing?.photoDataUrl||'',gender=getStudentGender(existing?.id);
+  openModal(`<h2>${existing?'Editar aluno':'Novo aluno'}</h2><div class="form-row"><label class="form-label">Foto do aluno</label><div class="student-photo-pick"><div id="studentPhotoPreview">${photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(existing?.name||'Aluno'))}</div>`}</div><div class="student-photo-actions"><button class="btn btn-secondary btn-sm" id="studentPhotoChoose" type="button">${photoDataUrl?'Trocar foto':'Adicionar foto'}</button>${photoDataUrl?'<button class="btn btn-ghost btn-sm" id="studentPhotoRemove" type="button">Remover</button>':''}</div></div><input id="studentPhotoFile" class="is-hidden" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"></div><div class="form-row"><label class="form-label">Nome</label><input id="studentName" class="form-input" value="${esc(existing?.name||'')}"></div><div class="form-row"><label class="form-label">Modelo corporal</label><select id="studentGender" class="form-select"><option value="unspecified" ${gender==='unspecified'?'selected':''}>Não informado</option><option value="female" ${gender==='female'?'selected':''}>Feminino</option><option value="male" ${gender==='male'?'selected':''}>Masculino</option></select><div class="student-gender-note">Usado somente para escolher o modelo anatômico do resumo.</div></div><div class="form-row"><label class="form-label">Modalidade</label><select id="studentModality" class="form-select">${['Presencial','Online','Ficha de Treinamento'].map(m=>`<option ${m===(existing?.modality||'Presencial')?'selected':''}>${m}</option>`).join('')}</select></div><div class="form-row"><label class="form-label">Objetivo</label><input id="studentGoal" class="form-input" value="${esc(existing?.goal||'')}"></div><div class="form-row"><label class="form-label">Observações</label><textarea id="studentNotes" class="form-textarea">${esc(existing?.notes||'')}</textarea></div><div class="modal-actions"><button class="btn btn-secondary" id="studentCancel">Cancelar</button><button class="btn btn-primary" id="studentSave">${existing?'Salvar':'Criar aluno'}</button></div>`);
+  const refresh=()=>{const name=$('#studentName')?.value.trim()||existing?.name||'Aluno';$('#studentPhotoPreview').innerHTML=photoDataUrl?`<div class="avatar round"><img src="${esc(photoDataUrl)}" alt=""></div>`:`<div class="avatar round">${esc(initials(name))}</div>`;};
+  $('#studentCancel').onclick=closeModal;$('#studentPhotoChoose').onclick=()=>$('#studentPhotoFile').click();$('#studentPhotoFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;openPhotoCropper(file,data=>{photoDataUrl=data;refresh();toast('Foto pronta para salvar.');},()=>{});};if($('#studentPhotoRemove'))$('#studentPhotoRemove').onclick=()=>{photoDataUrl='';refresh();$('#studentPhotoRemove')?.classList.add('is-hidden');};$('#studentName').oninput=()=>{if(!photoDataUrl)refresh();};
+  $('#studentSave').onclick=()=>{const name=$('#studentName').value.trim();if(!name)return toast('Digite o nome do aluno.');let id;if(existing){existing.name=name;existing.modality=$('#studentModality').value;existing.goal=$('#studentGoal').value.trim();existing.notes=$('#studentNotes').value.trim();existing.photoDataUrl=photoDataUrl;id=existing.id;}else{const st={id:uid('student'),name,modality:$('#studentModality').value,paired:false,goal:$('#studentGoal').value.trim(),notes:$('#studentNotes').value.trim(),photoDataUrl,defaultRestSec:120,defaultSets:3,defaultTargetReps:'8–12',createdAt:Date.now()};db.students.push(st);state.studentId=st.id;id=st.id;}setStudentGender(id,$('#studentGender').value);persist();closeModal();navigate('student',{studentId:id});toast(existing?'Aluno atualizado.':'Aluno criado.');};
+};
 
 /* Unified historical/final summary. */
 function summarySetChips(ex){return completedSets(ex).map((s,i)=>`<span class="series-chip"><b>${i+1}</b><span>${parseDecimal(s.weight)} kg × ${parseInteger(s.reps)}${s.rpe?` · RPE ${rpeLabel(s.rpe)}`:''}</span></span>`).join('');}
@@ -1140,8 +1161,7 @@ liveSetHtml=function(pi,ei,set,si,ex){
 
 openProgramView=function(programId){
   const p=programById(programId);if(!p)return;const st=studentById(p.studentId);
-  openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><p class="modal-sub">${esc(st?.name||'')} · ${p.exercises.length} exercícios</p>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=compactSeriesHtml(prev?completedSets(prev):[],{includeRpe:false});return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}${setChips}</div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
-  $('#modal').classList.add('program-summary-sheet');
+  openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><p class="modal-sub">${esc(st?.name||'')} · ${p.exercises.length} exercícios</p>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=prev?completedSets(prev).map((set,j)=>`<span class="series-chip"><b>${j+1}</b><span>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg</span></span>`).join(''):'<span class="series-chip">Sem registro</span>';return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="series-inline">${setChips}</div></div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
   $('#viewClose').onclick=closeModal;$('#viewEdit').onclick=()=>{closeModal();setTimeout(()=>openProgramBuilder(p.studentId,p.id),50);};$('#viewCopy').onclick=()=>openProgramCopy(programId);$('#viewDelete').onclick=()=>{closeModal();setTimeout(()=>confirmDeleteProgram(programId),50);};
 };
 
@@ -1160,7 +1180,15 @@ openExerciseHistory=function(...args){
   requestAnimationFrame(()=>{$$('.execution-sets span',$('#modal')).forEach(span=>{const text=span.textContent.replace(/\s+/g,' ').trim();const m=text.match(/^(?:S)?(\d+)\s*([0-9.,]+)\s*kg\s*[×x]\s*(\d+)/i);if(!m)return;span.innerHTML=`<b>${m[1]}</b>${m[3]} reps · ${m[2]} kg`;});});
 };
 
-/* Sheets have one centered handle; no duplicate close button. */
+/* 4) Sheets: alça realmente arrastável + botão de fechar. */
+installSheetGesture=function(){window.installSheetGesture?.();};
+const __openModalPolish=openModal;
+openModal=function(html,opts={}){
+  __openModalPolish(html,opts);
+  const modal=$('#modal');
+  if(modal&&!modal.classList.contains('fullscreen')&&!modal.querySelector('.sheet-close-btn')){const btn=document.createElement('button');btn.className='sheet-close-btn';btn.type='button';btn.setAttribute('aria-label','Fechar');btn.textContent='×';btn.onclick=closeModal;modal.appendChild(btn);}
+  requestAnimationFrame(installSheetGesture);
+};
 
 /* 5) Anatomia: regiões destacadas seguem contornos mais orgânicos e o modelo externo perde o efeito de mosaico. */
 function smoothOverlayPath(stats,name,d,boost=1){const h=muscleHeat(stats,name);if(!h)return '';const o=Math.min(.84,(.42+h*.34)*boost);return `<path d="${d}" fill="#078EDD" fill-opacity="${o.toFixed(3)}" stroke="none"/>`;}
@@ -1301,59 +1329,26 @@ function performanceExerciseData(ex){
 function performanceExerciseCardHtml(ex){
   const d=performanceExerciseData(ex),max=Math.max(d.maxLoad,1),count=d.sets.length;
   if(!count)return '';
-  const chips=compactSeriesHtml(d.sets,{className:'performance-series'});
-  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${count}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong></div></div>${chips}</div>`;
+  const chips=d.sets.map((s,i)=>`<span class="series-chip"><b>${i+1}</b><span>${parseInteger(s.reps)} reps · ${parseDecimal(s.weight)} kg${s.rpe?` · RPE ${rpeLabel(s.rpe)}`:''}</span></span>`).join('');
+  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${count}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong></div></div><div class="performance-series">${chips}</div></div>`;
 }
 function performanceParticipantCardHtml(session,p){
   const st=studentById(p.studentId),sets=participantSetCount(p),vol=participantVolume(p),rpes=(p.exercises||[]).flatMap(ex=>completedSets(ex).map(s=>Number(s.rpe)).filter(Number.isFinite)),avg=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—',doneExercises=(p.exercises||[]).filter(ex=>completedSets(ex).length);
-  return `<div class="finish-card"><div class="session-summary-head">${avatarHtml(st)}<div class="session-summary-title"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(session.endedAt||session.startedAt)}</small></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avg}</strong></div></div><div class="section-title performance-section-title"><h2>Exercícios</h2><span>${doneExercises.length}</span></div><div class="performance-exercises">${doneExercises.length?doneExercises.map(performanceExerciseCardHtml).join(''):'<div class="session-summary-empty">Detalhamento indisponível neste registro.</div>'}</div></div>`;
+  return `<div class="finish-card"><div class="session-summary-head">${avatarHtml(st)}<div class="session-summary-title"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(session.endedAt||session.startedAt)}</small></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avg}</strong></div></div><div class="section-title" style="margin:18px 0 8px"><h2>Exercícios</h2><span>${doneExercises.length}</span></div><div class="performance-exercises">${doneExercises.length?doneExercises.map(performanceExerciseCardHtml).join(''):'<div class="session-summary-empty">Detalhamento indisponível neste registro.</div>'}</div></div>`;
 }
 
-openFinishWorkout = function () {
-  if (!live) return;
-  const completed = live.participants.reduce((n, p) => n + p.exercises.reduce((m, ex) => m + ex.sets.filter(s => s.done).length, 0), 0);
-  if (!completed) return toast('Marque pelo menos uma série como concluída.');
-  const planned = live.participants.reduce((n, p) => n + p.exercises.reduce((m, ex) => m + ex.sets.length, 0), 0);
-  const pending = Math.max(0, planned - completed), now = Date.now();
-  const session = { endedAt: now, startedAt: live.startedAt || now, durationSec: Math.max(0, Math.round((now - (live.startedAt || now)) / 1000)) };
-  openModal(`<div class="finish-celebration"><small>TREINO CONCLUÍDO</small><h2>Parabéns!</h2></div>
-    <div class="finish-summary-body">${live.participants.map(p => performanceParticipantCardHtml(session, p)).join('')}
-      ${pending ? `<div class="finish-pending-note">${pending} série${pending === 1 ? ' não realizada será ignorada' : 's não realizadas serão ignoradas'} ao salvar.</div>` : ''}
-    </div>
-    <div class="finish-actions">
-      <button class="btn btn-secondary" id="finishCancel" type="button">Voltar</button>
-      <button class="btn btn-secondary" id="finishShare" type="button">Salvar imagem</button>
-      <button class="btn btn-primary" id="finishSave" type="button">Salvar treino</button>
-    </div>`, { fullscreen: true });
-  $('#modal').classList.add('compact-finish-sheet');
-  $('#finishCancel').onclick = closeModal;
-  $('#finishSave').onclick = () => { $('#finishSave').disabled = true; saveFinishedWorkout(); };
-  const shareButton = $('#finishShare');
-  const shareImage = async index => {
-    if (!live || shareButton.disabled) return;
-    shareButton.disabled = true;
-    shareButton.setAttribute('aria-busy', 'true');
-    try { await saveWorkoutSummaryImage(index); }
-    finally { shareButton.disabled = false; shareButton.removeAttribute('aria-busy'); }
-  };
-  shareButton.onclick = () => {
-    if (!live) return;
-    if (live.participants.length === 1) return shareImage(0);
-    // Paired workouts still export each person's image individually.
-    openModal(`<h2>Salvar imagem</h2><p class="modal-sub">Escolha o aluno.</p><div class="choice-list">${live.participants.map((p, i) => `<button class="choice" type="button" data-finish-image-person="${i}">${avatarHtml(studentById(p.studentId))}<span class="row-main"><strong>${esc(studentById(p.studentId)?.name || 'Aluno')}</strong><small>${esc(p.programName || 'Treino')}</small></span>${chev()}</button>`).join('')}</div>`, { preserveParent: true });
-    $$('[data-finish-image-person]', $('#modal')).forEach(button => button.onclick = () => {
-      const index = Number(button.dataset.finishImagePerson);
-      closeModal();
-      shareImage(index);
-    });
-  };
+openFinishWorkout=function(){
+  if(!live)return;
+  const completed=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).length,0),0);if(!completed)return toast('Marque pelo menos uma série como concluída.');
+  const planned=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.length,0),0),pending=Math.max(0,planned-completed),now=Date.now(),session={endedAt:now,startedAt:live.startedAt||now,durationSec:Math.max(0,Math.round((now-(live.startedAt||now))/1000))};
+  openModal(`<div class="finish-celebration"><small>TREINO CONCLUÍDO</small><h2>Parabéns!</h2></div>${live.participants.map((p,i)=>`${performanceParticipantCardHtml(session,p)}<button class="btn btn-secondary finish-share-btn" type="button" data-save-summary="${i}">Salvar imagem</button>`).join('')}${pending?`<div class="finish-pending-note">${pending} série${pending===1?' não realizada será ignorada':'s não realizadas serão ignoradas'} ao salvar.</div>`:''}<div class="modal-actions"><button class="btn btn-secondary" id="finishCancel">Voltar</button><button class="btn btn-primary" id="finishSave">Salvar treino</button></div>`,{fullscreen:true});
+  $('#finishCancel').onclick=closeModal;$('#finishSave').onclick=saveFinishedWorkout;$$('[data-save-summary]',$('#modal')).forEach(btn=>btn.onclick=()=>saveWorkoutSummaryImage(+btn.dataset.saveSummary));
 };
 
 function openPerformanceSessionSummary(sessionId,studentId=''){
   const session=db.sessions.find(s=>s.id===sessionId);if(!session)return toast('Sessão não encontrada.');
   const participants=studentId?session.participants.filter(p=>p.studentId===studentId):session.participants.slice();if(!participants.length)return toast('Registro deste aluno não está disponível.');
   openModal(`<div class="builder-head"><button class="icon-btn" id="performanceSummaryClose" aria-label="Fechar">${icons.back}</button><h2>Resumo da sessão</h2></div><div class="builder-body">${participants.map(p=>performanceParticipantCardHtml(session,p)).join('')}</div>`,{fullscreen:true});
-  $('#modal').classList.add('compact-session-summary');
   $('#performanceSummaryClose').onclick=closeModal;
   const footer=document.createElement('button');footer.type='button';footer.className='btn btn-danger summary-delete';footer.innerHTML=`${icons.trash} Apagar ${studentId?'registro':'sessão'}`;$('#modal').appendChild(footer);
   footer.onclick=()=>confirmModal('Apagar '+(studentId?'registro?':'sessão?'),'Esta ação remove o registro do histórico.','Apagar',()=>{
@@ -1378,8 +1373,8 @@ document.addEventListener('click',e=>{const el=e.target.closest?.('[data-perform
 
 /* Saved PNG follows the same exercise-performance structure and grows with content. */
 function shareSeriesPill(set,index,x,y,C){
-  const label=`${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}`,w=Math.max(176,Math.min(240,104+label.length*7.4));
-  return {w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="42" rx="14" fill="${C.surface}"/><text x="22" y="27" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="850" fill="${C.blue}">${index+1}</text><text x="42" y="27" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};
+  const label=`${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}`,w=Math.max(148,40+label.length*8);
+  return {w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="36" rx="11" fill="${C.surface}"/><text x="14" y="24" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="850" fill="${C.blue}">${index+1}</text><text x="28" y="24" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};
 }
 buildSummaryShareSvg=async function(participant){
   const st=studentById(participant.studentId),doneExercises=(participant.exercises||[]).filter(ex=>completedSets(ex).length),sets=participantSetCount(participant),vol=participantVolume(participant),rpes=doneExercises.flatMap(ex=>completedSets(ex).map(s=>Number(s.rpe)).filter(Number.isFinite)),avg=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—',duration=formatDurationShort((Date.now()-(live?.startedAt||Date.now()))/1000),dark=currentTheme()==='dark';
@@ -1391,7 +1386,7 @@ buildSummaryShareSvg=async function(participant){
     words.forEach(word=>titleLines.push(word.trim()));
     const titleHeight=(titleLines.length-1)*28;
     let px=96,py=cardY+66+titleHeight,pills='';
-    d.sets.forEach((s,si)=>{let pill=shareSeriesPill(s,si,px,py,C);if(px+pill.w>982){px=96;py+=50;pill=shareSeriesPill(s,si,px,py,C);}pills+=pill.markup;px+=pill.w+10;});
+    d.sets.forEach((s,si)=>{let pill=shareSeriesPill(s,si,px,py,C);if(px+pill.w>982){px=96;py+=42;pill=shareSeriesPill(s,si,px,py,C);}pills+=pill.markup;px+=pill.w+8;});
     const rowH=py-cardY+56;
     exerciseMarkup+=`<g><rect x="84" y="${cardY}" width="912" height="${rowH}" rx="24" fill="${C.surface2}"/><text x="106" y="${cardY+34}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="23" font-weight="820" fill="${C.text}">${titleLines.map((line,i)=>`<tspan x="106" dy="${i?28:0}">${xmlEsc(line)}</tspan>`).join('')}</text><text x="106" y="${cardY+58+titleHeight}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.muted}">${xmlEsc(`${kgText(d.volume)} · ${d.totalReps} reps`)}</text><text x="965" y="${cardY+30}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" font-weight="800" fill="${C.faint}">MAIOR CARGA</text><text x="965" y="${cardY+54}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="850" fill="${C.blue}">${xmlEsc(d.maxLoad?`${d.maxLoad} kg`:'—')}</text>${pills}</g>`;
     y+=rowH+14;
@@ -1426,7 +1421,7 @@ function exercisePointChart(entries){
 openExerciseHistory=function(studentId,exerciseId){
   const st=studentById(studentId),exercise=exerciseById(exerciseId);if(!st||!exercise)return toast('Histórico deste exercício não encontrado.');
   const entries=exerciseHistoryEntries(studentId,exerciseId),recent=entries.slice().reverse().slice(0,16),records=exerciseRecordSummary(entries),latest=entries[entries.length-1]||null,first=entries[0]||null,delta=latest&&first?latest.best-first.best:0,chart=exercisePointChart(entries);
-  openModal(`<div class="exercise-detail-head"><button class="icon-btn" id="exerciseHistoryClose" type="button" aria-label="Fechar">${icons.close}</button><div class="exercise-detail-title"><small>HISTÓRICO DO EXERCÍCIO</small><strong>${esc(exercise.name)}</strong><span>${esc(st.name)}${latest?` · última execução ${fmtDate(latest.session.endedAt)}`:''}</span></div></div><div class="exercise-history-content"><div class="exercise-muscle-tags">${(exercise.muscleGroups||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div><div class="exercise-pr-grid"><div class="exercise-pr-card"><small>Maior carga</small><strong>${records.bestLoad.value?`${records.bestLoad.value} kg`:'—'}</strong><span>${records.bestLoad.date}</span></div><div class="exercise-pr-card"><small>Mais reps</small><strong>${records.bestReps.value?`${records.bestReps.value} reps`:'—'}</strong><span>${records.bestReps.value?`${records.bestReps.weight} kg · ${records.bestReps.date}`:'—'}</span></div><div class="exercise-pr-card"><small>Maior volume</small><strong>${records.bestVolume.value?kgText(records.bestVolume.value):'—'}</strong><span>${records.bestVolume.date}</span></div></div><div class="history-summary-grid"><div><small>Execuções</small><strong>${entries.length}</strong></div><div><small>Última carga</small><strong>${latest?`${latest.best} kg`:'—'}</strong></div><div><small>Variação</small><strong class="${delta>0?'text-good':delta<0?'text-warn':''}">${entries.length>1?`${delta>0?'+':''}${round(delta)} kg`:'—'}</strong></div></div><div class="chart-card history-chart-card"><div class="chart-card-head"><div><strong>Maior carga por sessão</strong><small>Toque em um ponto para ver a data e o volume.</small></div></div>${chart.html||'-'}</div><div class="section history-execution-section"><div class="section-title"><h2>Histórico</h2><span>${recent.length}${entries.length>recent.length?` de ${entries.length}`:''}</span></div>${recent.length?recent.map(row=>{const sets=completedSets(row.exercise),isLoadPR=row.best===records.bestLoad.value&&records.bestLoad.value>0;return `<div class="exercise-execution-card"><div class="execution-card-head"><div><strong>${fmtDate(row.session.endedAt)}${isLoadPR?'<span class="exercise-record-badge">PR</span>':''}</strong><small>${esc(participantForStudent(row.session,studentId)?.programName||'Treino')}</small></div><div><b>${row.best} kg</b><small>${kgText(row.volume)} volume</small></div></div>${compactSeriesHtml(sets,{className:'execution-sets'})}<div class="execution-footer"><span>${sets.length} ${sets.length===1?'série':'séries'}</span><span>${sets.reduce((a,s)=>a+parseInteger(s.reps),0)} reps</span></div></div>`;}).join(''):emptyHtml('Sem execuções registradas.')}</div></div>`,{fullscreen:true});
+  openModal(`<div class="exercise-detail-head"><button class="icon-btn" id="exerciseHistoryClose" type="button" aria-label="Fechar">${icons.close}</button><div class="exercise-detail-title"><small>HISTÓRICO DO EXERCÍCIO</small><strong>${esc(exercise.name)}</strong><span>${esc(st.name)}${latest?` · última execução ${fmtDate(latest.session.endedAt)}`:''}</span></div></div><div class="exercise-history-content"><div class="exercise-muscle-tags">${(exercise.muscleGroups||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div><div class="exercise-pr-grid"><div class="exercise-pr-card"><small>Maior carga</small><strong>${records.bestLoad.value?`${records.bestLoad.value} kg`:'—'}</strong><span>${records.bestLoad.date}</span></div><div class="exercise-pr-card"><small>Mais reps</small><strong>${records.bestReps.value?`${records.bestReps.value} reps`:'—'}</strong><span>${records.bestReps.value?`${records.bestReps.weight} kg · ${records.bestReps.date}`:'—'}</span></div><div class="exercise-pr-card"><small>Maior volume</small><strong>${records.bestVolume.value?kgText(records.bestVolume.value):'—'}</strong><span>${records.bestVolume.date}</span></div></div><div class="history-summary-grid"><div><small>Execuções</small><strong>${entries.length}</strong></div><div><small>Última carga</small><strong>${latest?`${latest.best} kg`:'—'}</strong></div><div><small>Variação</small><strong class="${delta>0?'text-good':delta<0?'text-warn':''}">${entries.length>1?`${delta>0?'+':''}${round(delta)} kg`:'—'}</strong></div></div><div class="chart-card history-chart-card"><div class="chart-card-head"><div><strong>Maior carga por sessão</strong><small>Toque em um ponto para ver a data e o volume.</small></div></div>${chart.html||'-'}</div><div class="section history-execution-section"><div class="section-title"><h2>Histórico</h2><span>${recent.length}${entries.length>recent.length?` de ${entries.length}`:''}</span></div>${recent.length?recent.map(row=>{const sets=completedSets(row.exercise),isLoadPR=row.best===records.bestLoad.value&&records.bestLoad.value>0;return `<div class="exercise-execution-card"><div class="execution-card-head"><div><strong>${fmtDate(row.session.endedAt)}${isLoadPR?'<span class="exercise-record-badge">PR</span>':''}</strong><small>${esc(participantForStudent(row.session,studentId)?.programName||'Treino')}</small></div><div><b>${row.best} kg</b><small>${kgText(row.volume)} volume</small></div></div><div class="execution-sets">${sets.map((set,si)=>`<span><b>${si+1}</b>${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}</span>`).join('')}</div><div class="execution-footer"><span>${sets.length} ${sets.length===1?'série':'séries'}</span><span>${sets.reduce((a,s)=>a+parseInteger(s.reps),0)} reps</span></div></div>`;}).join(''):emptyHtml('Sem execuções registradas.')}</div></div>`,{fullscreen:true});
   $('#exerciseHistoryClose').onclick=closeModal;
   $$('[data-ex-point]',$('#modal')).forEach(pt=>{const show=()=>{const row=chart.points[+pt.dataset.exPoint];if(!row)return;const box=$('#exercisePointDetail');if(box)box.textContent=`${row.fullDate} · ${row.value} kg · ${kgText(row.volume)} de volume`;};pt.onclick=show;pt.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}};});
   requestAnimationFrame(()=>{const scroll=$('.history-chart-card .chart-scroll');if(scroll)scroll.scrollLeft=scroll.scrollWidth;});
@@ -1477,6 +1472,17 @@ html[data-theme] .set-row.is-done .set-input:focus{border-bottom-color:var(--rp-
 .effort-option>b{display:grid;place-items:center;flex:0 0 38px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue-2);font-size:17px}
 .effort-option>span{flex:1}.effort-option strong{display:block;font-size:12px;line-height:1.35}.effort-option small{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.35}.effort-option>svg{width:18px;height:18px;color:var(--blue-2)}
 .effort-option.is-selected{border-color:var(--blue-2)}.effort-clear{width:100%;margin-top:12px}
+.rest-timer{z-index:90!important;bottom:calc(86px + var(--safe-bottom))!important;animation:rest-enter .2s ease-out}
+.rest-sheet-head{display:none}.rest-resume{display:grid;place-items:center;background:var(--surface-2);color:var(--text);width:34px;height:34px;border-radius:11px;font-size:20px}
+body:not(.rest-expanded) .rest-timer{padding:10px 14px!important;gap:10px!important}
+body:not(.rest-expanded) .rest-timer-main{display:flex;align-items:center;gap:8px;flex:1}body:not(.rest-expanded) .rest-timer-main small{font-size:10px}body:not(.rest-expanded) .rest-timer-main strong{font-size:19px!important}
+body:not(.rest-expanded) .rest-timer-actions #restMinus,body:not(.rest-expanded) .rest-timer-actions #restPlus{display:none}
+body.rest-expanded .rest-timer.on-workout{left:50%!important;bottom:0!important;width:min(640px,100%)!important;max-width:640px!important;border-radius:26px 26px 0 0!important;padding:14px 18px calc(22px + var(--safe-bottom))!important;display:flex;flex-direction:column;gap:16px;background:var(--bg-elev)!important}
+body.rest-expanded .rest-sheet-head{display:flex;align-items:center;justify-content:space-between;width:100%;color:var(--muted);font-size:12px}
+.rest-sheet-head button{background:var(--surface-2);color:var(--text);border-radius:10px;padding:8px 10px;font-size:11px}
+body.rest-expanded .rest-timer-main{text-align:center}body.rest-expanded .rest-timer-main small{display:none}body.rest-expanded #restTimerValue{font-size:56px!important;line-height:1.2;font-variant-numeric:tabular-nums}
+body.rest-expanded .rest-timer-actions{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:10px}body.rest-expanded .rest-timer-actions button{height:45px!important;font-size:14px!important}
+body.rest-expanded .rest-resume{display:none}
 .summary-delete svg{width:18px;height:18px;flex:0 0 18px}
 .summary-delete{width:100%;margin-top:12px;flex-shrink:0}
 @keyframes rest-enter{from{opacity:0;translate:0 15px}to{opacity:1;translate:0 0}}
@@ -1484,131 +1490,86 @@ html[data-theme] .set-row.is-done .set-input:focus{border-bottom-color:var(--rp-
 
 </style>
 <script id="session-ux-js">
-/* Session controls share the modal/return controller in app.js. */
-(function () {
-  'use strict';
-
-  function effortDefinition(value) {
-    if (value >= 10) return 'Máximo · nenhuma repetição a mais';
-    if (value >= 9.5) return 'Talvez mais 1 repetição';
-    if (value >= 9) return 'Mais 1 repetição';
-    if (value >= 8.5) return 'Mais 1–2 repetições';
-    if (value >= 8) return 'Mais 2 repetições';
-    if (value >= 7) return 'Mais 3 repetições';
-    return 'Aquecimento · carga leve';
+/* Session UX: one shared modal system for effort and adjustment controls. */
+(function(){
+  const repeatIcon='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const clockIcon=icons.clock||'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  let restCollapsed=false,lastRoute=state.route,modalFocus=null;
+  const rest=$('#restTimer'),shade=document.createElement('div');shade.id='restShade';shade.className='rest-shade is-hidden';document.body.appendChild(shade);
+  rest.insertAdjacentHTML('afterbegin','<div class="rest-sheet-head"><button type="button" id="restCollapse" aria-label="Recolher descanso">⌄</button><span>Descanso</span><button type="button" id="restMinimize">Minimizar treino</button></div>');
+  rest.insertAdjacentHTML('beforeend','<button type="button" id="restResume" class="rest-resume" aria-label="Abrir descanso">⌃</button>');
+  function syncFocus(){
+    const modalOpen=!$('#modalLayer').classList.contains('is-hidden');
+    const running=!!live?.restEndAt&&!rest.classList.contains('is-hidden');
+    const expanded=running&&state.route==='workout'&&!restCollapsed;
+    document.body.classList.toggle('modal-focused',modalOpen);
+    document.body.classList.toggle('rest-expanded',expanded);
+    document.body.classList.toggle('rest-running',running);
+    shade.classList.add('is-hidden');
+    const nav=$('#bottomNav');const navHeight=nav&&getComputedStyle(nav).display!=='none'?nav.getBoundingClientRect().height:0;document.documentElement.style.setProperty('--visible-nav-height',`${navHeight}px`);
+    document.querySelector('.app-shell').inert=modalOpen;
+    $('#activeWorkoutPill').inert=modalOpen;
+    rest.inert=modalOpen;
+    if(!modalOpen&&!expanded)syncActiveWorkoutPill();
+    if(running)$('#activeWorkoutPill').classList.add('is-hidden');
   }
-
-  openRpePicker = function (path) {
-    const set = liveSetAt(path);
-    if (!set) return;
-    const value = set.rpe === '' || set.rpe == null ? 8 : Number(set.rpe);
-    openModal(`<div class="effort-slider-content">
-      <div class="effort-readout">
-        <output id="effortValue" class="effort-value" for="effortSlider" aria-live="off"></output>
-        <p id="effortLabel"></p>
-      </div>
-      <input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${clamp(value, 5, 10)}" aria-label="Percepção de esforço" aria-describedby="effortLabel">
-      <div class="effort-scale" aria-hidden="true"><span>5 · Leve</span><span>10 · Máximo</span></div>
-    </div>`, { preserveParent: true });
-    const modal = $('#modal');
-    modal.classList.add('effort-slider-sheet');
-    modal.setAttribute('aria-label', 'Percepção de esforço');
-    const slider = $('#effortSlider'), number = $('#effortValue'), label = $('#effortLabel');
-    const updateReadout = () => {
-      const n = Number(slider.value), description = effortDefinition(n);
-      number.textContent = rpeLabel(n);
-      label.textContent = description;
-      slider.setAttribute('aria-valuetext', `${rpeLabel(n)} · ${description}`);
-      slider.style.setProperty('--effort-progress', `${(n - 5) / 5 * 100}%`);
-    };
-    updateReadout();
-    const commit = () => {
-      updateReadout();
-      // Preserve the existing behavior: selecting effort completes a valid set.
-      if (!set.done) {
-        $(`[data-set-check="${path}"]`)?.click();
-        if (!set.done) return;
-      }
-      const next = Number(slider.value);
-      if (set.rpe !== next) { set.rpe = next; persistDraft(); }
-      const trigger = $(`[data-set-rpe-trigger="${path}"]`);
-      if (trigger) { trigger.textContent = rpeLabel(next); trigger.classList.add('has-value'); }
-    };
-    slider.oninput = commit;
-    slider.onchange = commit;
-  };
-
-  function editRest(path) {
-    const ex = liveExerciseAt(path);
-    if (!ex) return;
-    openRestPicker(ex.restSec, seconds => {
-      ex.restSec = seconds;
-      persistDraft();
-      // Update in place: neither the exercise nor its parent menu loses scroll.
-      const label = $(`[data-exercise-rest="${path}"] span`);
-      if (label) label.textContent = `Descanso · ${fmtClock(seconds)}`;
-      const menuValue = $('[data-live-ex-action="rest"] .row-main small', $('#modal'));
-      if (menuValue) menuValue.textContent = fmtRest(seconds);
-    }, null, 'Descanso do exercício');
+  $('#restCollapse').onclick=e=>{e.stopPropagation();restCollapsed=true;syncFocus();};
+  $('#restMinimize').onclick=e=>{e.stopPropagation();navigate('home');};
+  $('#restResume').onclick=e=>{e.stopPropagation();if(state.route!=='workout')navigate('workout');restCollapsed=false;syncFocus();};
+  shade.onclick=()=>{restCollapsed=true;syncFocus();};
+  rest.onclick=e=>{if(e.target.closest('button'))return;if(state.route!=='workout')navigate('workout');restCollapsed=false;syncFocus();};
+  const baseOpen=openModal,baseClose=closeModal,baseSync=syncRestTimer,baseStart=startRest,baseStop=stopRest;
+  openModal=function(html,options){modalFocus=document.activeElement;$('#rpeDock')?.classList.add('is-hidden');activeRpePath=null;baseOpen(html,options);syncFocus();requestAnimationFrame(()=>$('#modal').querySelector('button,input,select,[tabindex]')?.focus({preventScroll:true}));};
+  closeModal=function(){baseClose();syncFocus();if(modalFocus?.isConnected&&!modalFocus.closest('[inert]'))modalFocus.focus({preventScroll:true});};
+  syncRestTimer=function(){if(lastRoute!==state.route){restCollapsed=false;lastRoute=state.route;}baseSync();syncFocus();};
+  startRest=function(seconds){restCollapsed=false;baseStart(seconds);syncFocus();};
+  stopRest=function(){baseStop();restCollapsed=false;syncFocus();};
+  new MutationObserver(syncFocus).observe(rest,{attributes:true,attributeFilter:['class']});
+  document.addEventListener('keydown',e=>{
+    if($('#modalLayer').classList.contains('is-hidden'))return;
+    if(e.key==='Escape'){e.preventDefault();closeModal();return;}
+    if(e.key!=='Tab')return;const items=[...$('#modal').querySelectorAll('button:not(:disabled),input,select,textarea,[tabindex="0"]')].filter(el=>el.getClientRects().length);if(!items.length)return;
+    if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}
+  });
+  function effortDefinition(n){
+    if(n>=10)return 'Esforço máximo; nenhuma repetição em reserva.';
+    if(n>=9.5)return 'Talvez conseguisse mais 1 repetição.';
+    if(n>=9)return 'Mais 1 repetição com certeza.';
+    if(n>=8.5)return 'Mais 1 a 2 repetições.';
+    if(n>=8)return 'Mais 2 repetições com certeza.';
+    if(n>=7)return 'Mais 3 repetições.';
+    return 'Aquecimento / Carga leve.';
   }
-
-  const settings = openLiveExerciseSettings;
-  openLiveExerciseSettings = function (path) {
-    settings(path);
-    const restButton = $('[data-live-ex-action="rest"]', $('#modal'));
-    if (restButton) restButton.onclick = () => editRest(path);
+  openRpePicker=function(path){
+    const set=liveSetAt(path);if(!set)return;const value=set.rpe===''||set.rpe==null?8:Number(set.rpe);
+    openModal(`<div class="effort-slider-content"><p id="effortLabel" aria-live="polite"></p><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${value}" aria-label="RPE"><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div></div>`);
+    const modal=$('#modal');modal.classList.add('effort-slider-sheet');modal.querySelector('.sheet-close-btn')?.remove();
+    const slider=$('#effortSlider'),label=$('#effortLabel');
+    const updateLabel=()=>{label.textContent=`RPE ${rpeLabel(slider.value)} - ${effortDefinition(Number(slider.value))}`;slider.setAttribute('aria-valuetext',label.textContent);};updateLabel();
+    const commit=()=>{
+      updateLabel();
+      if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}
+      set.rpe=Number(slider.value);persistDraft();const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}
+    };
+    slider.oninput=commit;slider.onchange=commit;
   };
-
-  liveExerciseHtml = function (participant, pi, ex, ei) {
-    const path = `${pi}:${ei}`;
-    return `<div class="live-exercise-card" data-live-exercise="${path}">
-      <div class="live-exercise-head">
-        <div class="live-title-block">
-          <div class="row-main"><strong>${esc(ex.name)}</strong></div>
-          <button class="exercise-rest" type="button" data-exercise-rest="${path}" aria-label="Editar descanso de ${esc(ex.name)}">${icons.clock}<span>Descanso · ${fmtClock(ex.restSec || 0)}</span></button>
-        </div>
-        <div class="live-exercise-actions">
-          <button class="live-action-button live-history-button" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}" aria-label="Histórico de ${esc(ex.name)}" title="Histórico do exercício">${icons.history}</button>
-          <button class="live-action-button live-more" type="button" data-live-more="${path}" aria-label="Ações de ${esc(ex.name)}" title="Ações do exercício">${icons.moreHorizontal}</button>
-        </div>
-      </div>
-      ${compactLastSetsHtml(ex)}
-      <input class="live-note" data-live-note="${path}" value="${esc(ex.note || '')}" placeholder="Adicionar observação" aria-label="Observação do exercício">
-      <div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>
-      ${ex.sets.map((set, si) => liveSetHtml(pi, ei, set, si, ex)).join('')}
-    </div>`;
-  };
-
-  const bind = bindLiveHandlers;
-  bindLiveHandlers = function () {
-    bind();
-    $$('[data-exercise-rest]').forEach(btn => btn.onclick = () => editRest(btn.dataset.exerciseRest));
-  };
-  const renderLive = renderActiveWorkout;
-  renderActiveWorkout = function (main) {
-    renderLive(main);
-    $('.live-finish', main)?.remove();
-    const action = $('#topActionBtn');
-    if (action) {
-      action.innerHTML = icons.trash;
-      action.setAttribute('aria-label', 'Descartar treino');
-      action.title = 'Descartar treino';
-      action.onclick = discardLiveWorkout;
-    }
-    syncFloatingUI();
-  };
-  const save = saveFinishedWorkout;
-  saveFinishedWorkout = function () {
-    if (!live) return;
-    const before = new Set(db.sessions.map(s => s.id));
-    save();
-    const session = db.sessions.find(s => !before.has(s.id));
-    if (session) window.openSessionSummary(session.id);
-  };
+  // Effort selection stays open until its centered handle is dragged down.
+  $('#modalBackdrop').addEventListener('click',e=>{if($('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalLayer').classList.contains('is-hidden')&&$('#modal').classList.contains('effort-slider-sheet')){e.preventDefault();e.stopImmediatePropagation();}},true);
+  const settings=openLiveExerciseSettings;
+  openLiveExerciseSettings=function(path){settings(path);const reps=$('[data-live-ex-action="reps"]'),restButton=$('[data-live-ex-action="rest"]');reps?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${repeatIcon}</span>`);restButton?.insertAdjacentHTML('afterbegin',`<span class="action-icon">${clockIcon}</span>`);if(restButton)restButton.onclick=()=>editRest(path);};
+  function editRest(path){const ex=liveExerciseAt(path);if(!ex)return;openRestPicker(ex.restSec,seconds=>{ex.restSec=seconds;persistDraft();render();},()=>openLiveExerciseSettings(path),'Descanso do exercício');}
+  const bind=bindLiveHandlers;
+  liveExerciseHtml=function(participant,pi,ex,ei){return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><div class="live-title-block"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong></div><span class="history-mini">${icons.history}</span></button><button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${clockIcon}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button></div><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${compactLastSetsHtml(ex)}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>Reps</span><span>kg</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;};
+  bindLiveHandlers=function(){bind();$$('[data-exercise-rest]').forEach(btn=>btn.onclick=()=>editRest(btn.dataset.exerciseRest));};
+  const renderLive=renderActiveWorkout;
+  renderActiveWorkout=function(main){renderLive(main);$('.live-finish',main)?.remove();const action=$('#topActionBtn');if(action){action.innerHTML=icons.trash;action.setAttribute('aria-label','Descartar treino');action.title='Descartar treino';action.onclick=discardLiveWorkout;}syncFocus();};
+  const save=saveFinishedWorkout;
+  saveFinishedWorkout=function(){if(!live)return;const before=new Set(db.sessions.map(s=>s.id));save();const session=db.sessions.find(s=>!before.has(s.id));if(session)window.openSessionSummary(session.id);};
   render();
 })();
-</script>
 
+</script>
 
 <style id="compact-ui-revision">
 .home-start-wrap{margin-top:20px!important}
@@ -1618,6 +1579,11 @@ html[data-theme] .set-row.is-done .set-input:focus{border-bottom-color:var(--rp-
 html[data-theme] .set-row.is-done .set-index{background:var(--surface-2)!important;color:var(--muted)!important}
 html[data-theme="light"] .set-row.is-done .set-index{background:#F0F4F7!important}
 html[data-theme] .set-row.is-done .rpe-trigger{background:var(--green-soft)!important;color:var(--green)!important;border-color:var(--green)!important}
+body.rest-expanded .rest-timer.on-workout{bottom:var(--visible-nav-height,0px)!important}
+body.rest-expanded .screen{padding-bottom:250px!important}
+body.rest-expanded .rest-sheet-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;text-align:center;gap:8px}
+.rest-sheet-head button{display:grid;place-items:center;height:34px;line-height:1;margin:0}.rest-sheet-head button:first-child{justify-self:start;width:34px}.rest-sheet-head button:last-child{justify-self:end;width:100%;max-width:130px;font-size:10px;line-height:1.2;white-space:normal}.rest-sheet-head>span{display:grid;place-items:center;min-height:34px}
+.rest-shade{display:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .exercise-menu .action-icon{display:grid!important;place-items:center!important;padding:0!important;flex-shrink:0}.exercise-menu .action-icon svg{display:block;width:18px;height:18px}
 .builder-controls,.builder-default-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr)!important;gap:7px!important;align-items:end}
 .builder-default-grid>div:last-child{grid-column:auto!important}.builder-controls>div{min-width:0}.builder-reps-field{margin:0!important}
@@ -1635,452 +1601,72 @@ html[data-theme] .set-row.is-done .rpe-trigger{background:var(--green-soft)!impo
 #effortSlider:focus-visible{outline:2px solid var(--blue-2);outline-offset:4px;border-radius:12px}.effort-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
 </style>
 
-<style id="usability-20260928">
-/* Shared metrics for the compact floating controls and prescription fields. */
-:root{--safe-bottom:env(safe-area-inset-bottom,0px);--prescription-radius:10px;--visible-nav-height:0px}
-body{--floating-bottom:calc(8px + var(--safe-bottom))}
-body.has-bottom-nav{--floating-bottom:calc(8px + var(--visible-nav-height))}
-.modal-layer.is-hidden{display:none!important}
-
-/* One resting state: same dimensions inside the session and across the app. */
-body #restTimer.rest-timer{
-  position:fixed!important;left:50%!important;right:auto!important;bottom:var(--floating-bottom)!important;
-  transform:translateX(-50%)!important;translate:none!important;z-index:90!important;
-  box-sizing:border-box!important;width:min(312px,calc(100vw - 24px))!important;max-width:312px!important;
-  height:auto!important;min-height:0!important;margin:0!important;padding:10px 12px!important;
-  display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;
-  border:0!important;outline:0!important;border-radius:16px!important;background:var(--panel-bg)!important;
-  color:var(--panel-text)!important;box-shadow:0 6px 24px rgba(0,0,0,.18)!important;
-  animation:none!important;transition:bottom .16s ease!important
-}
-body #restTimer.rest-timer.is-hidden{display:none!important}
-body #restTimer .rest-timer-main{
-  display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;
-  width:100%!important;height:32px!important;min-height:0!important;gap:0!important;margin:0!important;padding:0!important;
-  background:transparent!important;border:0!important;border-radius:8px!important;text-align:center!important;color:inherit!important
-}
-body #restTimer #restTimerValue{display:block!important;font-size:26px!important;line-height:32px!important;font-weight:850!important;font-variant-numeric:tabular-nums;letter-spacing:.3px;margin:0!important;color:var(--panel-text)!important}
-body #restTimer .rest-timer-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;width:100%!important;margin:0!important}
-body #restTimer .rest-timer-actions button{
-  display:flex!important;align-items:center!important;justify-content:center!important;
-  box-sizing:border-box!important;width:100%!important;min-width:0!important;height:40px!important;
-  padding:0!important;margin:0!important;border:0!important;border-radius:10px!important;
-  background:var(--panel-surface-2)!important;color:var(--panel-text)!important;
-  font-size:12px!important;font-weight:750!important;line-height:1!important;text-align:center!important;white-space:nowrap
-}
-body #restTimer .rest-timer-actions .rest-skip{background:var(--rp-navy)!important;color:#fff!important}
-body.modal-open #restTimer,body.modal-open #activeWorkoutPill{visibility:hidden!important;pointer-events:none!important}
-body #activeWorkoutPill{bottom:var(--floating-bottom)!important}
-/* Rest is now part of the ongoing-workout bar on other pages. */
-body.workout-route .app-shell{padding-bottom:0!important}
-body.workout-route .screen{padding-bottom:calc(24px + var(--safe-bottom))!important}
-body.rest-running #main .screen{padding-bottom:calc(124px + var(--visible-nav-height) + var(--safe-bottom))!important}
-
-/* A generous grab target with only a small centered bar visible. */
-#modal>.modal-handle{
-  position:relative!important;display:block!important;box-sizing:border-box!important;
-  width:64px!important;height:32px!important;min-height:32px!important;flex:0 0 32px!important;
-  margin:-2px auto 10px!important;padding:0!important;border:0!important;border-radius:10px!important;
-  background:transparent!important;touch-action:none!important;cursor:grab!important
-}
-#modal>.modal-handle::before{content:none!important}
-#modal>.modal-handle::after{content:"";position:absolute;width:44px;height:5px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:8px;background:var(--panel-line-strong)}
-#modal>.modal-handle:active{cursor:grabbing!important}
-#modal:not(.fullscreen)>h2:first-of-type{padding-right:0!important}
-#modal.is-dragging{transition:none!important}
-
-/* Effort: number only in the box; its concise definition is always one line. */
-#modal.effort-slider-sheet{box-sizing:border-box!important;width:min(460px,100%)!important;min-height:0!important;height:auto!important;padding:12px 20px calc(18px + var(--safe-bottom))!important}
-#modal .effort-readout{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;margin:0 0 5px;text-align:center;min-width:0}
-#modal .effort-value{display:grid;place-items:center;box-sizing:border-box;width:52px;height:44px;margin:0;padding:0;border-radius:10px;background:var(--panel-surface-2);color:var(--panel-text);font-size:25px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
-#modal .effort-slider-content #effortLabel{display:block;width:100%;font-size:clamp(11px,3vw,13px)!important;line-height:19px!important;min-height:19px!important;height:19px!important;margin:0!important;text-align:center!important;white-space:nowrap!important;color:var(--panel-muted)!important;letter-spacing:0!important}
-#modal #effortSlider{display:block!important;height:44px!important;touch-action:pan-x}
-#modal #effortSlider::-webkit-slider-runnable-track{background:linear-gradient(to right,var(--blue-2) var(--effort-progress,60%),var(--panel-line-strong) var(--effort-progress,60%))!important}
-#modal #effortSlider::-moz-range-progress{height:6px;border-radius:99px;background:var(--blue-2)}
-#modal .effort-scale{font-size:10px;line-height:14px;margin-top:-2px}
-
-/* The student sees the complete summary card, not an exercise list. */
-#programList .workout-entry{box-sizing:border-box;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 12px}
-html[data-theme] #programList .workout-view-card{display:block!important;box-sizing:border-box!important;width:100%!important;margin:0!important;padding:0!important;border:0!important;border-radius:8px!important;background:transparent!important;box-shadow:none!important;text-align:left!important;color:var(--text)!important}
-.workout-card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.workout-card-heading>strong{font-size:17px;line-height:1.25;font-weight:850;overflow-wrap:anywhere}
-.workout-card-heading>.chev{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px}
-.workout-card-heading .chev svg{width:18px;height:18px}
-.workout-card-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin-top:13px}
-.workout-card-stats>span{min-width:0;display:block}
-.workout-card-stats small{display:block;color:var(--muted);font-size:10px;line-height:1.4;font-weight:650}
-.workout-card-stats strong{display:block;color:var(--text);font-size:13px;line-height:1.35;font-weight:800;margin-top:3px}
-#programList .workout-entry .workout-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0!important;margin:14px 0 0!important;border:0!important}
-#programList .workout-entry .workout-actions .btn{box-sizing:border-box;width:100%;min-width:0;min-height:40px;margin:0;padding:9px 8px}
-
-/* Consistent grid, corner radius, centering, and symmetric minus/plus controls. */
-#modal .builder-body .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-#modal .builder-body .form-grid>.form-row{min-width:0!important}
-#modal .builder-body input[type="date"]{min-width:0!important;width:100%!important;max-width:100%!important}
-#modal .builder-controls,#modal .builder-default-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;align-items:end!important}
-#modal .builder-controls>div,#modal .builder-default-grid>div{min-width:0!important;grid-column:auto!important}
-#modal .builder-reps-field{grid-column:auto!important;margin:0!important}
-#modal .builder-controls .control-label,#modal .builder-default-grid .control-label{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;width:100%!important;height:26px!important;min-height:26px!important;margin:0 0 5px!important;font-size:9px!important;font-weight:700!important;line-height:1.15!important;white-space:normal!important}
-#modal .builder-controls .form-input,#modal .builder-default-grid .form-input,
-#modal .builder-controls .select-pill,#modal .builder-default-grid .select-pill,
-#modal .builder-controls .stepper,#modal .builder-default-grid .stepper{
-  box-sizing:border-box!important;width:100%!important;min-width:0!important;height:40px!important;min-height:40px!important;
-  margin:0!important;padding:0!important;border:1px solid var(--panel-line-strong)!important;border-radius:var(--prescription-radius)!important;
-  background:var(--panel-surface-2)!important;color:var(--panel-text)!important;font-size:12px!important;text-align:center!important
-}
-#modal .builder-controls .form-input,#modal .builder-default-grid .form-input{padding:0 3px!important;appearance:none;-webkit-appearance:none}
-#modal .builder-controls .select-pill,#modal .builder-default-grid .select-pill{display:grid!important;grid-template-columns:minmax(0,1fr)!important;place-items:center!important;gap:0!important}
-#modal .builder-controls .select-pill strong,#modal .builder-default-grid .select-pill strong{width:100%;text-align:center;line-height:1;letter-spacing:0;font-variant-numeric:tabular-nums}
-#modal .builder-controls .stepper,#modal .builder-default-grid .stepper{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center!important;gap:0!important;overflow:hidden}
-#modal .builder-controls .stepper button,#modal .builder-default-grid .stepper button{display:grid!important;place-items:center!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;line-height:1!important}
-#modal .stepper button svg{display:block;width:16px;height:16px}
-#modal .stepper>span{display:grid!important;place-items:center!important;min-width:0!important;margin:0!important;padding:0!important;text-align:center!important;font-weight:850;font-variant-numeric:tabular-nums;line-height:1}
-#modal .rest-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-#modal .rest-choice{display:grid;place-items:center;min-height:48px;padding:8px;border:1px solid var(--panel-line-strong);border-radius:10px;background:var(--panel-surface-2);color:var(--panel-text);text-align:center;font-variant-numeric:tabular-nums}
-#modal .rest-choice.is-selected{border-color:var(--rp-accent);background:var(--rp-accent-soft)}
-
-/* Separate, equal-sized history and overflow actions on the same centerline. */
-#main .live-exercise-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important}
-#main .live-title-block{min-width:0}
-#main .live-title-block>.row-main strong{display:block;white-space:normal;overflow-wrap:anywhere}
-#main .live-title-block .exercise-rest{text-align:left;line-height:1.3;min-height:28px;padding:5px 0 0;font-size:10.5px}
-#main .live-title-block .exercise-rest span{min-width:0}
-#main .live-exercise-actions{display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0}
-html[data-theme] #main .live-exercise-actions .live-action-button{
-  display:grid!important;place-items:center!important;box-sizing:border-box!important;
-  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;flex:0 0 44px!important;
-  margin:0!important;padding:0!important;border:1px solid var(--line)!important;border-radius:11px!important;
-  background:var(--surface-2)!important;color:var(--blue-2)!important;line-height:1!important
-}
-#main .live-exercise-actions .live-action-button svg{display:block!important;width:20px!important;height:20px!important}
-#modal .exercise-menu .action-icon{display:grid!important;place-items:center!important;width:28px!important;height:28px!important;min-width:28px!important;flex:0 0 28px!important;padding:0!important;border-radius:8px!important}
-#modal .exercise-menu .action-icon svg{display:block!important;width:20px!important;height:20px!important}
-#modal .exercise-menu-row .action-item{display:flex;align-items:center;gap:8px;min-width:0}
-#modal .exercise-menu-row .row-main{min-width:0}
-#modal .exercise-menu-row .row-main strong{font-size:11px;overflow-wrap:anywhere}
-#modal .modal-handle:focus-visible,#main .live-action-button:focus-visible,#restTimer button:focus-visible,#programList button:focus-visible{outline:2px solid var(--rp-accent)!important;outline-offset:3px}
-@media(prefers-reduced-motion:reduce){body #restTimer.rest-timer,#modal{transition:none!important}}
-</style>
-
-<style id="usability-refinement-2">
-/* ===== REFINO 2 — apenas os campos, cartões e ações solicitados ===== */
-html[data-theme="light"]{
-  --entry-bg:#F1F4F7;--entry-line:#7B8B9B;--entry-text:#24394A;
-  --entry-placeholder:#526476;--entry-icon:#244B6B
-}
-html[data-theme="dark"]{
-  --entry-bg:#1A222C;--entry-line:#687B90;--entry-text:#E6ECF2;
-  --entry-placeholder:#ADBACA;--entry-icon:#B8D9F2
-}
-/* The note must look editable before it receives focus. Keep its compact height. */
-html[data-theme] #main .live-exercise-card .live-note{
-  display:block!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;
-  height:31px!important;min-height:31px!important;padding:0 10px!important;
-  border:1px solid var(--entry-line)!important;border-radius:8px!important;
-  background:var(--entry-bg)!important;color:var(--entry-text)!important;
-  font-size:11.5px!important;font-weight:400!important;opacity:1!important;box-shadow:none!important
-}
-html[data-theme] #main .live-exercise-card .live-note::placeholder{
-  color:var(--entry-placeholder)!important;opacity:1!important;font-weight:400!important
-}
-html[data-theme] #main .live-exercise-card .live-note:focus{
-  border-color:var(--rp-accent)!important;outline:2px solid var(--rp-accent)!important;outline-offset:1px
-}
-/* Smaller matched actions; no changes to Concluir or the floating rest control. */
-html[data-theme] #main .live-exercise-actions .live-action-button{
-  width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important;
-  flex-basis:36px!important;border-radius:9px!important
-}
-#main .live-exercise-actions .live-action-button svg{width:18px!important;height:18px!important}
-
-/* Exercise previews: number and name share a line; vertical gaps stay compact. */
-#modal .view-exercise{
-  display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;
-  align-items:start!important;align-content:start!important;gap:4px 6px!important;
-  box-sizing:border-box!important;min-height:0!important;height:auto!important;
-  margin:0 0 8px!important;padding:10px 12px!important;border-radius:12px!important
-}
-#modal .view-exercise>small{
-  grid-column:1!important;grid-row:1!important;position:static!important;
-  margin:0!important;padding:0!important;font-size:10px!important;line-height:19px!important;color:var(--panel-muted)!important
-}
-#modal .view-exercise>h3{
-  grid-column:2!important;grid-row:1!important;margin:0!important;padding:0!important;
-  font-size:14px!important;line-height:1.35!important;white-space:normal!important;overflow-wrap:anywhere
-}
-#modal .view-exercise>p{
-  grid-column:2!important;margin:0!important;padding:0!important;font-size:11.5px!important;line-height:1.4!important
-}
-#modal .view-exercise>.previous-note{
-  grid-column:2!important;margin:2px 0!important;padding:6px 8px!important;font-size:11px!important;line-height:1.4!important;
-  white-space:normal;overflow-wrap:anywhere
-}
-#modal .view-exercise>.series-inline{
-  grid-column:2!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;
-  gap:4px!important;margin:2px 0 0!important;padding:0!important
-}
-#modal .view-exercise .series-chip{
-  box-sizing:border-box!important;min-height:22px!important;padding:3px 6px!important;
-  border-radius:7px!important;font-size:10px!important;line-height:1.3!important
-}
-#modal .view-exercise .series-chip b{font-size:10px!important}
-
-/* No bold labels or values in either prescription grid (create/edit). */
-#modal .builder-default-grid .control-label,#modal .builder-controls .control-label,
-#modal .builder-default-grid .form-input,#modal .builder-controls .form-input,
-#modal .builder-default-grid .stepper,#modal .builder-controls .stepper,
-#modal .builder-default-grid .stepper>span,#modal .builder-controls .stepper>span,
-#modal .builder-default-grid .stepper button,#modal .builder-controls .stepper button,
-#modal .builder-default-grid .select-pill,#modal .builder-controls .select-pill,
-#modal .builder-default-grid .select-pill strong,#modal .builder-controls .select-pill strong,
-#modal .rest-choice strong{font-weight:400!important}
-
-/* Searches are visible in both the library and the exercise picker. */
-html[data-theme] #main .search-field,html[data-theme] #modal .search-field{
-  border:1px solid var(--entry-line)!important;background:var(--entry-bg)!important;
-  color:var(--entry-text)!important;opacity:1!important;box-shadow:none!important
-}
-html[data-theme] #main .search-field>svg,html[data-theme] #modal .search-field>svg{
-  display:block!important;flex:0 0 18px!important;width:18px!important;height:18px!important;
-  color:var(--entry-icon)!important;opacity:1!important
-}
-html[data-theme] #main .search-field input,html[data-theme] #modal .search-field input{
-  min-width:0!important;background:transparent!important;color:var(--entry-text)!important;opacity:1!important
-}
-html[data-theme] #main .search-field input::placeholder,html[data-theme] #modal .search-field input::placeholder{
-  color:var(--entry-placeholder)!important;opacity:1!important
-}
-html[data-theme] #main .search-field:focus-within,html[data-theme] #modal .search-field:focus-within{
-  border-color:var(--rp-accent)!important;outline:2px solid var(--rp-accent)!important;outline-offset:1px
-}
-html[data-theme="light"] #studentBirthDate{color-scheme:light}
-html[data-theme="dark"] #studentBirthDate{color-scheme:dark}
-#modal #studentBirthDate{box-sizing:border-box;min-width:0;width:100%;max-width:100%;text-align:left}
-#modal #studentBirthDate[aria-invalid="true"]{border-color:#C64040!important}
-
-/* One inset, icon column and type size for every exercise menu action. */
-#modal .exercise-menu .action-item{
-  display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;
-  align-items:center!important;justify-content:start!important;gap:8px!important;
-  box-sizing:border-box!important;min-width:0!important;min-height:58px!important;
-  margin:0!important;padding:12px 10px!important;border-width:1px!important;border-style:solid!important;
-  text-align:left!important;font-size:12px!important
-}
-#modal .exercise-menu .action-item .action-icon{margin:0!important;align-self:center!important}
-#modal .exercise-menu .action-item .row-main{
-  min-width:0!important;margin:0!important;padding:0!important;text-align:left!important;align-self:center!important
-}
-#modal .exercise-menu .action-item .row-main strong{
-  display:block!important;margin:0!important;padding:0!important;font-size:12px!important;line-height:1.3!important;
-  font-weight:700!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important
-}
-#modal .exercise-menu .action-item .row-main small{
-  display:block!important;margin:3px 0 0!important;padding:0!important;
-  color:var(--panel-muted)!important;font-size:10px!important;line-height:1.4!important;font-weight:400!important
-}
-#modal .exercise-menu .action-item>.chev{display:grid!important;place-items:center!important;width:16px!important;height:16px!important;margin:0!important}
-#modal .exercise-menu .action-item>.chev svg{width:16px!important;height:16px!important}
-</style>
-
-<style id="final-density-and-status">
-/* Final focused pass: quiet inputs, complete theme coverage, one status bar,
-   and dense in-app summaries. Does not style or change the exported PNG. */
-html[data-theme="light"]{--status-blue:#0A6FB6;--status-red:#C23C48;--note-bg:#F0F4F7;--note-line:#D4DEE6}
-html[data-theme="dark"]{--status-blue:#69C2EB;--status-red:#FF858D;--note-bg:var(--surface,#14181E);--note-line:var(--panel-line)}
-
-/* Brand belongs only in the global header, not in finish/summary cards. */
-.topbar-leading{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
-.header-brand{display:block;flex:0 0 30px;width:30px;height:28px;object-fit:contain;border:0;border-radius:0;background:transparent;margin:0}
-.topbar-title{min-width:0}
-.topbar-title>strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:360px){.header-brand{width:26px;height:24px;flex-basis:26px}.topbar-leading{gap:7px}}
-
-/* Match the quiet outlines and surfaces of Duração / Volume / Séries. */
-html[data-theme] #main .live-exercise-card .live-note{
-  background:var(--note-bg)!important;border:1px solid var(--note-line)!important;
-  color:var(--panel-text)!important;box-shadow:none!important;outline:0!important;
-  border-radius:8px!important;height:31px!important;min-height:31px!important;
-  padding:0 9px!important;font-weight:400!important
-}
-html[data-theme] #main .live-exercise-card .live-note::placeholder{color:var(--panel-muted)!important;opacity:.85!important}
-html[data-theme] #main .live-exercise-card .live-note:focus{border-color:var(--rp-accent)!important;outline:1px solid var(--rp-accent)!important;outline-offset:0!important}
-
-/* Both visible bars share their dimensions, surface, inset, and baseline. */
-body #activeWorkoutPill.workout-status-bar,body #restTimer.rest-timer.workout-status-bar{
-  position:fixed!important;left:50%!important;right:auto!important;bottom:var(--floating-bottom)!important;
-  transform:translateX(-50%)!important;translate:none!important;box-sizing:border-box!important;
-  width:calc(min(600px,100vw) - 24px)!important;max-width:576px!important;
-  height:56px!important;min-height:56px!important;margin:0!important;padding:8px 12px!important;
-  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
-  gap:9px!important;border:1px solid var(--panel-line)!important;border-radius:15px!important;outline:0!important;
-  background:var(--panel-bg)!important;color:var(--panel-text)!important;
-  box-shadow:0 5px 18px rgba(0,0,0,.12)!important;z-index:90!important;
-  animation:none!important;transition:none!important
-}
-body #activeWorkoutPill.workout-status-bar.is-hidden,body #restTimer.rest-timer.workout-status-bar.is-hidden{display:none!important}
-body #activeWorkoutPill .pulse-dot{width:6px;height:6px;flex:0 0 6px}
-body #activeWorkoutPill .active-workout-copy{display:block;flex:1;min-width:0;text-align:left;line-height:1.25}
-body #activeWorkoutPill .active-workout-copy small{display:block;white-space:nowrap;color:var(--panel-muted);font-size:8px!important}
-body #activeWorkoutPill .active-workout-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px!important;color:var(--panel-text);margin-top:3px}
-.status-clocks{display:flex;align-items:center;gap:9px;flex:0 0 auto;min-width:0}
-.status-clock{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1;font-size:12px;font-weight:700}
-.status-clock svg,body #restTimer .rest-timer-main svg{display:block;width:15px;height:15px;flex:0 0 15px}
-.status-clock>[data-icon],body #restTimer .rest-timer-main>[data-icon]{display:flex;align-items:center;justify-content:center;flex-shrink:0}
-body #activeWorkoutPill .status-workout-clock,body #activeWorkoutPill #activeWorkoutClock{color:var(--status-blue)!important}
-body #activeWorkoutPill .status-rest-clock,body #restTimer .rest-timer-main,body #restTimer #restTimerValue{color:var(--status-red)!important}
-#activeWorkoutRest.is-hidden{display:none!important}
-body #restTimer.rest-timer .rest-timer-main{
-  width:auto!important;height:auto!important;min-width:0!important;flex:1 1 auto!important;
-  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
-  gap:7px!important;margin:0!important;padding:0!important;background:transparent!important
-}
-body #restTimer.rest-timer #restTimerValue{font-size:18px!important;line-height:24px!important;font-weight:750!important;letter-spacing:0!important}
-body #restTimer.rest-timer .rest-timer-actions{
-  display:flex!important;align-items:center!important;justify-content:flex-end!important;
-  gap:6px!important;width:auto!important;flex:0 0 auto!important;margin:0!important;padding:0!important
-}
-body #restTimer.rest-timer .rest-timer-actions button{
-  width:49px!important;min-width:49px!important;height:36px!important;min-height:36px!important;
-  border-radius:9px!important;padding:0 5px!important;background:var(--panel-surface-2)!important;
-  color:var(--panel-text)!important;line-height:1!important;font-size:11.5px!important;font-weight:600!important
-}
-body #restTimer.rest-timer .rest-timer-actions .rest-skip{width:54px!important;min-width:54px!important;background:var(--rp-navy)!important;color:#fff!important}
-body.rest-running #main .screen,body.has-floating-status #main .screen{padding-bottom:calc(80px + var(--floating-bottom))!important}
-body.modal-open #restTimer,body.modal-open #activeWorkoutPill{visibility:hidden!important;pointer-events:none!important}
-@media(max-width:360px){
-  body #activeWorkoutPill.workout-status-bar,body #restTimer.rest-timer.workout-status-bar{gap:7px!important;padding-left:10px!important;padding-right:10px!important}
-  .status-clocks{gap:7px}.status-clock{gap:3px;font-size:11px}
-  .status-clock svg{width:13px;height:13px;flex-basis:13px}
-}
-
-/* No hard-coded dark surfaces in exercises, records, menus or set badges. */
-html[data-theme] #modal .exercise-execution-card,html[data-theme] #modal .execution-card,
-html[data-theme] #modal .exercise-pr-card,html[data-theme] #modal .session-exercise,
-html[data-theme] #main .exercise-list-card{
-  background:var(--panel-surface)!important;border-color:var(--panel-line)!important;color:var(--panel-text)!important;box-shadow:none!important
-}
-html[data-theme] #modal .performance-exercise-card,html[data-theme] #modal .exercise-point-detail,
-html[data-theme] #modal .history-summary-grid>div,html[data-theme] #modal .execution-sets>span,
-html[data-theme] #modal .series-chip,html[data-theme] #main .series-chip,
-html[data-theme] #modal .group-button:not(.is-selected),html[data-theme] #modal .filter-chip:not(.is-active){
-  background:var(--panel-surface-2)!important;background-image:none!important;
-  border-color:var(--panel-line)!important;color:var(--panel-text)!important;box-shadow:none!important
-}
-html[data-theme] #modal .execution-sets>span>b,html[data-theme] #modal .series-chip>b,
-html[data-theme] #main .series-chip>b{
-  background:transparent!important;border:0!important;color:var(--panel-text)!important;
-  font-size:10px!important;font-weight:650!important;min-width:14px!important;min-height:0!important;
-  height:auto!important;width:auto!important;padding:0!important;margin:0!important;border-radius:0!important
-}
-html[data-theme] #modal .exercise-execution-card .execution-card-head strong,
-html[data-theme] #modal .exercise-pr-card strong{color:var(--panel-text)!important}
-html[data-theme] #modal .exercise-execution-card .execution-card-head small,
-html[data-theme] #modal .execution-footer,html[data-theme] #modal .performance-exercise-title small,
-html[data-theme] #modal .performance-max small{color:var(--panel-muted)!important}
-html[data-theme="light"] #main .live-action-button,
-html[data-theme="light"] #modal .exercise-detail-head .icon-btn{background:var(--panel-surface-2)!important;color:#0A427E!important;border-color:var(--panel-line)!important}
-
-/* Single-line strips: identical consecutive sets share their number range.
-   Different sets stay readable and scroll horizontally instead of wrapping. */
-html[data-theme] #modal .compact-series-strip,html[data-theme] #main .compact-series-strip,
-#modal .view-exercise>.series-inline.compact-series-strip{
-  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;
-  min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;
-  gap:4px!important;margin:5px 0 0!important;padding:0 0 2px!important;
-  overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;
-  -webkit-overflow-scrolling:touch;white-space:nowrap!important
-}
-html[data-theme] #modal .compact-series-strip .compact-set-chip,
-html[data-theme] #main .compact-series-strip .compact-set-chip{
-  display:inline-flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:flex-start!important;
-  gap:5px!important;box-sizing:border-box!important;min-width:0!important;width:auto!important;max-width:none!important;
-  height:24px!important;min-height:24px!important;padding:3px 6px!important;margin:0!important;
-  border:0!important;border-radius:6px!important;font-size:10px!important;font-weight:400!important;
-  line-height:16px!important;white-space:nowrap!important;background:var(--panel-surface-2)!important;color:var(--panel-text)!important
-}
-html[data-theme] #modal .compact-series-strip .compact-set-chip>span,
-html[data-theme] #main .compact-series-strip .compact-set-chip>span{
-  display:inline!important;margin:0!important;padding:0!important;border:0!important;
-  background:transparent!important;color:var(--panel-muted)!important;font-size:10px!important;font-weight:400!important;
-  line-height:16px!important;white-space:nowrap!important;min-height:0!important
-}
-.compact-series-strip:focus-visible{outline:1px solid var(--rp-accent);outline-offset:2px;border-radius:7px}
-
-/* Slightly tighter workout cards and the exercise preview. */
-#programList .workout-entry{padding:12px!important;margin-bottom:8px!important;border-radius:14px!important;background:var(--panel-surface)!important;border-color:var(--panel-line)!important}
-#programList .workout-card-stats{gap:6px 12px!important;margin-top:8px!important}
-#programList .workout-card-stats small{font-size:9px!important;line-height:1.3!important}
-#programList .workout-card-stats strong{font-size:12px!important;line-height:1.3!important;margin-top:2px!important}
-#programList .workout-entry .workout-actions{gap:7px!important;margin-top:9px!important}
-#programList .workout-entry .workout-actions .btn{height:36px!important;min-height:36px!important;padding:6px 8px!important;font-size:11.5px!important}
-#modal.program-summary-sheet .builder-body{padding-top:10px!important;padding-bottom:12px!important}
-#modal .view-exercise{padding:8px 10px!important;gap:3px 5px!important;margin-bottom:6px!important;grid-template-columns:18px minmax(0,1fr)!important;border-radius:10px!important}
-#modal .view-exercise>h3{font-size:13px!important;line-height:1.3!important}
-#modal .view-exercise>small{font-size:9px!important;line-height:17px!important}
-#modal .view-exercise>p{font-size:10.5px!important;line-height:1.35!important}
-#modal .view-exercise>.compact-series-strip{grid-column:1/-1!important;margin-top:3px!important}
-#modal .view-exercise>.previous-note{font-size:10.5px!important;padding:4px 6px!important;margin:1px 0!important}
-
-/* Recent history: shorter cards and less space between them, not a new layout. */
-#main .history-session{padding:10px 12px!important;margin:0 0 7px!important;border-radius:12px!important;color:var(--panel-text)!important;background:var(--panel-surface)!important;border-color:var(--panel-line)!important}
-#main .history-session-head{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:0!important}
-#main .history-session-head>div:first-child{min-width:0}
-#main .history-session-head strong{font-size:12.5px!important;line-height:1.3!important}
-#main .history-session-head small{display:block;font-size:10px!important;line-height:1.4!important;margin-top:3px!important}
-#main .history-session-head>span{font-size:11px!important;white-space:nowrap;flex-shrink:0}
-#main .recent-session-card{padding:11px 12px!important;margin-bottom:8px!important;border-radius:13px!important;min-height:0!important}
-#main .recent-session-top{gap:9px!important}
-#main .recent-session-top .avatar{width:32px!important;height:32px!important;flex-basis:32px!important}
-#main .recent-session-top .row-main strong{font-size:13px!important;line-height:1.3!important}
-#main .recent-session-top .row-main small{font-size:10px!important;margin-top:3px!important}
-#main .recent-session-stats{margin-top:8px!important;padding-top:7px!important;gap:8px!important}
-#main .recent-session-stats strong{font-size:12px!important;line-height:1.3!important;margin-top:2px!important}
-#main .recent-session-stats small{font-size:8px!important}
-#main .home-recent-section{margin-top:18px!important}
-#main .profile-actions{margin-bottom:14px!important}
-#main .profile-actions~.section{margin-top:16px!important}
-
-/* Compact in-app summaries; export sizing, quality and layout are separate. */
-#modal .finish-card{padding:11px!important;margin-bottom:8px!important;border-radius:14px!important}
-#modal .session-summary-head{gap:8px;margin:0 0 8px!important;align-items:center}
-#modal .session-summary-head .avatar{width:34px!important;height:34px!important;flex-basis:34px!important}
-#modal .session-summary-title strong{font-size:15px!important;line-height:1.3!important;white-space:normal;overflow-wrap:anywhere}
-#modal .session-summary-title small{font-size:9.5px!important;margin-top:2px!important;line-height:1.35}
-#modal .finish-duration-pill{min-height:28px!important;padding:0 8px!important;font-size:10px!important;border-radius:9px!important}
-#modal .finish-stats{gap:6px!important;margin-top:8px!important}
-#modal .finish-stats>div{padding:7px!important;border-radius:9px!important;background:var(--panel-surface-2)!important;border-color:var(--panel-line)!important}
-#modal .finish-stats strong{font-size:12px!important;margin-top:3px!important}
-#modal .performance-section-title{display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px!important}
-#modal .performance-section-title h2{font-size:13px!important;margin:0!important}
-#modal .performance-section-title>span{font-size:10px;color:var(--panel-muted)}
-#modal .performance-exercises{gap:6px!important;margin-top:0!important;min-width:0}
-#modal .performance-exercise-card{min-width:0!important;padding:8px 9px!important;border-radius:10px!important}
-#modal .performance-exercise-top{gap:8px!important}
-#modal .performance-exercise-title strong{font-size:12px!important;line-height:1.3!important}
-#modal .performance-exercise-title small{font-size:9.5px!important;margin-top:2px!important;line-height:1.3!important}
-#modal .performance-max strong{font-size:12px!important;margin-top:2px!important;color:var(--status-blue)!important}
-#modal .performance-max small{font-size:7px!important}
-#modal .exercise-execution-card,#modal .execution-card{padding:10px!important;margin-bottom:7px!important;border-radius:11px!important}
-#modal .exercise-execution-card .execution-card-head{margin-bottom:0!important}
-#modal .execution-card-head strong,#modal .execution-card-head b{font-size:12px!important}
-#modal .execution-card-head small{font-size:9.5px!important;margin-top:3px!important}
-#modal .execution-footer{margin-top:5px!important;padding-top:5px!important;font-size:9px!important}
-#modal.compact-session-summary .builder-body{padding-top:10px!important;padding-bottom:12px!important}
-
-/* Equal footer actions: Voltar | Salvar imagem | Salvar treino. */
-#modal.compact-finish-sheet{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
-#modal.compact-finish-sheet .finish-celebration{flex:0 0 auto;padding:8px 2px 10px!important}
-#modal.compact-finish-sheet .finish-celebration h2{font-size:24px!important;margin:3px 0 0!important}
-#modal .finish-summary-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 1px 8px;overscroll-behavior:contain}
-#modal .finish-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center;flex:0 0 auto;gap:6px;padding:10px 0 calc(2px + var(--safe-bottom));margin-top:0;background:var(--panel-bg);border-top:1px solid var(--panel-line)}
-#modal .finish-actions .btn{display:flex!important;align-items:center;justify-content:center;box-sizing:border-box!important;width:100%!important;min-width:0!important;height:40px!important;min-height:40px!important;padding:0 4px!important;margin:0!important;border-radius:10px!important;font-size:clamp(10.5px,2.9vw,12px)!important;font-weight:600!important;line-height:1.2!important;white-space:nowrap!important;box-shadow:none!important}
-#modal .finish-actions .btn:disabled{opacity:.55;cursor:wait}
-@media(prefers-reduced-motion:reduce){body #activeWorkoutPill.workout-status-bar,body #restTimer.rest-timer.workout-status-bar{transition:none!important}}
-
-/* Low-contrast chips remain distinct from their surrounding summary card. */
-html[data-theme] #modal .performance-exercise-card .compact-series-strip .compact-set-chip{background:var(--panel-surface)!important}
+<style id="sept30-fixes">
+/* Numeric clocks share the same size, including the compact rest balloon. */
+:root{--workout-clock-size:16px}
+#liveDuration,#activeWorkoutClock,body #restTimerValue,body.rest-expanded #restTimerValue,body:not(.rest-expanded) .rest-timer-main strong{font-size:var(--workout-clock-size)!important;font-weight:800!important;line-height:1.2!important;font-variant-numeric:tabular-nums}
+body.rest-expanded .rest-timer.on-workout{gap:10px!important;padding-top:10px!important}
+.exercise-library-card{background:var(--surface)!important;background-image:none!important;overflow:hidden;isolation:isolate}
+.exercise-library-card .exercise-list-card{background:transparent!important;box-shadow:none!important}
+.series-chip,.series-inline .series-chip,.performance-series .series-chip,.execution-sets>span,.print-series-pill{gap:4px!important;padding:4px 6px!important;min-height:25px!important;letter-spacing:0!important;line-height:1.25!important}
+.series-chip>b,.execution-sets>span>b{min-width:12px!important;margin:0!important;font-size:10px!important}
+.series-chip>span,.performance-series .series-chip span,.execution-sets>span{font-size:10px!important;letter-spacing:0!important}
+.series-inline,.performance-series,.execution-sets{gap:5px!important}
+input.form-input,input.set-input,textarea.form-textarea{-webkit-appearance:none;appearance:none;background-clip:padding-box!important}
+#programName{font-size:16px!important;outline:0!important;box-shadow:none!important}
+#programName:focus{border-color:var(--blue-2)!important;outline:0!important;box-shadow:inset 0 0 0 1px var(--blue-2)!important}
+@media(max-width:640px){.form-input,.form-select,.form-textarea,.search-field input{font-size:16px!important}}
+.effort-slider-sheet{background:var(--bg-elev)!important;color:var(--text)!important;max-height:calc(100dvh - var(--safe-top))!important;overflow-y:auto!important;opacity:1!important;will-change:auto!important;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.effort-slider-sheet .modal-handle{position:relative;z-index:2;touch-action:none}
+.live-add-exercises{margin:12px 16px 24px}.live-add-exercises .add-dashed{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin:8px 0}.live-add-exercises svg{width:18px;height:18px;flex-shrink:0}
 
 </style>
+<script id="sept30-fixes-js">
+(function(){
+  let modalEpoch=0,currentSheetCleanup=null;
+  const prevOpen=openModal,prevClose=closeModal;
+  openModal=function(html,opts={}){
+    modalEpoch++;
+    currentSheetCleanup?.();currentSheetCleanup=null;
+    const modal=$('#modal');modal.style.removeProperty('transform');modal.style.removeProperty('opacity');modal.style.removeProperty('transition');modal.classList.remove('is-dragging');
+    // Avoid leaving the native iOS keyboard and its zoom/viewport state active.
+    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+    prevOpen(html,opts);const epoch=modalEpoch;
+    requestAnimationFrame(()=>{if(epoch!==modalEpoch||$('#modalLayer').classList.contains('is-hidden'))return;modal.style.removeProperty('transform');if(modal.classList.contains('effort-slider-sheet'))$('#effortSlider')?.focus({preventScroll:true});});
+  };
+  closeModal=function(){modalEpoch++;currentSheetCleanup?.();currentSheetCleanup=null;prevClose();const modal=$('#modal');modal.style.removeProperty('transform');modal.style.removeProperty('opacity');modal.classList.remove('is-dragging');};
+  installSheetGesture=function(){
+    currentSheetCleanup?.();currentSheetCleanup=null;
+    const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!handle||modal.classList.contains('fullscreen')||$('#modalLayer').classList.contains('is-hidden'))return;
+    const epoch=modalEpoch;let active=false,start=0,delta=0,closeTimer=null;
+    const unbind=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);};
+    function down(e){if(e.button!=null&&e.button!==0)return;active=true;start=e.clientY;delta=0;modal.classList.add('is-dragging');modal.style.transition='none';try{handle.setPointerCapture(e.pointerId);}catch{}window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);e.preventDefault();}
+    function move(e){if(!active||epoch!==modalEpoch)return;delta=Math.max(0,e.clientY-start);modal.style.transform=`translate3d(0,${delta}px,0)`;if(e.cancelable)e.preventDefault();}
+    function finish(close){if(!active)return;active=false;unbind();modal.classList.remove('is-dragging');modal.style.removeProperty('transition');if(close&&epoch===modalEpoch){modal.style.transform=`translate3d(0,${modal.offsetHeight}px,0)`;closeTimer=setTimeout(()=>{if(epoch===modalEpoch&&!$('#modalLayer').classList.contains('is-hidden'))closeModal();},180);}else modal.style.removeProperty('transform');}
+    function up(){finish(delta>Math.min(90,modal.offsetHeight*.22));}function cancel(){finish(false);}
+    handle.addEventListener('pointerdown',down,{passive:false});
+    currentSheetCleanup=()=>{active=false;unbind();clearTimeout(closeTimer);handle.removeEventListener('pointerdown',down);};
+  };
+  const renderLive=renderActiveWorkout;
+  renderActiveWorkout=function(main){
+    renderLive(main);if(!live?.startedAt)return;
+    const section=document.createElement('div');section.className='live-add-exercises';
+    section.innerHTML=live.participants.map((p,i)=>`<button type="button" class="add-dashed" data-live-add-exercise="${i}">${icons.plus}<span>Adicionar exercício${live.participants.length>1?` · ${esc(studentById(p.studentId)?.name||'Aluno')}`:''}</span></button>`).join('');
+    main.querySelector('.screen')?.appendChild(section);
+    $$('[data-live-add-exercise]',section).forEach(btn=>btn.onclick=()=>{
+      const session=live,pi=Number(btn.dataset.liveAddExercise),participant=session.participants[pi];
+      openExercisePicker(id=>{
+        if(live!==session)return;const ex=exerciseById(id);if(!ex)return;
+        const st=studentById(participant.studentId),program=programById(participant.programId),sets=clamp(parseInteger(st?.defaultSets)||3,1,50),restSec=clamp(parseInteger(st?.defaultRestSec)||90,60,180),targetReps=String(st?.defaultTargetReps||'8–12'),programIndex=program?program.exercises.length:null;
+        if(program){program.exercises.push({exerciseId:id,sets,restSec,targetReps,note:'',referenceWeight:null});program.updatedAt=Date.now();persist();}
+        participant.exercises.push({exerciseId:id,sourceExerciseId:id,programIndex,name:ex.name,muscleGroups:normalizeGroups(ex.muscleGroups),sets:Array.from({length:sets},()=>({weight:'',reps:'',rpe:'',done:false,autoWeight:true,autoReps:true})),restSec,targetReps,note:'',referenceWeight:null,adjustmentSummary:''});
+        persistDraft();closeModal();render();toast(program?'Exercício adicionado à sessão e à ficha.':'Exercício adicionado à sessão.');
+      });
+    });
+  };
+  render();
+})();
 
+</script>
 </body>
 </html>
