@@ -982,7 +982,7 @@ function renderExercises(main) {
     <section class="screen">
       <div class="hero"><h1>Biblioteca</h1></div>
       <div class="toolbar"><div class="search-field">${icons.search}<input id="exerciseSearch" placeholder="Buscar exercício" value="${esc(state.exerciseSearch)}"></div><button class="btn btn-primary" id="exerciseAdd">+ Novo</button></div>
-      <div class="section" style="margin-top:0"><div class="card exercise-library-card" style="padding:2px 14px">${exercises.length?exercises.map(exerciseRowHtml).join(''):emptyHtml(q?'Nenhum resultado.':'Biblioteca vazia.',q?'Tente outro termo.':'Cadastre o primeiro exercício.')}</div></div>
+      <div class="section" style="margin-top:0"><div class="card" style="padding:2px 14px">${exercises.length?exercises.map(exerciseRowHtml).join(''):emptyHtml(q?'Nenhum resultado.':'Biblioteca vazia.',q?'Tente outro termo.':'Cadastre o primeiro exercício.')}</div></div>
     </section>`;
   $('#exerciseSearch').oninput = e => { state.exerciseSearch=e.target.value; renderExercises(main); requestAnimationFrame(()=>{$('#exerciseSearch')?.focus(); const el=$('#exerciseSearch');if(el)el.setSelectionRange(el.value.length,el.value.length);}); };
   $('#exerciseAdd').onclick = () => openExerciseForm();
