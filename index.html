@@ -1027,16 +1027,8 @@ setHeader=function(opts){__setHeader(opts);$('#themeToggle')?.classList.add('is-
 /* Sheet locking + drag-to-dismiss from the handle. */
 const __openModal=openModal,__closeModal=closeModal;
 let sheetCleanup=null;
-function installSheetGesture(){
-  sheetCleanup?.();sheetCleanup=null;
-  const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!modal||!handle||modal.classList.contains('fullscreen'))return;
-  let active=false,startY=0,lastY=0,lastT=0,dy=0;
-  const down=e=>{active=true;startY=e.clientY;lastY=e.clientY;lastT=performance.now();dy=0;modal.classList.add('is-dragging');try{handle.setPointerCapture?.(e.pointerId);}catch(_){}};
-  const move=e=>{if(!active)return;dy=Math.max(0,e.clientY-startY);modal.style.transform=`translateY(${dy}px)`;lastY=e.clientY;lastT=performance.now();};
-  const up=e=>{if(!active)return;active=false;modal.classList.remove('is-dragging');const shouldClose=dy>Math.min(150,modal.offsetHeight*.24);if(shouldClose){modal.style.transform=`translateY(${modal.offsetHeight}px)`;setTimeout(()=>closeModal(),170);}else{modal.style.transform='translateY(0)';setTimeout(()=>{if(modal.isConnected)modal.style.transform='';},230);}};
-  handle.addEventListener('pointerdown',down);handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
-  sheetCleanup=()=>{handle.removeEventListener('pointerdown',down);handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);};
-}
+function installSheetGesture(){window.installSheetGesture?.();}
+
 openModal=function(html,opts={}){__openModal(html,opts);document.body.classList.add('modal-open');requestAnimationFrame(installSheetGesture);};
 closeModal=function(){sheetCleanup?.();sheetCleanup=null;document.body.classList.remove('modal-open');__closeModal();};
 
@@ -1189,17 +1181,7 @@ openExerciseHistory=function(...args){
 };
 
 /* 4) Sheets: alça realmente arrastável + botão de fechar. */
-installSheetGesture=function(){
-  sheetCleanup?.();sheetCleanup=null;
-  const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!modal||!handle||modal.classList.contains('fullscreen'))return;
-  let active=false,startY=0,dy=0,startT=0,lastY=0,lastT=0,pid=null;
-  const cleanupWindow=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);};
-  const down=e=>{if(e.button!=null&&e.button!==0)return;active=true;pid=e.pointerId;startY=lastY=e.clientY;startT=lastT=performance.now();dy=0;modal.classList.add('is-dragging');try{handle.setPointerCapture?.(pid);}catch(_){}window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);e.preventDefault();};
-  function move(e){if(!active)return;dy=Math.max(0,e.clientY-startY);lastY=e.clientY;lastT=performance.now();modal.style.transform=`translate3d(0,${dy}px,0)`;if(e.cancelable)e.preventDefault();}
-  function up(e){if(!active)return;active=false;cleanupWindow();modal.classList.remove('is-dragging');const elapsed=Math.max(1,performance.now()-startT),velocity=dy/elapsed,threshold=Math.min(105,modal.offsetHeight*.18),shouldClose=dy>threshold||velocity>.72;if(shouldClose){modal.style.transform=`translate3d(0,${modal.offsetHeight}px,0)`;setTimeout(()=>closeModal(),175);}else{modal.style.transform='translate3d(0,0,0)';setTimeout(()=>{if(modal.isConnected)modal.style.transform='';},230);}}
-  handle.addEventListener('pointerdown',down,{passive:false});
-  sheetCleanup=()=>{cleanupWindow();handle.removeEventListener('pointerdown',down);};
-};
+installSheetGesture=function(){window.installSheetGesture?.();};
 const __openModalPolish=openModal;
 openModal=function(html,opts={}){
   __openModalPolish(html,opts);
@@ -1391,8 +1373,8 @@ document.addEventListener('click',e=>{const el=e.target.closest?.('[data-perform
 
 /* Saved PNG follows the same exercise-performance structure and grows with content. */
 function shareSeriesPill(set,index,x,y,C){
-  const label=`${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}`,w=Math.max(176,Math.min(240,104+label.length*7.4));
-  return {w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="42" rx="14" fill="${C.surface}"/><text x="22" y="27" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="850" fill="${C.blue}">${index+1}</text><text x="42" y="27" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};
+  const label=`${parseInteger(set.reps)} reps · ${parseDecimal(set.weight)} kg${set.rpe?` · RPE ${rpeLabel(set.rpe)}`:''}`,w=Math.max(148,40+label.length*8);
+  return {w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="36" rx="11" fill="${C.surface}"/><text x="14" y="24" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="850" fill="${C.blue}">${index+1}</text><text x="28" y="24" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};
 }
 buildSummaryShareSvg=async function(participant){
   const st=studentById(participant.studentId),doneExercises=(participant.exercises||[]).filter(ex=>completedSets(ex).length),sets=participantSetCount(participant),vol=participantVolume(participant),rpes=doneExercises.flatMap(ex=>completedSets(ex).map(s=>Number(s.rpe)).filter(Number.isFinite)),avg=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—',duration=formatDurationShort((Date.now()-(live?.startedAt||Date.now()))/1000),dark=currentTheme()==='dark';
@@ -1404,7 +1386,7 @@ buildSummaryShareSvg=async function(participant){
     words.forEach(word=>titleLines.push(word.trim()));
     const titleHeight=(titleLines.length-1)*28;
     let px=96,py=cardY+66+titleHeight,pills='';
-    d.sets.forEach((s,si)=>{let pill=shareSeriesPill(s,si,px,py,C);if(px+pill.w>982){px=96;py+=50;pill=shareSeriesPill(s,si,px,py,C);}pills+=pill.markup;px+=pill.w+10;});
+    d.sets.forEach((s,si)=>{let pill=shareSeriesPill(s,si,px,py,C);if(px+pill.w>982){px=96;py+=42;pill=shareSeriesPill(s,si,px,py,C);}pills+=pill.markup;px+=pill.w+8;});
     const rowH=py-cardY+56;
     exerciseMarkup+=`<g><rect x="84" y="${cardY}" width="912" height="${rowH}" rx="24" fill="${C.surface2}"/><text x="106" y="${cardY+34}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="23" font-weight="820" fill="${C.text}">${titleLines.map((line,i)=>`<tspan x="106" dy="${i?28:0}">${xmlEsc(line)}</tspan>`).join('')}</text><text x="106" y="${cardY+58+titleHeight}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.muted}">${xmlEsc(`${kgText(d.volume)} · ${d.totalReps} reps`)}</text><text x="965" y="${cardY+30}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" font-weight="800" fill="${C.faint}">MAIOR CARGA</text><text x="965" y="${cardY+54}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="850" fill="${C.blue}">${xmlEsc(d.maxLoad?`${d.maxLoad} kg`:'—')}</text>${pills}</g>`;
     y+=rowH+14;
@@ -1619,5 +1601,72 @@ body.rest-expanded .rest-sheet-head{display:grid;grid-template-columns:minmax(0,
 #effortSlider:focus-visible{outline:2px solid var(--blue-2);outline-offset:4px;border-radius:12px}.effort-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
 </style>
 
+<style id="sept30-fixes">
+/* Numeric clocks share the same size, including the compact rest balloon. */
+:root{--workout-clock-size:16px}
+#liveDuration,#activeWorkoutClock,body #restTimerValue,body.rest-expanded #restTimerValue,body:not(.rest-expanded) .rest-timer-main strong{font-size:var(--workout-clock-size)!important;font-weight:800!important;line-height:1.2!important;font-variant-numeric:tabular-nums}
+body.rest-expanded .rest-timer.on-workout{gap:10px!important;padding-top:10px!important}
+.exercise-library-card{background:var(--surface)!important;background-image:none!important;overflow:hidden;isolation:isolate}
+.exercise-library-card .exercise-list-card{background:transparent!important;box-shadow:none!important}
+.series-chip,.series-inline .series-chip,.performance-series .series-chip,.execution-sets>span,.print-series-pill{gap:4px!important;padding:4px 6px!important;min-height:25px!important;letter-spacing:0!important;line-height:1.25!important}
+.series-chip>b,.execution-sets>span>b{min-width:12px!important;margin:0!important;font-size:10px!important}
+.series-chip>span,.performance-series .series-chip span,.execution-sets>span{font-size:10px!important;letter-spacing:0!important}
+.series-inline,.performance-series,.execution-sets{gap:5px!important}
+input.form-input,input.set-input,textarea.form-textarea{-webkit-appearance:none;appearance:none;background-clip:padding-box!important}
+#programName{font-size:16px!important;outline:0!important;box-shadow:none!important}
+#programName:focus{border-color:var(--blue-2)!important;outline:0!important;box-shadow:inset 0 0 0 1px var(--blue-2)!important}
+@media(max-width:640px){.form-input,.form-select,.form-textarea,.search-field input{font-size:16px!important}}
+.effort-slider-sheet{background:var(--bg-elev)!important;color:var(--text)!important;max-height:calc(100dvh - var(--safe-top))!important;overflow-y:auto!important;opacity:1!important;will-change:auto!important;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.effort-slider-sheet .modal-handle{position:relative;z-index:2;touch-action:none}
+.live-add-exercises{margin:12px 16px 24px}.live-add-exercises .add-dashed{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin:8px 0}.live-add-exercises svg{width:18px;height:18px;flex-shrink:0}
+
+</style>
+<script id="sept30-fixes-js">
+(function(){
+  let modalEpoch=0,currentSheetCleanup=null;
+  const prevOpen=openModal,prevClose=closeModal;
+  openModal=function(html,opts={}){
+    modalEpoch++;
+    currentSheetCleanup?.();currentSheetCleanup=null;
+    const modal=$('#modal');modal.style.removeProperty('transform');modal.style.removeProperty('opacity');modal.style.removeProperty('transition');modal.classList.remove('is-dragging');
+    // Avoid leaving the native iOS keyboard and its zoom/viewport state active.
+    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+    prevOpen(html,opts);const epoch=modalEpoch;
+    requestAnimationFrame(()=>{if(epoch!==modalEpoch||$('#modalLayer').classList.contains('is-hidden'))return;modal.style.removeProperty('transform');if(modal.classList.contains('effort-slider-sheet'))$('#effortSlider')?.focus({preventScroll:true});});
+  };
+  closeModal=function(){modalEpoch++;currentSheetCleanup?.();currentSheetCleanup=null;prevClose();const modal=$('#modal');modal.style.removeProperty('transform');modal.style.removeProperty('opacity');modal.classList.remove('is-dragging');};
+  installSheetGesture=function(){
+    currentSheetCleanup?.();currentSheetCleanup=null;
+    const modal=$('#modal'),handle=modal?.querySelector('.modal-handle');if(!handle||modal.classList.contains('fullscreen')||$('#modalLayer').classList.contains('is-hidden'))return;
+    const epoch=modalEpoch;let active=false,start=0,delta=0,closeTimer=null;
+    const unbind=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);};
+    function down(e){if(e.button!=null&&e.button!==0)return;active=true;start=e.clientY;delta=0;modal.classList.add('is-dragging');modal.style.transition='none';try{handle.setPointerCapture(e.pointerId);}catch{}window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);e.preventDefault();}
+    function move(e){if(!active||epoch!==modalEpoch)return;delta=Math.max(0,e.clientY-start);modal.style.transform=`translate3d(0,${delta}px,0)`;if(e.cancelable)e.preventDefault();}
+    function finish(close){if(!active)return;active=false;unbind();modal.classList.remove('is-dragging');modal.style.removeProperty('transition');if(close&&epoch===modalEpoch){modal.style.transform=`translate3d(0,${modal.offsetHeight}px,0)`;closeTimer=setTimeout(()=>{if(epoch===modalEpoch&&!$('#modalLayer').classList.contains('is-hidden'))closeModal();},180);}else modal.style.removeProperty('transform');}
+    function up(){finish(delta>Math.min(90,modal.offsetHeight*.22));}function cancel(){finish(false);}
+    handle.addEventListener('pointerdown',down,{passive:false});
+    currentSheetCleanup=()=>{active=false;unbind();clearTimeout(closeTimer);handle.removeEventListener('pointerdown',down);};
+  };
+  const renderLive=renderActiveWorkout;
+  renderActiveWorkout=function(main){
+    renderLive(main);if(!live?.startedAt)return;
+    const section=document.createElement('div');section.className='live-add-exercises';
+    section.innerHTML=live.participants.map((p,i)=>`<button type="button" class="add-dashed" data-live-add-exercise="${i}">${icons.plus}<span>Adicionar exercício${live.participants.length>1?` · ${esc(studentById(p.studentId)?.name||'Aluno')}`:''}</span></button>`).join('');
+    main.querySelector('.screen')?.appendChild(section);
+    $$('[data-live-add-exercise]',section).forEach(btn=>btn.onclick=()=>{
+      const session=live,pi=Number(btn.dataset.liveAddExercise),participant=session.participants[pi];
+      openExercisePicker(id=>{
+        if(live!==session)return;const ex=exerciseById(id);if(!ex)return;
+        const st=studentById(participant.studentId),program=programById(participant.programId),sets=clamp(parseInteger(st?.defaultSets)||3,1,50),restSec=clamp(parseInteger(st?.defaultRestSec)||90,60,180),targetReps=String(st?.defaultTargetReps||'8–12'),programIndex=program?program.exercises.length:null;
+        if(program){program.exercises.push({exerciseId:id,sets,restSec,targetReps,note:'',referenceWeight:null});program.updatedAt=Date.now();persist();}
+        participant.exercises.push({exerciseId:id,sourceExerciseId:id,programIndex,name:ex.name,muscleGroups:normalizeGroups(ex.muscleGroups),sets:Array.from({length:sets},()=>({weight:'',reps:'',rpe:'',done:false,autoWeight:true,autoReps:true})),restSec,targetReps,note:'',referenceWeight:null,adjustmentSummary:''});
+        persistDraft();closeModal();render();toast(program?'Exercício adicionado à sessão e à ficha.':'Exercício adicionado à sessão.');
+      });
+    });
+  };
+  render();
+})();
+
+</script>
 </body>
 </html>
