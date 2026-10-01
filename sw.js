@@ -1,4 +1,4 @@
-const CACHE = 'treino-local-fixes-v2';
+const CACHE = 'treino-local-fixes-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -6,8 +6,8 @@ const ASSETS = [
   './app.js',
   './recovery-ui.js',
   './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
