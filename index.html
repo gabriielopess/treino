@@ -3363,6 +3363,8 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
     if(!raw||typeof raw!=='object')return clean;
     const rawStudents=new Map((Array.isArray(raw.students)?raw.students:[]).map(s=>[String(s?.id||''),s]));
     clean.students.forEach(st=>{const src=rawStudents.get(st.id);if(src&&src.sex!=null)st.sex=String(src.sex||'');});
+    const rawPrograms=new Map((Array.isArray(raw.programs)?raw.programs:[]).map(p=>[String(p?.id||''),p]));
+    clean.programs.forEach(program=>{const src=rawPrograms.get(program.id);if(src)program.description=String(src.description||'');});
     const rawSessions=new Map((Array.isArray(raw.sessions)?raw.sessions:[]).map(s=>[String(s?.id||''),s]));
     clean.sessions.forEach(session=>{
       const srcSession=rawSessions.get(session.id);if(!srcSession)return;
@@ -3570,20 +3572,21 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
     const savedDraft=loadProgramDraft(studentId,programId);
     const draft=savedDraft||{
       id:existing?.id||null,studentId,
-      name:existing?.name||'',startDate:existing?.startDate||'',endDate:existing?.endDate||'',
+      name:existing?.name||'',description:String(existing?.description||''),startDate:existing?.startDate||'',endDate:existing?.endDate||'',
       defaultRestSec:clamp(parseInteger(student.defaultRestSec)||120,60,180),
       defaultSets:clamp(parseInteger(student.defaultSets)||3,1,50),
       defaultTargetReps:String(student.defaultTargetReps||'8–12'),
       exercises:(existing?.exercises||[]).map(pe=>({...clone(pe),targetReps:String(pe.targetReps||student.defaultTargetReps||'8–12')}))
     };
+    if(draft.description==null)draft.description=String(existing?.description||'');
     draft.exercises=(draft.exercises||[]).filter(pe=>exerciseById(pe.exerciseId));
     const persistEditorDraft=()=>saveProgramDraft(studentId,programId,draft);
     if(savedDraft)setTimeout(()=>toast('Rascunho do treino retomado.'),120);
 
     const renderBuilder=()=>{
       persistEditorDraft();
-      openModal(`<div class="builder-head"><button class="icon-btn" id="builderClose">${icons.back}</button><h2>${existing?'Editar treino':'Criar treino'}</h2></div><div class="builder-body"><div class="form-row"><label class="form-label">Nome do treino</label><input id="programName" class="form-input" value="${esc(draft.name)}"></div><div class="form-row"><label class="form-label">Padrões para os exercícios</label><div class="builder-default-grid"><div><span class="control-label">Séries</span><div class="stepper"><button type="button" id="defaultSetsMinus">−</button><span>${draft.defaultSets}</span><button type="button" id="defaultSetsPlus">+</button></div></div><div><span class="control-label">Faixa de repetições</span><input id="builderDefaultReps" class="form-input" value="${esc(draft.defaultTargetReps)}"></div><div><span class="control-label">Descanso</span><button class="select-pill compact" id="builderDefaultRest" type="button"><span>Intervalo</span><strong>${fmtRest(draft.defaultRestSec)}</strong>${chev()}</button></div></div>${draft.exercises.length?'<button class="btn btn-ghost btn-sm builder-apply-all" id="applyBuilderDefaults" type="button">Aplicar a todos</button>':''}</div><div class="form-grid"><div class="form-row"><label class="form-label">Início opcional</label><input id="programStart" type="date" class="form-input" value="${esc(draft.startDate)}"></div><div class="form-row"><label class="form-label">Término opcional</label><input id="programEnd" type="date" class="form-input" value="${esc(draft.endDate)}"></div></div><div class="section-title builder-section-title"><h2>Exercícios</h2><span>${draft.exercises.length}</span></div><div id="builderExercises">${draft.exercises.map((pe,i)=>builderExerciseHtml(pe,i,draft.exercises.length)).join('')}</div><button class="add-dashed" id="builderAddExercise" type="button">+ Adicionar exercício da biblioteca</button></div><div class="builder-foot"><div class="modal-actions" style="margin-top:0"><button class="btn btn-secondary" id="builderCancel">Cancelar</button><button class="btn btn-primary" id="builderSave">${existing?'Salvar alterações':'Criar treino'}</button></div></div>`,{fullscreen:true,onClose:()=>{}});
-      const syncFields=()=>{draft.name=$('#programName')?.value??draft.name;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';draft.defaultTargetReps=$('#builderDefaultReps')?.value??draft.defaultTargetReps;persistEditorDraft();};
+      openModal(`<div class="builder-head"><button class="icon-btn" id="builderClose">${icons.back}</button><h2>${existing?'Editar treino':'Criar treino'}</h2></div><div class="builder-body"><div class="form-row"><label class="form-label">Nome do treino</label><input id="programName" class="form-input" value="${esc(draft.name)}"></div><div class="form-row"><label class="form-label">Breve descrição</label><textarea id="programDescription" class="form-textarea program-description-input" maxlength="240" placeholder="Ex.: usar este treino às segundas-feiras">${esc(draft.description||'')}</textarea></div><div class="form-row"><label class="form-label">Padrões para os exercícios</label><div class="builder-default-grid"><div><span class="control-label">Séries</span><div class="stepper"><button type="button" id="defaultSetsMinus">−</button><span>${draft.defaultSets}</span><button type="button" id="defaultSetsPlus">+</button></div></div><div><span class="control-label">Faixa de repetições</span><input id="builderDefaultReps" class="form-input" value="${esc(draft.defaultTargetReps)}"></div><div><span class="control-label">Descanso</span><button class="select-pill compact" id="builderDefaultRest" type="button"><span>Intervalo</span><strong>${fmtRest(draft.defaultRestSec)}</strong>${chev()}</button></div></div>${draft.exercises.length?'<button class="btn btn-ghost btn-sm builder-apply-all" id="applyBuilderDefaults" type="button">Aplicar a todos</button>':''}</div><div class="form-grid"><div class="form-row"><label class="form-label">Início opcional</label><input id="programStart" type="date" class="form-input" value="${esc(draft.startDate)}"></div><div class="form-row"><label class="form-label">Término opcional</label><input id="programEnd" type="date" class="form-input" value="${esc(draft.endDate)}"></div></div><div class="section-title builder-section-title"><h2>Exercícios</h2><span>${draft.exercises.length}</span></div><div id="builderExercises">${draft.exercises.map((pe,i)=>builderExerciseHtml(pe,i,draft.exercises.length)).join('')}</div><button class="add-dashed" id="builderAddExercise" type="button">+ Adicionar exercício da biblioteca</button></div><div class="builder-foot"><div class="modal-actions" style="margin-top:0"><button class="btn btn-secondary" id="builderCancel">Cancelar</button><button class="btn btn-primary" id="builderSave">${existing?'Salvar alterações':'Criar treino'}</button></div></div>`,{fullscreen:true,onClose:()=>{}});
+      const syncFields=()=>{draft.name=$('#programName')?.value??draft.name;draft.description=$('#programDescription')?.value??draft.description;draft.startDate=$('#programStart')?.value||'';draft.endDate=$('#programEnd')?.value||'';draft.defaultTargetReps=$('#builderDefaultReps')?.value??draft.defaultTargetReps;persistEditorDraft();};
       const promptExit=()=>{
         syncFields();
         openModal(`<h2>Sair da ${existing?'edição':'criação'}?</h2><p class="modal-sub">Seu rascunho já está salvo neste aparelho. Ele só será apagado se você escolher descartar.</p><div class="action-list"><button class="action-item" id="builderContinue" type="button"><div class="row-main"><strong>Continuar editando</strong></div></button><button class="action-item" id="builderKeepDraft" type="button"><div class="row-main"><strong>Sair e manter rascunho</strong><small>Você pode retomar depois pelo mesmo treino.</small></div></button><button class="action-item danger" id="builderDiscard" type="button"><span class="action-icon">${icons.trash}</span><div class="row-main"><strong>Descartar rascunho</strong><small>Apagar estas alterações não salvas.</small></div></button></div>`);
@@ -3593,6 +3596,7 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
       };
       $('#builderClose').onclick=promptExit;$('#builderCancel').onclick=promptExit;
       $('#programName').oninput=e=>{draft.name=e.target.value;persistEditorDraft();};
+      $('#programDescription').oninput=e=>{draft.description=e.target.value;persistEditorDraft();};
       $('#programStart').onchange=e=>{draft.startDate=e.target.value;persistEditorDraft();};
       $('#programEnd').onchange=e=>{draft.endDate=e.target.value;persistEditorDraft();};
       $('#builderDefaultReps').oninput=e=>{draft.defaultTargetReps=e.target.value;persistEditorDraft();};
@@ -3616,8 +3620,8 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
         if(draft.exercises.some(pe=>!exerciseById(pe.exerciseId)))return toast('Há um exercício inválido no treino.');
         if(draft.exercises.some(pe=>!String(pe.targetReps||'').trim()))return toast('Informe a faixa de repetições de todos os exercícios.');
         student.defaultRestSec=draft.defaultRestSec;student.defaultSets=draft.defaultSets;student.defaultTargetReps=String(draft.defaultTargetReps||'8–12').trim()||'8–12';
-        if(existing){existing.name=name;existing.startDate=draft.startDate;existing.endDate=draft.endDate;existing.exercises=draft.exercises.map(pe=>({...clone(pe),targetReps:String(pe.targetReps).trim()}));existing.updatedAt=Date.now();}
-        else db.programs.push({id:uid('program'),studentId,name,startDate:draft.startDate,endDate:draft.endDate,exercises:draft.exercises.map(pe=>({...clone(pe),targetReps:String(pe.targetReps).trim()})),createdAt:Date.now(),updatedAt:Date.now()});
+        if(existing){existing.name=name;existing.description=String(draft.description||'').trim();existing.startDate=draft.startDate;existing.endDate=draft.endDate;existing.exercises=draft.exercises.map(pe=>({...clone(pe),targetReps:String(pe.targetReps).trim()}));existing.updatedAt=Date.now();}
+        else db.programs.push({id:uid('program'),studentId,name,description:String(draft.description||'').trim(),startDate:draft.startDate,endDate:draft.endDate,exercises:draft.exercises.map(pe=>({...clone(pe),targetReps:String(pe.targetReps).trim()})),createdAt:Date.now(),updatedAt:Date.now()});
         clearProgramDraft(studentId,programId);persist();closeModal();navigate('student',{studentId});toast(existing?'Treino atualizado.':'Treino criado.');
       };
     };
@@ -3921,7 +3925,7 @@ html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;bord
   openProgramView=function(programId){
     const p=programById(programId);if(!p)return;const st=studentById(p.studentId),dates=[];
     if(p.startDate)dates.push(fmtDate(p.startDate));if(p.endDate)dates.push(fmtDate(p.endDate));
-    openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><div class="program-view-meta"><span>${esc(st?.name||'')} · ${p.exercises.length} exercícios</span>${dates.length?`<b>${esc(dates.join(' — '))}</b>`:''}</div>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=prev?completedSets(prev).map((set,j)=>`<span class="series-chip"><b>${j+1}</b><span>${logicalSetReps(set)} reps · ${bestLoad({sets:[set]})} kg</span></span>`).join(''):'<span class="series-chip">Sem registro</span>';return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="series-inline">${setChips}</div></div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
+    openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><div class="program-view-meta"><span>${esc(st?.name||'')} · ${p.exercises.length} exercícios</span>${dates.length?`<b>${esc(dates.join(' — '))}</b>`:''}</div>${String(p.description||'').trim()?`<div class="program-view-description">${esc(p.description)}</div>`:''}${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=prev?completedSets(prev).map((set,j)=>`<span class="series-chip"><b>${j+1}</b><span>${logicalSetReps(set)} reps · ${bestLoad({sets:[set]})} kg</span></span>`).join(''):'<span class="series-chip">Sem registro</span>';return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="series-inline">${setChips}</div></div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
     $('#viewClose').onclick=closeModal;$('#viewEdit').onclick=()=>{closeModal();setTimeout(()=>openProgramBuilder(p.studentId,p.id),50);};$('#viewCopy').onclick=()=>openProgramCopy(programId);$('#viewDelete').onclick=()=>{closeModal();setTimeout(()=>confirmDeleteProgram(programId),50);};
   };
 
@@ -3936,29 +3940,68 @@ html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;bord
   }
   function bindProgramOrdering(studentId){
     const host=$('#programList');if(!host)return;
+    let item=null,moved=false,activeTouchId=null;
+
+    const reorderAt=(clientY)=>{
+      if(!item)return;
+      const others=$$('.program-order-item',host).filter(el=>el!==item);
+      let before=null;
+      for(const candidate of others){
+        const r=candidate.getBoundingClientRect();
+        if(clientY<r.top+r.height/2){before=candidate;break;}
+      }
+      const oldNext=item.nextElementSibling;
+      if(before){if(before!==item&&before!==oldNext)host.insertBefore(item,before);}
+      else if(item!==host.lastElementChild)host.appendChild(item);
+      if(item.nextElementSibling!==oldNext)moved=true;
+    };
+
+    const finish=()=>{
+      if(!item)return;
+      item.classList.remove('is-dragging');
+      document.body.classList.remove('program-order-dragging');
+      const ids=$$('.program-order-item',host).map(el=>el.dataset.programOrderId);
+      persistProgramOrder(studentId,ids);
+      if(moved)toast('Ordem dos treinos atualizada.');
+      item=null;moved=false;activeTouchId=null;
+      document.removeEventListener('touchmove',onTouchMove,{capture:true});
+      document.removeEventListener('touchend',onTouchEnd,{capture:true});
+      document.removeEventListener('touchcancel',onTouchEnd,{capture:true});
+      document.removeEventListener('mousemove',onMouseMove,true);
+      document.removeEventListener('mouseup',onMouseUp,true);
+    };
+
+    const onTouchMove=e=>{
+      if(!item)return;
+      const touch=[...e.touches].find(t=>t.identifier===activeTouchId);if(!touch)return;
+      e.preventDefault();reorderAt(touch.clientY);
+    };
+    const onTouchEnd=e=>{
+      if(!item)return;
+      const ended=[...e.changedTouches].some(t=>t.identifier===activeTouchId);if(ended)finish();
+    };
+    const onMouseMove=e=>{if(!item)return;e.preventDefault();reorderAt(e.clientY);};
+    const onMouseUp=()=>finish();
+
     $$('.program-order-handle',host).forEach(handle=>{
-      let item=null,pointerId=null,moved=false;
-      const finish=()=>{
-        if(!item)return;
-        item.classList.remove('is-dragging');
-        const ids=$$('.program-order-item',host).map(el=>el.dataset.programOrderId);
-        persistProgramOrder(studentId,ids);
-        if(moved)toast('Ordem dos treinos atualizada.');
-        item=null;pointerId=null;moved=false;
-      };
-      handle.onpointerdown=e=>{
-        e.preventDefault();item=handle.closest('.program-order-item');pointerId=e.pointerId;moved=false;item?.classList.add('is-dragging');
-        try{handle.setPointerCapture(pointerId);}catch{}
-      };
-      handle.onpointermove=e=>{
-        if(!item||e.pointerId!==pointerId)return;e.preventDefault();moved=true;
-        const others=$$('.program-order-item',host).filter(el=>el!==item);
-        let before=null;
-        for(const candidate of others){const r=candidate.getBoundingClientRect();if(e.clientY<r.top+r.height/2){before=candidate;break;}}
-        if(before)host.insertBefore(item,before);else host.appendChild(item);
-      };
-      handle.onpointerup=e=>{if(e.pointerId===pointerId)finish();};
-      handle.onpointercancel=e=>{if(e.pointerId===pointerId)finish();};
+      handle.addEventListener('touchstart',e=>{
+        if(item||!e.changedTouches?.length)return;
+        const touch=e.changedTouches[0];
+        item=handle.closest('.program-order-item');if(!item)return;
+        activeTouchId=touch.identifier;moved=false;item.classList.add('is-dragging');document.body.classList.add('program-order-dragging');
+        e.preventDefault();
+        document.addEventListener('touchmove',onTouchMove,{passive:false,capture:true});
+        document.addEventListener('touchend',onTouchEnd,{passive:false,capture:true});
+        document.addEventListener('touchcancel',onTouchEnd,{passive:false,capture:true});
+      },{passive:false});
+      handle.addEventListener('mousedown',e=>{
+        if(item||e.button!==0)return;
+        item=handle.closest('.program-order-item');if(!item)return;
+        moved=false;item.classList.add('is-dragging');document.body.classList.add('program-order-dragging');
+        e.preventDefault();
+        document.addEventListener('mousemove',onMouseMove,true);
+        document.addEventListener('mouseup',onMouseUp,true);
+      });
     });
   }
 
@@ -4107,6 +4150,130 @@ html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;bord
 
   /* Se a biblioteca já estiver aberta ao carregar este patch, atualiza uma única vez. */
   if(state?.route==='exercises')renderExercises($('#main'));
+})();
+</script>
+
+
+<!-- FINAL-TWEAKS-2026-10-01: teclado de alunos, séries, RPE, descanso, organização e descrição. -->
+<style id="final-tweaks-oct01-css">
+/* Busca de alunos: o input permanece montado enquanto somente a lista muda. */
+#studentList{overflow-anchor:none!important}
+
+/* Descrição curta da ficha: aparece apenas no editor e em "Ver treino". */
+.program-description-input{min-height:72px!important;max-height:110px!important;resize:none!important;line-height:1.45!important}
+.program-view-description{margin:-2px 0 15px;padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+html[data-theme="light"] .program-view-description{background:#F0F4F7!important;border-color:#D4DEE6!important;color:#516576!important}
+
+/* Reordenação: o gesto de arrastar fica preso ao handle e não rola a página junto. */
+.program-order-handle{touch-action:none!important;-webkit-user-select:none!important;user-select:none!important}
+body.program-order-dragging{overflow:hidden!important;touch-action:none!important}
+.program-order-item.is-dragging{box-shadow:0 10px 28px rgba(0,0,0,.18)!important}
+
+/* Série ao vivo: kg volta para a esquerda e reps para a direita. */
+.set-head,.set-row{grid-template-columns:34px minmax(50px,.94fr) minmax(54px,1fr) 50px 38px!important;gap:6px!important}
+button.set-index{letter-spacing:-.15px!important}
+.set-sub-index{font-size:8px!important;letter-spacing:-.25px!important;padding:0 2px!important;white-space:nowrap!important}
+@media(max-width:390px){
+  .set-head,.set-row{grid-template-columns:31px minmax(46px,.92fr) minmax(50px,1fr) 47px 36px!important;gap:4px!important}
+}
+@media(max-width:350px){
+  .set-head,.set-row{grid-template-columns:29px minmax(43px,.9fr) minmax(47px,1fr) 44px 34px!important;gap:3px!important}
+  .set-sub-index{font-size:7.5px!important}
+}
+
+/* Descanso mais próximo do nome e com menos destaque visual. */
+.live-title-block .exercise-rest{padding:1px 0 0!important;margin:0!important;gap:4px!important;color:var(--faint)!important;font-size:9.5px!important;font-weight:720!important;line-height:1.2!important}
+.live-title-block .exercise-rest svg{width:12px!important;height:12px!important;opacity:.72!important}
+.live-exercise-head{margin-bottom:4px!important}
+
+/* RPE: trilho discretamente mais espesso, marcas de 0,5 e feedback tátil visual. */
+.rpe-touch{height:48px!important;padding:0 4px!important}
+.rpe-range{height:48px!important}
+.rpe-range::-webkit-slider-runnable-track{
+  height:6px!important;border-radius:999px!important;
+  background:
+    radial-gradient(circle at left center,rgba(255,255,255,.42) 0 1.15px,transparent 1.3px) 0 0/5.5556% 100% repeat-x,
+    linear-gradient(to right,var(--rp-navy) 0,var(--rp-navy) var(--rpe-pos,77.8%),var(--line-strong) var(--rpe-pos,77.8%),var(--line-strong) 100%)!important;
+}
+.rpe-range::-webkit-slider-thumb{
+  margin-top:-8px!important;
+  transition:transform .11s cubic-bezier(.2,.85,.25,1),box-shadow .11s ease!important;
+}
+.rpe-range:active::-webkit-slider-thumb{transform:scale(1.16)!important;box-shadow:0 2px 12px rgba(10,66,126,.38)!important}
+.rpe-range::-moz-range-track{height:6px!important;border-radius:999px!important;background:var(--line-strong)!important}
+.rpe-range::-moz-range-progress{height:6px!important;border-radius:999px!important;background:var(--rp-navy)!important}
+.rpe-range::-moz-range-thumb{transition:transform .11s cubic-bezier(.2,.85,.25,1),box-shadow .11s ease!important}
+.rpe-range:active::-moz-range-thumb{transform:scale(1.16)!important;box-shadow:0 2px 12px rgba(10,66,126,.38)!important}
+.rpe-dock-value{transition:transform .12s ease!important}
+.rpe-dock:has(.rpe-range:active) .rpe-dock-value{transform:scale(1.06)!important}
+html[data-theme="light"] .rpe-range::-webkit-slider-runnable-track{
+  background:
+    radial-gradient(circle at left center,rgba(10,66,126,.34) 0 1.15px,transparent 1.3px) 0 0/5.5556% 100% repeat-x,
+    linear-gradient(to right,var(--rp-navy) 0,var(--rp-navy) var(--rpe-pos,77.8%),#CBD6DF var(--rpe-pos,77.8%),#CBD6DF 100%)!important;
+}
+</style>
+<script id="final-tweaks-oct01-js">
+(function(){
+  'use strict';
+
+  /* 1) Busca de alunos sem desmontar/recriar o campo a cada letra. */
+  renderStudents=function(main){
+    setHeader({title:'Alunos',action:'plus',actionFn:()=>openStudentForm()});
+    main.innerHTML=`<section class="screen"><div class="hero"><h1>Seus alunos</h1><p>Treinos, histórico, volume, observações e evolução em um só lugar.</p></div><div class="toolbar"><div class="search-field">${icons.search}<input id="studentSearch" placeholder="Buscar aluno" value="${esc(state.studentSearch)}" autocomplete="off"></div><button class="btn btn-primary" id="studentAdd" type="button">+ Aluno</button></div><div class="section" style="margin-top:0"><div class="section-title"><h2>Todos</h2><span>${db.students.length} aluno${db.students.length===1?'':'s'}</span></div><div id="studentList"></div></div></section>`;
+    const input=$('#studentSearch'),list=$('#studentList');
+    const paint=()=>{
+      if(!input||!list)return;
+      state.studentSearch=input.value;
+      const q=String(state.studentSearch||'').trim().toLocaleLowerCase('pt-BR');
+      const students=db.students.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')).filter(st=>st.name.toLocaleLowerCase('pt-BR').includes(q));
+      list.innerHTML=students.length?students.map(studentRowHtml).join(''):emptyHtml(q?'Nenhum resultado.':'Nenhum aluno cadastrado.',q?'Tente outro nome.':'Cadastre seu primeiro aluno para começar.');
+    };
+    input?.addEventListener('input',paint,{passive:true});
+    $('#studentAdd').onclick=()=>openStudentForm();
+    list?.addEventListener('click',e=>{const row=e.target.closest?.('[data-student-id]');if(row)navigate('student',{studentId:row.dataset.studentId});});
+    paint();
+  };
+
+  /* 2) Identificação direta da técnica no próprio número da série. */
+  const TYPE_PREFIX={normal:'',drop:'D',cluster:'C',pyramid:'P'};
+  const TYPE_MIN={drop:2,cluster:3,pyramid:3};
+  function liveType(set){const type=String(set?.seriesType||'normal');return Object.prototype.hasOwnProperty.call(TYPE_PREFIX,type)?type:'normal';}
+  function ensureFinalBlocks(set,type=liveType(set)){
+    if(type==='normal')return [];
+    let blocks=Array.isArray(set.blocks)?set.blocks:[];
+    if(!blocks.length)blocks=[{weight:String(set.weight??''),reps:String(set.reps??'')}];
+    const min=TYPE_MIN[type]||1;while(blocks.length<min)blocks.push({weight:'',reps:''});
+    set.blocks=blocks;return blocks;
+  }
+  function finalSuggestion(set,key){
+    const own=key==='weight'?set?.suggestedWeight:set?.suggestedReps;if(String(own??'').trim())return String(own);
+    const prev=key==='weight'?set?.previous?.weight:set?.previous?.reps;return String(prev??'').trim();
+  }
+  function finalSpecialRows(pi,ei,set,si){
+    const type=liveType(set);if(type==='normal')return '';
+    const prefix=TYPE_PREFIX[type],blocks=ensureFinalBlocks(set,type);
+    return blocks.slice(1).map((block,bi)=>{const path=`${pi}:${ei}:${si}:${bi+1}`,part=bi+2,repsPlaceholder=type==='cluster'?'3–4':'reps';return `<div class="set-row special-sub-row ${set.done?'is-done':''}" data-special-block-row="${path}"><div class="set-sub-index" title="Bloco ${part}">${prefix}${si+1}·${part}</div><input class="set-input" inputmode="decimal" data-set-block-weight="${path}" value="${esc(block.weight)}" placeholder="kg" aria-label="Carga do bloco ${part} da série ${si+1}"><input class="set-input" inputmode="numeric" ${type==='cluster'?'max="4"':''} data-set-block-reps="${path}" value="${esc(block.reps)}" placeholder="${repsPlaceholder}" aria-label="Repetições do bloco ${part} da série ${si+1}"><div class="special-empty-cell"></div><div class="special-empty-cell"></div></div>`;}).join('');
+  }
+  liveSetHtml=function(pi,ei,set,si,ex){
+    const path=`${pi}:${ei}:${si}`,type=liveType(set),prefix=TYPE_PREFIX[type],rpe=set.rpe===''||set.rpe==null?'':Number(set.rpe),sw=finalSuggestion(set,'weight'),sr=finalSuggestion(set,'reps');
+    if(type!=='normal')ensureFinalBlocks(set,type);
+    const repsPlaceholder=type==='cluster'?'3–4':(sr||'reps'),indexLabel=`${prefix}${si+1}`;
+    return `<div class="special-set-group" data-special-set="${path}" data-series-type="${type}"><div class="set-row ${set.done?'is-done':''}" data-set-row="${path}"><button class="set-index" type="button" data-series-type-menu="${path}" aria-label="Definir tipo da série ${si+1}" title="${type==='normal'?'Série normal':type}">${indexLabel}</button><input class="set-input ${!set.weight&&sw?'has-suggestion':''}" inputmode="decimal" data-set-weight="${path}" value="${esc(set.weight)}" placeholder="${esc(sw||'kg')}" aria-label="Carga da série ${si+1}"><input class="set-input ${!set.reps&&sr?'has-suggestion':''}" inputmode="numeric" ${type==='cluster'?'max="4"':''} data-set-reps="${path}" value="${esc(set.reps)}" placeholder="${esc(repsPlaceholder)}" aria-label="Repetições da série ${si+1}"><button class="rpe-trigger ${rpe?'has-value':''}" type="button" data-set-rpe-trigger="${path}" aria-label="RPE da série ${si+1}">${rpe?rpeLabel(rpe):'—'}</button><button class="set-check" data-set-check="${path}" type="button" aria-label="${set.done?'Desmarcar':'Concluir'} série ${si+1}">${set.done?icons.check:''}</button></div>${finalSpecialRows(pi,ei,set,si)}</div>`;
+  };
+
+  /* 3) Cabeçalho do exercício: descanso mais perto e kg/reps na ordem preferida. */
+  const tinyClock='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  liveExerciseHtml=function(participant,pi,ex,ei){
+    const last=typeof compactLastSetsHtml==='function'?compactLastSetsHtml(ex):'';
+    return `<div class="live-exercise-card" data-live-exercise="${pi}:${ei}"><div class="live-exercise-head"><div class="live-title-block"><button class="live-exercise-history" type="button" data-ex-history data-ex-history-student="${esc(participant.studentId)}" data-ex-history-id="${esc(ex.exerciseId)}"><div class="row-main"><strong>${esc(ex.name)}</strong></div><span class="history-mini">${icons.history}</span></button><button class="exercise-rest" type="button" data-exercise-rest="${pi}:${ei}">${tinyClock}<span>Descanso · ${fmtClock(ex.restSec||0)}</span></button></div><button class="live-more" type="button" data-live-more="${pi}:${ei}" aria-label="Ações do exercício">⋯</button></div>${last}<input class="live-note" data-live-note="${pi}:${ei}" value="${esc(ex.note||'')}" placeholder="Adicionar observação" aria-label="Observação do exercício"><div class="set-head"><span>Série</span><span>kg</span><span>Reps</span><span>RPE</span><span></span></div>${ex.sets.map((set,si)=>liveSetHtml(pi,ei,set,si,ex)).join('')}</div>`;
+  };
+
+  /* 4) Deixa a mudança de valor do RPE um pouco mais viva sem alterar a lógica. */
+  const oldSyncRpe=typeof syncRpeDock==='function'?syncRpeDock:null;
+  if(oldSyncRpe)syncRpeDock=function(value){oldSyncRpe(value);const label=$('#rpeDockValue');if(!label)return;label.animate?.([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:120,easing:'ease-out'});};
+
+  if(state?.route==='students')renderStudents($('#main'));
+  if(state?.route==='workout'&&live?.startedAt)renderActiveWorkout($('#main'));
 })();
 </script>
 
