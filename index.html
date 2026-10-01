@@ -3014,10 +3014,23 @@ html.ios-standalone .builder-head{
     return chunks.join('\n');
   }
 
-  function pdfRoundRect(ctx,x,y,w,h,r){
-    r=Math.max(0,Math.min(r,Math.min(w,h)/2));
-    ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
-  }
+  /*
+     PDF vetorial para o app instalado do iPhone.
+     A aparência usa as mesmas medidas da folha que já foi aprovada, mas texto,
+     linhas e balões são gravados como objetos PDF — não como imagem. Assim o
+     zoom permanece nítido, como no PDF gerado nativamente pelo Safari.
+  */
+  const PDF_PAGE_W=794;
+  const PDF_PAGE_H=1123;
+  const PDF_PAGE_W_PT=595.28;
+  const PDF_PAGE_H_PT=841.89;
+  const PDF_MARGIN=34;
+  const PDF_FONT='Helvetica,Arial,sans-serif';
+  const PDF_PT=PDF_PAGE_W_PT/PDF_PAGE_W;
+  const pdfMeasureCanvas=document.createElement('canvas');
+  const pdfMeasureCtx=pdfMeasureCanvas.getContext('2d');
+
+  function pdfSetFont(ctx,weight,size){ctx.font=`${weight} ${size}px ${PDF_FONT}`;}
 
   function pdfWrapLines(ctx,text,maxWidth){
     const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
@@ -3043,29 +3056,15 @@ html.ios-standalone .builder-head{
     };
   }
 
-  /*
-     PDF do app instalado com a mesma linguagem visual da impressão do Safari:
-     A4, margem de 9 mm, tipografia do sistema, separadores horizontais e os
-     mesmos pills de séries. O canvas apenas reproduz essa folha para que o
-     iOS consiga compartilhar um PDF real fora do window.print().
-  */
-  const PDF_PAGE_W=794;
-  const PDF_PAGE_H=1123;
-  const PDF_MARGIN=34;
-  const PDF_SCALE=2;
-  const PDF_FONT='-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-
-  function pdfSetFont(ctx,weight,size){ctx.font=`${weight} ${size}px ${PDF_FONT}`;}
-
   function pdfPillRows(ctx,series,maxWidth){
     const rows=[];let row=[],used=0;const gap=5,padX=7,boldGap=5;
     for(const raw of series){
       const m=String(raw||'').match(/^(\d+)\s{2}(.*)$/),index=m?m[1]:'',detail=m?m[2]:String(raw||'');
       pdfSetFont(ctx,800,7.8);const iw=ctx.measureText(index).width;
       pdfSetFont(ctx,500,7.8);const dw=ctx.measureText(detail).width;
-      const w=Math.ceil(padX*2+iw+(detail?boldGap+dw:0));
+      const w=Math.ceil(padX*2+iw+(detail?boldGap+dw:0)+1.5);
       if(row.length&&used+gap+w>maxWidth){rows.push(row);row=[];used=0;}
-      row.push({index,detail,w});used+=(used?gap:0)+w;
+      row.push({index,detail,w,iw});used+=(used?gap:0)+w;
     }
     if(row.length)rows.push(row);return rows;
   }
@@ -3081,85 +3080,110 @@ html.ios-standalone .builder-head{
     return (compact?6:8)*2+inner;
   }
 
-  function pdfDrawPills(ctx,rows,x,y){
+  function pdfNum(n){return Number(n).toFixed(3).replace(/\.?0+$/,'');}
+  function pdfX(px){return px*PDF_PT;}
+  function pdfY(py){return PDF_PAGE_H_PT-py*PDF_PT;}
+  function pdfColor(hex){
+    const s=String(hex||'#000000').replace('#','');
+    const r=parseInt(s.slice(0,2),16)/255,g=parseInt(s.slice(2,4),16)/255,b=parseInt(s.slice(4,6),16)/255;
+    return `${pdfNum(r)} ${pdfNum(g)} ${pdfNum(b)}`;
+  }
+
+  const CP1252={
+    0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,
+    0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F
+  };
+  function pdfWinAnsiByte(code){if(code<=255)return code;if(CP1252[code]!=null)return CP1252[code];return 0x3F;}
+  function pdfLiteral(text){
+    let out='';for(const ch of String(text??'')){const b=pdfWinAnsiByte(ch.codePointAt(0));if(b===0x28||b===0x29||b===0x5C)out+='\\'+String.fromCharCode(b);else if(b<32||b>126)out+='\\'+b.toString(8).padStart(3,'0');else out+=String.fromCharCode(b);}return `(${out})`;
+  }
+
+  function pdfText(cmd,font,size,x,y,text,color='#111111'){
+    if(text==null||text==='')return;
+    cmd.push(`BT /${font} ${pdfNum(size*PDF_PT)} Tf ${pdfColor(color)} rg 1 0 0 1 ${pdfNum(pdfX(x))} ${pdfNum(pdfY(y))} Tm ${pdfLiteral(text)} Tj ET`);
+  }
+  function pdfLine(cmd,x1,y1,x2,y2,color='#E4E7EB',width=1){
+    cmd.push(`q ${pdfColor(color)} RG ${pdfNum(width*PDF_PT)} w ${pdfNum(pdfX(x1))} ${pdfNum(pdfY(y1))} m ${pdfNum(pdfX(x2))} ${pdfNum(pdfY(y2))} l S Q`);
+  }
+  function pdfFillRect(cmd,x,y,w,h,color){
+    cmd.push(`q ${pdfColor(color)} rg ${pdfNum(pdfX(x))} ${pdfNum(PDF_PAGE_H_PT-(y+h)*PDF_PT)} ${pdfNum(pdfX(w))} ${pdfNum(h*PDF_PT)} re f Q`);
+  }
+  function pdfRoundRect(cmd,x,y,w,h,r,color){
+    const k=0.5522847498,rr=Math.min(r,w/2,h/2),x0=pdfX(x),x1=pdfX(x+rr),x2=pdfX(x+w-rr),x3=pdfX(x+w),yTop=pdfY(y),y1=pdfY(y+rr),y2=pdfY(y+h-rr),yBot=pdfY(y+h),rp=rr*PDF_PT;
+    const c=rp*k;
+    cmd.push(`q ${pdfColor(color)} rg ${pdfNum(x1)} ${pdfNum(yTop)} m ${pdfNum(x2)} ${pdfNum(yTop)} l ${pdfNum(x2+c)} ${pdfNum(yTop)} ${pdfNum(x3)} ${pdfNum(y1+c)} ${pdfNum(x3)} ${pdfNum(y1)} c ${pdfNum(x3)} ${pdfNum(y2)} l ${pdfNum(x3)} ${pdfNum(y2-c)} ${pdfNum(x2+c)} ${pdfNum(yBot)} ${pdfNum(x2)} ${pdfNum(yBot)} c ${pdfNum(x1)} ${pdfNum(yBot)} l ${pdfNum(x1-c)} ${pdfNum(yBot)} ${pdfNum(x0)} ${pdfNum(y2-c)} ${pdfNum(x0)} ${pdfNum(y2)} c ${pdfNum(x0)} ${pdfNum(y1)} l ${pdfNum(x0)} ${pdfNum(y1+c)} ${pdfNum(x1-c)} ${pdfNum(yTop)} ${pdfNum(x1)} ${pdfNum(yTop)} c f Q`);
+  }
+
+  function pdfDrawPillsVector(cmd,ctx,rows,x,y){
     let cy=y;
     for(const row of rows){
       let px=x;
       for(const pill of row){
-        ctx.fillStyle='#F0F2F4';pdfRoundRect(ctx,px,cy,pill.w,18,7);ctx.fill();
-        ctx.textBaseline='alphabetic';pdfSetFont(ctx,800,7.8);ctx.fillStyle='#111111';ctx.fillText(pill.index,px+7,cy+12.2);
-        const iw=ctx.measureText(pill.index).width;
-        if(pill.detail){pdfSetFont(ctx,500,7.8);ctx.fillStyle='#4D5560';ctx.fillText(pill.detail,px+7+iw+5,cy+12.2);}
+        pdfRoundRect(cmd,px,cy,pill.w,18,7,'#F0F2F4');
+        pdfText(cmd,'F2',7.8,px+7,cy+12.2,pill.index,'#111111');
+        if(pill.detail)pdfText(cmd,'F1',7.8,px+7+pill.iw+5,cy+12.2,pill.detail,'#4D5560');
         px+=pill.w+5;
       }
       cy+=23;
     }
   }
 
-  function pdfDrawExercise(ctx,item,x,y,width,{compact=false,last=false}={}){
+  function pdfDrawExerciseVector(cmd,ctx,item,x,y,width,{compact=false,last=false}={}){
     const h=pdfMeasureExercise(ctx,item,width,compact),indexW=22,gap=7,tx=x+indexW+gap,contentW=width-indexW-gap;
-    ctx.textAlign='left';ctx.textBaseline='alphabetic';
-    pdfSetFont(ctx,900,9);ctx.fillStyle='#8A8A8A';ctx.fillText(String(item.index).padStart(2,'0'),x,y+(compact?14:16));
+    pdfText(cmd,'F2',9,x,y+(compact?14:16),String(item.index).padStart(2,'0'),'#8A8A8A');
 
     const titleSize=compact?10.5:11.5,titleLH=compact?12:13.6;
-    pdfSetFont(ctx,750,titleSize);ctx.fillStyle='#111111';
-    const titleLines=pdfWrapLines(ctx,item.name,contentW).slice(0,2);let cy=y+(compact?12:14);
-    for(const line of titleLines){ctx.fillText(line,tx,cy);cy+=titleLH;}
+    pdfSetFont(ctx,750,titleSize);const titleLines=pdfWrapLines(ctx,item.name,contentW).slice(0,2);let cy=y+(compact?12:14);
+    for(const line of titleLines){pdfText(cmd,'F2',titleSize,tx,cy,line,'#111111');cy+=titleLH;}
 
-    pdfSetFont(ctx,500,8);ctx.fillStyle='#6E6E6E';ctx.fillText(item.groups||'Exercício',tx,cy+1);cy+=15;
+    pdfText(cmd,'F1',8,tx,cy+1,item.groups||'Exercício','#6E6E6E');cy+=15;
 
     const prescription=[{b:String(item.sets),t:' séries'},{b:item.reps,t:' reps'},{b:item.rest,t:''}];let px=tx;
     for(const part of prescription){
-      pdfSetFont(ctx,800,8.6);ctx.fillStyle='#111111';ctx.fillText(part.b,px,cy);px+=ctx.measureText(part.b).width;
-      if(part.t){pdfSetFont(ctx,500,8.6);ctx.fillText(part.t,px,cy);px+=ctx.measureText(part.t).width;}
+      pdfSetFont(ctx,800,8.6);pdfText(cmd,'F2',8.6,px,cy,part.b,'#111111');px+=ctx.measureText(part.b).width;
+      if(part.t){pdfSetFont(ctx,500,8.6);pdfText(cmd,'F1',8.6,px,cy,part.t,'#111111');px+=ctx.measureText(part.t).width;}
       px+=7;
     }
-    const rows=pdfPillRows(ctx,item.series,contentW);if(rows.length)pdfDrawPills(ctx,rows,tx,cy+11);
-    if(!last){ctx.strokeStyle='#E4E7EB';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+h-.5);ctx.lineTo(x+width,y+h-.5);ctx.stroke();}
+    const rows=pdfPillRows(ctx,item.series,contentW);if(rows.length)pdfDrawPillsVector(cmd,ctx,rows,tx,cy+11);
+    if(!last)pdfLine(cmd,x,y+h-.5,x+width,y+h-.5,'#E4E7EB',1);
     return h;
   }
 
-  function createWorkoutPdfCanvases(st,programs){
-    const pages=[];
-    for(const program of programs){
-      const canvas=document.createElement('canvas');canvas.width=PDF_PAGE_W*PDF_SCALE;canvas.height=PDF_PAGE_H*PDF_SCALE;
-      const ctx=canvas.getContext('2d',{alpha:false});ctx.scale(PDF_SCALE,PDF_SCALE);ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,PDF_PAGE_W,PDF_PAGE_H);
-      const W=PDF_PAGE_W-PDF_MARGIN*2;let y=PDF_MARGIN;const compact=program.exercises.length>14;
+  function buildProgramPdfContent(st,program){
+    const ctx=pdfMeasureCtx,cmd=[];const W=PDF_PAGE_W-PDF_MARGIN*2;let y=PDF_MARGIN;const compact=program.exercises.length>14;
+    pdfSetFont(ctx,800,compact?21:23);
+    const titleLines=pdfWrapLines(ctx,program.name,W).slice(0,2),titleLH=compact?22:24;
+    for(const line of titleLines){pdfText(cmd,'F2',compact?21:23,PDF_MARGIN,y+(compact?18:20),line,'#111111');y+=titleLH;}
+    y+=4;
 
-      pdfSetFont(ctx,800,compact?21:23);ctx.fillStyle='#111111';ctx.textBaseline='alphabetic';ctx.textAlign='left';
-      const titleLines=pdfWrapLines(ctx,program.name,W).slice(0,2),titleLH=compact?22:24;
-      for(const line of titleLines){ctx.fillText(line,PDF_MARGIN,y+(compact?18:20));y+=titleLH;}
-      y+=4;
+    pdfText(cmd,'F2',14,PDF_MARGIN,y+12,st.name,'#111111');y+=17;
+    const dateBits=[];if(program.startDate)dateBits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`Término ${fmtDate(program.endDate)}`);
+    if(dateBits.length){pdfText(cmd,'F1',10,PDF_MARGIN,y+9,dateBits.join(' · '),'#555555');y+=14;}
+    y+=10;pdfFillRect(cmd,PDF_MARGIN,y,W,1,'#D8D8D8');y+=11;
 
-      pdfSetFont(ctx,850,14);ctx.fillStyle='#111111';ctx.fillText(st.name,PDF_MARGIN,y+12);y+=17;
-      const dateBits=[];if(program.startDate)dateBits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)dateBits.push(`Término ${fmtDate(program.endDate)}`);
-      if(dateBits.length){pdfSetFont(ctx,500,10);ctx.fillStyle='#555555';ctx.fillText(dateBits.join(' · '),PDF_MARGIN,y+9);y+=14;}
-      y+=10;ctx.fillStyle='#D8D8D8';ctx.fillRect(PDF_MARGIN,y,W,1);y+=11;
-
-      const items=program.exercises.map((pe,i)=>pdfExerciseData(st,pe,i)).filter(Boolean),twoCols=program.exercises.length>7;
-      if(!twoCols){
-        items.forEach((item,i)=>{const h=pdfDrawExercise(ctx,item,PDF_MARGIN,y,W,{compact,last:i===items.length-1});y+=h;});
-      }else{
-        const colGap=Math.round(8*96/25.4),colW=(W-colGap)/2;let leftY=y,rightY=y;
-        items.forEach((item,i)=>{const col=i%2,x=PDF_MARGIN+col*(colW+colGap),yy=col?rightY:leftY;const h=pdfDrawExercise(ctx,item,x,yy,colW,{compact,last:i>=items.length-2});if(col)rightY+=h;else leftY+=h;});
-      }
-      pages.push(canvas);
+    const items=program.exercises.map((pe,i)=>pdfExerciseData(st,pe,i)).filter(Boolean),twoCols=program.exercises.length>7;
+    if(!twoCols){
+      items.forEach((item,i)=>{const h=pdfDrawExerciseVector(cmd,ctx,item,PDF_MARGIN,y,W,{compact,last:i===items.length-1});y+=h;});
+    }else{
+      const colGap=Math.round(8*96/25.4),colW=(W-colGap)/2;let leftY=y,rightY=y;
+      items.forEach((item,i)=>{const col=i%2,x=PDF_MARGIN+col*(colW+colGap),yy=col?rightY:leftY;const h=pdfDrawExerciseVector(cmd,ctx,item,x,yy,colW,{compact,last:i>=items.length-2});if(col)rightY+=h;else leftY+=h;});
     }
-    return pages;
+    return cmd.join('\n')+'\n';
   }
 
   function pdfAscii(str){return new TextEncoder().encode(str);}
   function pdfConcat(chunks){const total=chunks.reduce((n,c)=>n+c.length,0),out=new Uint8Array(total);let off=0;for(const c of chunks){out.set(c,off);off+=c.length;}return out;}
-  function pdfJpegBytes(canvas){const raw=canvas.toDataURL('image/jpeg',0.92).split(',')[1],bin=atob(raw),out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}
 
-  function buildWorkoutPdf(canvases){
-    const pageW='595.28',pageH='841.89',n=canvases.length,objCount=2+n*3,objects=new Array(objCount+1);
+  function buildWorkoutVectorPdf(st,programs){
+    const n=programs.length,objCount=4+n*2,objects=new Array(objCount+1);
     objects[1]=[pdfAscii('<< /Type /Catalog /Pages 2 0 R >>')];
-    const kids=[];for(let i=0;i<n;i++)kids.push(`${3+i*3} 0 R`);objects[2]=[pdfAscii(`<< /Type /Pages /Count ${n} /Kids [${kids.join(' ')}] >>`)];
+    const kids=[];for(let i=0;i<n;i++)kids.push(`${5+i*2} 0 R`);
+    objects[2]=[pdfAscii(`<< /Type /Pages /Count ${n} /Kids [${kids.join(' ')}] >>`)];
+    objects[3]=[pdfAscii('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')];
+    objects[4]=[pdfAscii('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>')];
     for(let i=0;i<n;i++){
-      const pageId=3+i*3,imgId=4+i*3,contentId=5+i*3,canvas=canvases[i],jpeg=pdfJpegBytes(canvas),content=`q\n${pageW} 0 0 ${pageH} 0 0 cm\n/Im${i+1} Do\nQ\n`,contentBytes=pdfAscii(content);
-      objects[pageId]=[pdfAscii(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im${i+1} ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`)];
-      objects[imgId]=[pdfAscii(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`),jpeg,pdfAscii('\nendstream')];
+      const pageId=5+i*2,contentId=6+i*2,contentBytes=pdfAscii(buildProgramPdfContent(st,programs[i]));
+      objects[pageId]=[pdfAscii(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PDF_PAGE_W_PT} ${PDF_PAGE_H_PT}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contentId} 0 R >>`)];
       objects[contentId]=[pdfAscii(`<< /Length ${contentBytes.length} >>\nstream\n`),contentBytes,pdfAscii('endstream')];
     }
     const chunks=[pdfAscii('%PDF-1.4\n%'),new Uint8Array([0xE2,0xE3,0xCF,0xD3,0x0A])],offsets=new Array(objCount+1).fill(0);let length=chunks.reduce((n,c)=>n+c.length,0);
@@ -3175,7 +3199,7 @@ html.ios-standalone .builder-head{
 
   function shareStandaloneWorkoutPdf(st,programs){
     try{
-      const canvases=createWorkoutPdfCanvases(st,programs),bytes=buildWorkoutPdf(canvases),blob=new Blob([bytes],{type:'application/pdf'}),safe=String(st.name||'treino').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()||'treino',filename=`treino-${safe}.pdf`,file=new File([blob],filename,{type:'application/pdf'});
+      const bytes=buildWorkoutVectorPdf(st,programs),blob=new Blob([bytes],{type:'application/pdf'}),safe=String(st.name||'treino').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()||'treino',filename=`treino-${safe}.pdf`,file=new File([blob],filename,{type:'application/pdf'});
       let canShare=!!navigator.share;try{if(canShare&&navigator.canShare)canShare=navigator.canShare({files:[file]});}catch(e){}
       if(canShare){
         navigator.share({files:[file],title:`${st.name} · Treino`}).catch(err=>{if(err?.name!=='AbortError'){fallbackOpenPdf(blob,filename);toast('PDF aberto. Use Compartilhar para imprimir ou salvar.');}});
