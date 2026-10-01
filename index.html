@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#053C6C">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Treino">
   <meta name="format-detection" content="telephone=no">
   <title>Treino Pro</title>
@@ -1857,7 +1857,7 @@ html[data-theme="light"] .header-logo{filter:brightness(0)}
   const leading=document.querySelector('.topbar-leading');
   if(leading&&!document.getElementById('headerLogo')){
     const logo=document.createElement('img');
-    logo.id='headerLogo';logo.className='header-logo';logo.src='./logo.png';logo.alt='';logo.setAttribute('aria-hidden','true');
+    logo.id='headerLogo';logo.className='header-logo';logo.src='./icons/icon-192.png';logo.alt='';logo.setAttribute('aria-hidden','true');
     leading.insertBefore(logo,leading.firstChild);
   }
   function syncHeaderLogo(hasBack){document.getElementById('headerLogo')?.classList.toggle('is-hidden',!!hasBack);}
@@ -2875,6 +2875,212 @@ html[data-theme="dark"] .search-field{
     const label={'7d':'7 dias','30d':'30 dias','90d':'3 meses','180d':'6 meses','365d':'1 ano','all':'todo o histórico'}[period]||period;
     openModal(`<h2>Séries por grupamento</h2><p class="modal-sub">${esc(label)}</p>${rows.length?`<div class="series-muscle-list">${rows.map(row=>{const count=round(row.sets);return `<div class="series-muscle-row"><span>${esc(row.group)}</span><strong>${count}</strong></div>`;}).join('')}</div>`:emptyHtml('Sem séries registradas neste período.')}<div class="modal-actions"><button class="btn btn-primary" id="metricExplainClose">Fechar</button></div>`);
     $('#metricExplainClose').onclick=closeModal;
+  };
+})();
+</script>
+
+
+<!-- PONTUAIS 2026-10-01: ficha compacta, impressão no PWA do iPhone e cabeçalho nítido. -->
+<style id="iphone-pwa-point-fixes">
+/* Ver treino: preserva a hierarquia, mas reduz balões, folgas e variação tipográfica. */
+#modal.fullscreen .builder-body > .modal-sub{
+  margin:0 0 10px!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+}
+#modal.fullscreen .builder-body > .view-exercise{
+  margin:0 0 8px!important;
+  padding:11px 12px 10px!important;
+  border-radius:13px!important;
+  box-shadow:none!important;
+}
+#modal.fullscreen .builder-body > .view-exercise > small{
+  display:block!important;
+  margin:0 0 3px!important;
+  color:var(--faint)!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  letter-spacing:.06em!important;
+}
+#modal.fullscreen .builder-body > .view-exercise h3{
+  margin:0 0 5px!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  letter-spacing:-.2px!important;
+}
+#modal.fullscreen .builder-body > .view-exercise > p{
+  margin:3px 0!important;
+  color:var(--muted)!important;
+  font-size:10.5px!important;
+  font-weight:550!important;
+  line-height:1.35!important;
+}
+#modal.fullscreen .builder-body > .view-exercise > p strong{
+  font-size:10.5px!important;
+  font-weight:750!important;
+}
+#modal.fullscreen .builder-body > .view-exercise .previous-note{
+  margin:6px 0 0!important;
+  padding:7px 9px!important;
+  border-radius:9px!important;
+  font-size:10.5px!important;
+  font-weight:520!important;
+  line-height:1.35!important;
+  letter-spacing:0!important;
+}
+#modal.fullscreen .builder-body > .view-exercise .previous-note small{
+  display:block!important;
+  margin:0 0 2px!important;
+  color:var(--faint)!important;
+  font-size:7.5px!important;
+  font-weight:850!important;
+  line-height:1.2!important;
+  letter-spacing:.055em!important;
+  text-transform:uppercase!important;
+}
+#modal.fullscreen .builder-body > .view-exercise .previous-note > div{
+  margin:0!important;
+  font-size:10.5px!important;
+  font-weight:550!important;
+  line-height:1.35!important;
+}
+#modal.fullscreen .builder-body > .view-exercise .series-inline{
+  margin-top:7px!important;
+  gap:4px!important;
+}
+#modal.fullscreen .builder-body > .view-exercise .series-chip{
+  min-height:23px!important;
+  padding:3px 6px!important;
+  border-radius:8px!important;
+  gap:4px!important;
+  font-size:9px!important;
+  font-weight:600!important;
+  line-height:1.2!important;
+}
+#modal.fullscreen .builder-body > .view-exercise .series-chip b,
+#modal.fullscreen .builder-body > .view-exercise .series-chip span{
+  font-size:9px!important;
+  line-height:1.2!important;
+}
+
+/* iPhone instalado: elimina as camadas translúcidas/composited que podem rasterizar o topo. */
+html.ios-standalone .topbar,
+html.ios-standalone .live-header{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  will-change:auto!important;
+  transform:none!important;
+  background:var(--bg)!important;
+}
+html.ios-standalone .topbar *,
+html.ios-standalone .exercise-detail-head *,
+html.ios-standalone .history-modal-head *,
+html.ios-standalone .builder-head *{
+  filter:none!important;
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:optimizeLegibility!important;
+}
+html.ios-standalone .modal.fullscreen,
+html.ios-standalone .exercise-detail-head,
+html.ios-standalone .history-modal-head,
+html.ios-standalone .builder-head{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  will-change:auto!important;
+}
+</style>
+<script id="iphone-pwa-point-fixes-js">
+(function(){
+  'use strict';
+
+  const isStandalone=()=>navigator.standalone===true ||
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.matchMedia?.('(display-mode: fullscreen)').matches;
+  if(isStandalone())document.documentElement.classList.add('ios-standalone');
+
+  function selectedPrograms(studentId,programIds){
+    const ids=new Set(Array.isArray(programIds)?programIds:[]);
+    return programsForStudent(studentId).filter(p=>ids.has(p.id));
+  }
+
+  function currentCssText(){
+    const chunks=[];
+    for(const sheet of Array.from(document.styleSheets)){
+      try{chunks.push(Array.from(sheet.cssRules||[]).map(rule=>rule.cssText).join('\n'));}catch(e){}
+    }
+    return chunks.join('\n');
+  }
+
+  function openStandalonePrintDocument(html,title){
+    const popup=window.open('','_blank');
+    if(!popup)return false;
+    const css=currentCssText().replace(/<\/style/gi,'<\\/style');
+    const safeTitle=String(title||'Treino').replace(/[&<>"']/g,ch=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[ch]));
+    popup.document.open();
+    popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title><style>${css}</style><style>
+      @media screen{
+        html,body{background:#fff!important;color:#111!important;min-height:100%!important}
+        body{margin:0!important;padding:14px!important;-webkit-font-smoothing:antialiased}
+        #printArea{display:block!important;width:100%!important;background:#fff!important;color:#111!important}
+        .pwa-print-helper{position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:10px 12px;border:1px solid #d9dde3;border-radius:12px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.08)}
+        .pwa-print-helper span{font-size:12px;line-height:1.35;color:#4b5563}.pwa-print-helper button{border:0;border-radius:10px;background:#0A427E;color:#fff;padding:10px 13px;font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;white-space:nowrap}
+      }
+      @media print{.pwa-print-helper{display:none!important}#printArea{display:block!important}}
+    </style></head><body><div class="pwa-print-helper"><span>Se a tela de impressão não abrir automaticamente, toque aqui.</span><button type="button" onclick="window.print()">Imprimir / Salvar PDF</button></div><div id="printArea" class="print-area">${html}</div></body></html>`);
+    popup.document.close();
+    try{popup.focus();popup.print();}catch(e){}
+    return true;
+  }
+
+  generateStudentProgramsPDF=function(studentId,programIds){
+    const st=studentById(studentId);if(!st)return;
+    const programs=selectedPrograms(studentId,programIds);
+    if(!programs.length)return toast('Selecione pelo menos um treino para imprimir.');
+    const html=programs.map(p=>programPrintPageHtml(p,st)).join('');
+    const area=$('#printArea');
+    area.className='print-area';area.innerHTML=html;
+
+    /* Home Screen Web Apps do iPhone podem não responder a window.print() no próprio container.
+       Nesse modo, abrimos uma folha dedicada com botão de impressão como fallback visível. */
+    if(isStandalone() && openStandalonePrintDocument(html,`${st.name} · Treino`))return;
+
+    /* Safari normal: impressão direta, sem timers que perdem o gesto do usuário. */
+    area.getBoundingClientRect();
+    try{window.print();}catch(e){toast('Não foi possível abrir a impressão neste navegador.');}
+  };
+
+  /* Mantém o mesmo seletor, mas dispara a impressão no próprio toque do botão. */
+  openStudentPrintSelector=function(studentId){
+    const st=studentById(studentId);if(!st)return;
+    const programs=programsForStudent(studentId);
+    if(!programs.length)return toast('Este aluno ainda não possui treinos para imprimir.');
+    const selected=new Set(programs.map(p=>p.id));
+    const renderSelection=()=>{
+      openModal(`<h2>Imprimir treinos</h2><p class="modal-sub">Selecione quais fichas de ${esc(st.name)} deseja incluir. Cada treino será organizado em sua própria folha A4.</p><div class="print-select-toolbar"><span id="printSelectedCount">${selected.size} de ${programs.length} selecionado${selected.size===1?'':'s'}</span><button class="btn btn-ghost btn-sm" id="printToggleAll" type="button">${selected.size===programs.length?'Desmarcar todos':'Selecionar todos'}</button></div><div class="print-select-list">${programs.map(p=>{const active=selected.has(p.id),dateBits=[];if(p.startDate)dateBits.push(`Início ${fmtDate(p.startDate)}`);if(p.endDate)dateBits.push(`Término ${fmtDate(p.endDate)}`);return `<button class="print-select-item ${active?'is-selected':''}" type="button" data-print-program="${esc(p.id)}" aria-pressed="${active?'true':'false'}"><span class="print-select-check">${icons.check}</span><span class="print-select-copy"><strong>${esc(p.name)}</strong><small>${p.exercises.length} exercício${p.exercises.length===1?'':'s'}${dateBits.length?` · ${dateBits.join(' · ')}`:''}</small></span></button>`;}).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="printCancel" type="button">Cancelar</button><button class="btn btn-primary print-generate-btn" id="printGenerate" type="button">Gerar PDF / Imprimir</button></div>`);
+      const sync=()=>{
+        $('#printSelectedCount').textContent=`${selected.size} de ${programs.length} selecionado${selected.size===1?'':'s'}`;
+        $('#printToggleAll').textContent=selected.size===programs.length?'Desmarcar todos':'Selecionar todos';
+        $$('[data-print-program]',$('#modal')).forEach(btn=>{const on=selected.has(btn.dataset.printProgram);btn.classList.toggle('is-selected',on);btn.setAttribute('aria-pressed',on?'true':'false');});
+        $('#printGenerate').disabled=selected.size===0;
+      };
+      $$('[data-print-program]',$('#modal')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.printProgram;selected.has(id)?selected.delete(id):selected.add(id);sync();});
+      $('#printToggleAll').onclick=()=>{selected.size===programs.length?selected.clear():programs.forEach(p=>selected.add(p.id));sync();};
+      $('#printCancel').onclick=closeModal;
+      $('#printGenerate').onclick=()=>{
+        if(!selected.size)return toast('Selecione pelo menos um treino.');
+        const ids=programs.filter(p=>selected.has(p.id)).map(p=>p.id);
+        closeModal();
+        generateStudentProgramsPDF(studentId,ids);
+      };
+      sync();
+    };
+    renderSelection();
   };
 })();
 </script>
