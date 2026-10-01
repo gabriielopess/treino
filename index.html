@@ -3014,27 +3014,120 @@ html.ios-standalone .builder-head{
     return chunks.join('\n');
   }
 
-  function openStandalonePrintDocument(html,title){
-    const popup=window.open('','_blank');
-    if(!popup)return false;
-    const css=currentCssText().replace(/<\/style/gi,'<\\/style');
-    const safeTitle=String(title||'Treino').replace(/[&<>"']/g,ch=>({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-    }[ch]));
-    popup.document.open();
-    popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title><style>${css}</style><style>
-      @media screen{
-        html,body{background:#fff!important;color:#111!important;min-height:100%!important}
-        body{margin:0!important;padding:14px!important;-webkit-font-smoothing:antialiased}
-        #printArea{display:block!important;width:100%!important;background:#fff!important;color:#111!important}
-        .pwa-print-helper{position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:10px 12px;border:1px solid #d9dde3;border-radius:12px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.08)}
-        .pwa-print-helper span{font-size:12px;line-height:1.35;color:#4b5563}.pwa-print-helper button{border:0;border-radius:10px;background:#0A427E;color:#fff;padding:10px 13px;font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;white-space:nowrap}
-      }
-      @media print{.pwa-print-helper{display:none!important}#printArea{display:block!important}}
-    </style></head><body><div class="pwa-print-helper"><span>Se a tela de impressão não abrir automaticamente, toque aqui.</span><button type="button" onclick="window.print()">Imprimir / Salvar PDF</button></div><div id="printArea" class="print-area">${html}</div></body></html>`);
-    popup.document.close();
-    try{popup.focus();popup.print();}catch(e){}
-    return true;
+  function pdfRoundRect(ctx,x,y,w,h,r){
+    r=Math.max(0,Math.min(r,Math.min(w,h)/2));
+    ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+  }
+
+  function pdfWrapLines(ctx,text,maxWidth){
+    const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+    for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width<=maxWidth||!line)line=test;else{lines.push(line);line=word;}}
+    if(line)lines.push(line);return lines.length?lines:[''];
+  }
+
+  function pdfRpeText(value){
+    if(value==null||value==='')return '';
+    const n=Number(value);if(!Number.isFinite(n))return '';
+    return Number.isInteger(n)?String(n):String(n).replace('.',',');
+  }
+
+  function pdfExerciseData(st,pe,index){
+    const ex=exerciseById(pe.exerciseId);if(!ex)return null;
+    const entries=exerciseHistoryEntries(st.id,ex.id),latest=entries[entries.length-1]||null;
+    const latestSets=latest?completedSets(latest.exercise):[];
+    const count=Math.max(1,parseInteger(pe.sets)||1);
+    return {
+      index:index+1,name:ex.name,groups:(ex.muscleGroups||[]).join(' · '),
+      sets:count,reps:String(pe.targetReps||'—'),rest:fmtRest(pe.restSec),
+      series:Array.from({length:count},(_,i)=>{const s=latestSets[i]||null;if(!s)return `${i+1}  —`;const rpe=pdfRpeText(s.rpe);return `${i+1}  ${parseInteger(s.reps)} reps · ${parseDecimal(s.weight)} kg${rpe?` · RPE ${rpe}`:''}`;})
+    };
+  }
+
+  function pdfPillRows(ctx,series,maxWidth,font){
+    ctx.font=font;const rows=[];let row=[],used=0;const gap=12,pad=20;
+    for(const text of series){const w=Math.ceil(ctx.measureText(text).width)+pad*2;if(row.length&&used+gap+w>maxWidth){rows.push(row);row=[];used=0;}row.push({text,w});used+=(used?gap:0)+w;}
+    if(row.length)rows.push(row);return rows;
+  }
+
+  function pdfMeasureExercise(ctx,item,width){
+    const pad=26,indexW=62,titleX=pad+indexW,titleW=width-titleX-pad;
+    ctx.font='700 27px Arial, sans-serif';const titleLines=pdfWrapLines(ctx,item.name,titleW);
+    const seriesRows=pdfPillRows(ctx,item.series,width-pad*2,'600 18px Arial, sans-serif');
+    return 28+Math.max(56,titleLines.length*32+28)+52+seriesRows.length*48+24;
+  }
+
+  function pdfDrawExercise(ctx,item,x,y,width){
+    const h=pdfMeasureExercise(ctx,item,width),pad=26,indexW=62;
+    ctx.fillStyle='#FFFFFF';ctx.strokeStyle='#DDE3E8';ctx.lineWidth=2;pdfRoundRect(ctx,x,y,width,h,22);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#EAF3F7';pdfRoundRect(ctx,x+pad,y+24,52,52,14);ctx.fill();ctx.fillStyle='#0A427E';ctx.font='800 20px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(item.index).padStart(2,'0'),x+pad+26,y+50);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle='#111820';ctx.font='700 27px Arial, sans-serif';
+    const tx=x+pad+indexW,tw=width-(pad+indexW)-pad;const titleLines=pdfWrapLines(ctx,item.name,tw);let cy=y+43;
+    for(const line of titleLines.slice(0,2)){ctx.fillText(line,tx,cy);cy+=32;}
+    ctx.fillStyle='#74808C';ctx.font='500 17px Arial, sans-serif';ctx.fillText(item.groups||'Exercício',tx,cy+2);
+    const metaY=y+Math.max(95,28+Math.max(56,titleLines.length*32+28));
+    const chips=[`${item.sets} séries`,`${item.reps} reps`,`${item.rest} descanso`];let cx=x+pad;
+    ctx.font='700 17px Arial, sans-serif';for(const chip of chips){const w=Math.ceil(ctx.measureText(chip).width)+30;ctx.fillStyle='#F1F4F6';pdfRoundRect(ctx,cx,metaY,w,36,10);ctx.fill();ctx.fillStyle='#31404D';ctx.fillText(chip,cx+15,metaY+24);cx+=w+10;}
+    let sy=metaY+54;const rows=pdfPillRows(ctx,item.series,width-pad*2,'600 18px Arial, sans-serif');ctx.font='600 18px Arial, sans-serif';
+    for(const row of rows){let px=x+pad;for(const pill of row){ctx.fillStyle='#F4F6F8';pdfRoundRect(ctx,px,sy,pill.w,38,10);ctx.fill();ctx.fillStyle='#1B252E';ctx.fillText(pill.text,px+20,sy+25);px+=pill.w+12;}sy+=48;}
+    return h;
+  }
+
+  function createWorkoutPdfCanvases(st,programs){
+    const PW=1240,PH=1754,M=82,BOTTOM=86,CONTENT=PW-M*2,pages=[];
+    for(const program of programs){
+      const items=program.exercises.map((pe,i)=>pdfExerciseData(st,pe,i)).filter(Boolean);let ctx,canvas,y,pageInProgram=0;
+      const newPage=(continued=false)=>{
+        canvas=document.createElement('canvas');canvas.width=PW;canvas.height=PH;ctx=canvas.getContext('2d',{alpha:false});
+        ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,PW,PH);ctx.fillStyle='#0A427E';ctx.fillRect(0,0,PW,14);
+        ctx.fillStyle='#111820';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.font='800 48px Arial, sans-serif';
+        const titleLines=pdfWrapLines(ctx,program.name,CONTENT).slice(0,2);let ty=95;for(const line of titleLines){ctx.fillText(line,M,ty);ty+=54;}
+        ctx.font='700 25px Arial, sans-serif';ctx.fillStyle='#283642';ctx.fillText(st.name,M,ty+4);
+        const bits=[];if(program.startDate)bits.push(`Início ${fmtDate(program.startDate)}`);if(program.endDate)bits.push(`Término ${fmtDate(program.endDate)}`);if(continued)bits.push('continuação');
+        ctx.font='500 20px Arial, sans-serif';ctx.fillStyle='#75818C';ctx.fillText(bits.join('  ·  ')||'Ficha de treino',M,ty+39);
+        ctx.strokeStyle='#D8DEE4';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(M,ty+68);ctx.lineTo(PW-M,ty+68);ctx.stroke();
+        y=ty+96;pageInProgram++;pages.push({canvas,ctx,programName:program.name,pageInProgram});
+      };
+      newPage(false);
+      for(const item of items){const h=pdfMeasureExercise(ctx,item,CONTENT);if(y+h>PH-BOTTOM)newPage(true);pdfDrawExercise(ctx,item,M,y,CONTENT);y+=h+18;}
+    }
+    pages.forEach((p,i)=>{const ctx=p.ctx;ctx.font='500 16px Arial, sans-serif';ctx.fillStyle='#98A1AA';ctx.textAlign='left';ctx.fillText('Treino',82,PH-42);ctx.textAlign='right';ctx.fillText(`Página ${i+1} de ${pages.length}`,PW-82,PH-42);});
+    return pages.map(p=>p.canvas);
+  }
+
+  function pdfAscii(str){return new TextEncoder().encode(str);}
+  function pdfConcat(chunks){const total=chunks.reduce((n,c)=>n+c.length,0),out=new Uint8Array(total);let off=0;for(const c of chunks){out.set(c,off);off+=c.length;}return out;}
+  function pdfJpegBytes(canvas){const raw=canvas.toDataURL('image/jpeg',0.92).split(',')[1],bin=atob(raw),out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}
+
+  function buildWorkoutPdf(canvases){
+    const pageW='595.28',pageH='841.89',n=canvases.length,objCount=2+n*3,objects=new Array(objCount+1);
+    objects[1]=[pdfAscii('<< /Type /Catalog /Pages 2 0 R >>')];
+    const kids=[];for(let i=0;i<n;i++)kids.push(`${3+i*3} 0 R`);objects[2]=[pdfAscii(`<< /Type /Pages /Count ${n} /Kids [${kids.join(' ')}] >>`)];
+    for(let i=0;i<n;i++){
+      const pageId=3+i*3,imgId=4+i*3,contentId=5+i*3,canvas=canvases[i],jpeg=pdfJpegBytes(canvas),content=`q\n${pageW} 0 0 ${pageH} 0 0 cm\n/Im${i+1} Do\nQ\n`,contentBytes=pdfAscii(content);
+      objects[pageId]=[pdfAscii(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im${i+1} ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`)];
+      objects[imgId]=[pdfAscii(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`),jpeg,pdfAscii('\nendstream')];
+      objects[contentId]=[pdfAscii(`<< /Length ${contentBytes.length} >>\nstream\n`),contentBytes,pdfAscii('endstream')];
+    }
+    const chunks=[pdfAscii('%PDF-1.4\n%'),new Uint8Array([0xE2,0xE3,0xCF,0xD3,0x0A])],offsets=new Array(objCount+1).fill(0);let length=chunks.reduce((n,c)=>n+c.length,0);
+    for(let id=1;id<=objCount;id++){offsets[id]=length;const head=pdfAscii(`${id} 0 obj\n`),tail=pdfAscii('\nendobj\n'),body=objects[id];chunks.push(head,...body,tail);length+=head.length+tail.length+body.reduce((n,c)=>n+c.length,0);}
+    const xrefOffset=length;let xref=`xref\n0 ${objCount+1}\n0000000000 65535 f \n`;for(let id=1;id<=objCount;id++)xref+=String(offsets[id]).padStart(10,'0')+' 00000 n \n';
+    const trailer=`trailer\n<< /Size ${objCount+1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+    chunks.push(pdfAscii(xref+trailer));return pdfConcat(chunks);
+  }
+
+  function fallbackOpenPdf(blob,filename){
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),120000);
+  }
+
+  function shareStandaloneWorkoutPdf(st,programs){
+    try{
+      const canvases=createWorkoutPdfCanvases(st,programs),bytes=buildWorkoutPdf(canvases),blob=new Blob([bytes],{type:'application/pdf'}),safe=String(st.name||'treino').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()||'treino',filename=`treino-${safe}.pdf`,file=new File([blob],filename,{type:'application/pdf'});
+      let canShare=!!navigator.share;try{if(canShare&&navigator.canShare)canShare=navigator.canShare({files:[file]});}catch(e){}
+      if(canShare){
+        navigator.share({files:[file],title:`${st.name} · Treino`}).catch(err=>{if(err?.name!=='AbortError'){fallbackOpenPdf(blob,filename);toast('PDF aberto. Use Compartilhar para imprimir ou salvar.');}});
+      }else{fallbackOpenPdf(blob,filename);toast('PDF aberto. Use Compartilhar para imprimir ou salvar.');}
+      return true;
+    }catch(err){console.error('Falha ao gerar PDF',err);toast('Não foi possível gerar o PDF.');return false;}
   }
 
   generateStudentProgramsPDF=function(studentId,programIds){
@@ -3045,11 +3138,12 @@ html.ios-standalone .builder-head{
     const area=$('#printArea');
     area.className='print-area';area.innerHTML=html;
 
-    /* Home Screen Web Apps do iPhone podem não responder a window.print() no próprio container.
-       Nesse modo, abrimos uma folha dedicada com botão de impressão como fallback visível. */
-    if(isStandalone() && openStandalonePrintDocument(html,`${st.name} · Treino`))return;
+    /* No app instalado do iPhone, window.print() não é confiável.
+       Geramos um PDF real no aparelho e abrimos a folha nativa de compartilhamento,
+       onde o iOS oferece Imprimir e Salvar em Arquivos. */
+    if(isStandalone()){shareStandaloneWorkoutPdf(st,programs);return;}
 
-    /* Safari normal: impressão direta, sem timers que perdem o gesto do usuário. */
+    /* Safari normal mantém a impressão nativa que já funcionava. */
     area.getBoundingClientRect();
     try{window.print();}catch(e){toast('Não foi possível abrir a impressão neste navegador.');}
   };
