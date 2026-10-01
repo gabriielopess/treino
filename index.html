@@ -4040,5 +4040,75 @@ html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;bord
   requestAnimationFrame(()=>{try{render();}catch(err){console.error(err);}});
 })();
 </script>
+
+<!-- KEYBOARD-STABILITY-FIX-2026-10-01 -->
+
+<!-- KEYBOARD-STABILITY-FIX-2026-10-01 -->
+<style id="keyboard-stability-fix-css">
+/* Mantém o modal preso ao topo da área visível. O iOS pode variar visualViewport.offsetTop
+   enquanto o teclado está aberto; compensar esse offset fazia a tela oscilar. */
+:root{--app-vv-top:0px!important}
+#modal.keyboard-safe-modal.fullscreen{
+  top:0!important;
+  transform:translateX(-50%)!important;
+}
+.keyboard-safe-picker-body,
+.keyboard-safe-picker-body .picker-list-scroll{
+  overflow-anchor:none!important;
+}
+/* A busca permanece no mesmo lugar enquanto só a lista abaixo é atualizada. */
+.search-only-picker .picker-toolbar{position:relative;z-index:2;flex:0 0 auto}
+</style>
+<script id="keyboard-stability-fix-js">
+(function(){
+  'use strict';
+
+  function stableFold(value){
+    return String(value??'')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLocaleLowerCase('pt-BR')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  /* Biblioteca: não recria mais o input a cada tecla.
+     Só o conteúdo da lista muda, então o teclado e o viewport permanecem estáveis. */
+  renderExercises=function(main){
+    setHeader({title:'Exercícios',action:'plus',actionFn:()=>openExerciseForm()});
+    main.innerHTML=`<section class="screen"><div class="hero"><h1>Biblioteca</h1></div><div class="toolbar"><div class="search-field">${icons.search}<input id="exerciseSearch" placeholder="Buscar exercício" value="${esc(state.exerciseSearch)}" autocomplete="off" autocapitalize="none"></div><button class="btn btn-primary" id="exerciseAdd">+ Novo</button></div><div class="section" style="margin-top:0"><div id="exerciseLibraryList" class="card exercise-library-card" style="padding:2px 14px"></div></div></section>`;
+
+    const input=$('#exerciseSearch');
+    const list=$('#exerciseLibraryList');
+
+    const paint=()=>{
+      if(!input||!list)return;
+      state.exerciseSearch=input.value;
+      const q=stableFold(state.exerciseSearch);
+      const exercises=db.exercises
+        .slice()
+        .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'))
+        .filter(ex=>stableFold(ex.name).includes(q));
+      list.innerHTML=exercises.length
+        ? exercises.map(exerciseRowHtml).join('')
+        : emptyHtml(q?'Nenhum resultado.':'Biblioteca vazia.',q?'Tente outro termo.':'Cadastre o primeiro exercício.');
+    };
+
+    input?.addEventListener('input',paint,{passive:true});
+    $('#exerciseAdd').onclick=()=>openExerciseForm();
+    list?.addEventListener('click',e=>{
+      const edit=e.target.closest?.('[data-exercise-edit]');
+      if(edit){e.preventDefault();e.stopPropagation();openExerciseForm(edit.dataset.exerciseEdit);return;}
+      const view=e.target.closest?.('[data-exercise-view]');
+      if(view){e.preventDefault();window.openExerciseDetails?.(view.dataset.exerciseView);}
+    });
+    paint();
+  };
+
+  /* Se a biblioteca já estiver aberta ao carregar este patch, atualiza uma única vez. */
+  if(state?.route==='exercises')renderExercises($('#main'));
+})();
+</script>
+
 </body>
 </html>
