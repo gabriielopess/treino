@@ -3523,27 +3523,42 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
   function clearProgramDraft(studentId,programId){const all=readProgramDrafts(),key=programDraftKey(studentId,programId);if(key in all){delete all[key];writeProgramDrafts(all);}}
 
   function openExerciseMultiPicker(draft,renderBuilder,syncDraft){
-    let activeGroup='all',query='',selected=new Set();
+    let query='',selected=new Set();
     const existingIds=new Set(draft.exercises.map(pe=>pe.exerciseId));
-    const commit=()=>{
-      selected.forEach(id=>{if(existingIds.has(id)||!exerciseById(id))return;draft.exercises.push({exerciseId:id,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:'',referenceWeight:null});existingIds.add(id);});
-      selected.clear();syncDraft?.();renderBuilder();
+    const addSelectedToDraft=()=>{
+      selected.forEach(id=>{
+        if(existingIds.has(id)||!exerciseById(id))return;
+        draft.exercises.push({exerciseId:id,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:'',referenceWeight:null});
+        existingIds.add(id);
+      });
     };
+    const commit=()=>{addSelectedToDraft();selected.clear();syncDraft?.();renderBuilder();};
     const picker=()=>{
       const list=db.exercises.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
-      openModal(`<div class="builder-head"><button class="icon-btn" id="multiPickerBack" type="button" aria-label="Voltar">${icons.back}</button><h2>Adicionar exercícios</h2></div><div class="keyboard-safe-body keyboard-safe-picker-body"><button class="picker-create-top" id="multiPickerNew" type="button">${icons.plus}<div><strong>Criar exercício</strong><small>Adicionar rapidamente à biblioteca</small></div>${chev()}</button><span class="picker-selected-count" id="multiPickerCount">Nenhum novo exercício selecionado</span><div class="picker-filter-row" id="multiPickerGroups"><button class="filter-chip ${activeGroup==='all'?'is-active':''}" type="button" data-multi-group="all">Todos</button>${MUSCLE_GROUPS.map(g=>`<button class="filter-chip ${activeGroup===g?'is-active':''}" type="button" data-multi-group="${esc(g)}">${esc(g)}</button>`).join('')}</div><div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="multiPickerSearch" placeholder="Buscar exercício" value="${esc(query)}" autocomplete="off"></div></div><div id="multiPickerList" class="choice-list picker-list-scroll"></div><div class="modal-actions"><button class="btn btn-secondary" id="multiPickerCancel" type="button">Voltar</button><button class="btn btn-primary" id="multiPickerDone" type="button">Adicionar selecionados</button></div></div>`,{fullscreen:true});
+      openModal(`<div class="builder-head"><button class="icon-btn" id="multiPickerBack" type="button" aria-label="Voltar">${icons.back}</button><h2>Adicionar exercícios</h2></div><div class="keyboard-safe-body keyboard-safe-picker-body search-only-picker"><div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="multiPickerSearch" placeholder="Buscar exercício" value="${esc(query)}" autocomplete="off" autocapitalize="none"></div></div><div id="multiPickerList" class="exercise-search-suggestions picker-list-scroll"></div><div class="search-picker-footer"><span class="picker-selected-count" id="multiPickerCount">Nenhum selecionado</span><button class="btn btn-primary" id="multiPickerDone" type="button">Adicionar</button></div></div>`,{fullscreen:true});
       markKeyboardSafe();
-      const updateCount=()=>{const n=selected.size;$('#multiPickerCount').textContent=n?`${n} exercício${n===1?'':'s'} selecionado${n===1?'':'s'}`:'Nenhum novo exercício selecionado';$('#multiPickerDone').disabled=n===0;};
+      const updateCount=()=>{const n=selected.size;$('#multiPickerCount').textContent=n?`${n} selecionado${n===1?'':'s'}`:'Nenhum selecionado';$('#multiPickerDone').disabled=n===0;};
+      const openQuickCreate=()=>{
+        addSelectedToDraft();selected.clear();syncDraft?.();closeModal();
+        setTimeout(()=>openExerciseForm(null,id=>{if(!existingIds.has(id)){draft.exercises.push({exerciseId:id,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:'',referenceWeight:null});existingIds.add(id);}syncDraft?.();renderBuilder();},renderBuilder),40);
+      };
       const paint=()=>{
-        query=$('#multiPickerSearch')?.value||query;const q=foldText(query),arr=list.filter(ex=>foldText(ex.name).includes(q)&&(activeGroup==='all'||ex.muscleGroups.includes(activeGroup)));
-        $('#multiPickerList').innerHTML=arr.map(ex=>{const exists=existingIds.has(ex.id),on=selected.has(ex.id);return `<button class="choice ${on?'is-selected':''} ${exists?'is-existing':''}" type="button" data-multi-id="${esc(ex.id)}" ${exists?'disabled':''}><span class="picker-choice-state">${exists?'•':icons.check}</span><div class="row-main"><strong>${esc(ex.name)}</strong><small>${exists?'Já está nesta ficha':esc(ex.muscleGroups.join(' · '))}</small></div></button>`;}).join('')||emptyHtml('Nenhum exercício encontrado.','Troque o filtro ou crie um novo exercício.');
-        $$('[data-multi-id]',$('#multiPickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.multiId;if(selected.has(id))selected.delete(id);else selected.add(id);paint();updateCount();});
+        query=$('#multiPickerSearch')?.value||'';
+        const q=foldText(query);
+        if(!q){
+          $('#multiPickerList').innerHTML='<div class="picker-search-hint">Digite o nome do exercício para buscar.</div>';
+          updateCount();return;
+        }
+        const arr=list.filter(ex=>foldText(ex.name).startsWith(q));
+        $('#multiPickerList').innerHTML=arr.length?arr.map(ex=>{const exists=existingIds.has(ex.id),on=selected.has(ex.id);return `<button class="exercise-search-suggestion ${on?'is-selected':''} ${exists?'is-existing':''}" type="button" data-multi-id="${esc(ex.id)}" ${exists?'disabled':''}><strong>${esc(ex.name)}</strong><span class="exercise-search-state">${exists?'Adicionado':on?'✓':''}</span></button>`;}).join(''):`<div class="picker-search-hint">Nenhum exercício começa com “${esc(query.trim())}”.</div><button class="picker-create-inline" id="multiPickerNew" type="button">+ Criar exercício</button>`;
+        $$('[data-multi-id]',$('#multiPickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.multiId;if(selected.has(id))selected.delete(id);else selected.add(id);paint();});
+        $('#multiPickerNew')?.addEventListener('click',openQuickCreate);
+        updateCount();
       };
       paint();updateCount();
       $('#multiPickerSearch').oninput=paint;
-      $$('[data-multi-group]',$('#multiPickerGroups')).forEach(btn=>btn.onclick=()=>{activeGroup=btn.dataset.multiGroup;$$('[data-multi-group]',$('#multiPickerGroups')).forEach(x=>x.classList.toggle('is-active',x===btn));paint();});
-      $('#multiPickerBack').onclick=commit;$('#multiPickerCancel').onclick=commit;$('#multiPickerDone').onclick=commit;
-      $('#multiPickerNew').onclick=()=>{selected.forEach(id=>{if(!existingIds.has(id)&&exerciseById(id)){draft.exercises.push({exerciseId:id,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:'',referenceWeight:null});existingIds.add(id);}});selected.clear();syncDraft?.();closeModal();setTimeout(()=>openExerciseForm(null,id=>{if(!existingIds.has(id))draft.exercises.push({exerciseId:id,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:'',referenceWeight:null});syncDraft?.();renderBuilder();},renderBuilder),40);};
+      $('#multiPickerBack').onclick=commit;
+      $('#multiPickerDone').onclick=commit;
       setTimeout(()=>$('#multiPickerSearch')?.focus({preventScroll:true}),100);
     };
     picker();
@@ -3785,5 +3800,245 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
 })();
 </script>
 
+
+
+<!-- AJUSTES FINAIS 2026-10-01: busca, evolução, ordenação de fichas e tema claro. -->
+<style id="oct01-final-detail-css">
+/* O foco fica dentro do componente: sem aro externo cortado nas laterais. */
+.toolbar,.picker-toolbar,.search-field{overflow:visible!important}
+.search-field input:focus,.search-field input:focus-visible{outline:none!important;box-shadow:none!important}
+.search-field:focus-within{border-color:var(--rp-accent)!important;box-shadow:inset 0 0 0 1px var(--rp-accent)!important}
+.keyboard-safe-body .form-input:focus,.keyboard-safe-body .form-input:focus-visible{outline:none!important;box-shadow:inset 0 0 0 1px var(--rp-accent)!important}
+
+/* Seletor de exercícios: pesquisa direta, sem elementos que disputam espaço com o teclado. */
+.search-only-picker{padding-top:8px!important}
+.search-only-picker .picker-toolbar{margin:8px 0 10px!important;flex:0 0 auto!important}
+.search-only-picker .search-field{width:100%!important;flex:0 0 auto!important}
+.exercise-search-suggestions{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 2px 10px}
+.exercise-search-suggestion{width:100%;min-height:50px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 12px;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--text);text-align:left}
+.exercise-search-suggestion strong{font-size:14px;font-weight:760;letter-spacing:-.15px}
+.exercise-search-suggestion.is-selected{background:var(--rp-accent-soft)}
+.exercise-search-suggestion.is-existing{opacity:.55}
+.exercise-search-state{font-size:9px;font-weight:850;color:var(--rp-accent);white-space:nowrap}
+.picker-search-hint{padding:24px 12px;color:var(--muted);font-size:12px;line-height:1.5;text-align:center}
+.picker-create-inline{display:block;margin:0 auto 12px;padding:9px 12px;border-radius:11px;background:transparent;color:var(--rp-accent);font-size:11px;font-weight:800}
+.search-picker-footer{flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 2px calc(2px + var(--safe-bottom));border-top:1px solid var(--line);background:var(--panel-bg)}
+.search-picker-footer .picker-selected-count{margin:0!important;padding-left:4px}
+.search-picker-footer .btn{height:43px;min-width:104px}
+
+/* O tipo de série fica direto ao ponto: apenas o nome da técnica. */
+.series-technique-choice small{display:none!important}
+.series-technique-choice{min-height:48px!important}
+.series-technique-choice strong{font-size:13px!important}
+
+/* Fichas do aluno um pouco mais compactas e sem datas no cartão inicial. */
+#programList .workout-entry{margin-bottom:10px!important}
+#programList .workout-entry .workout-view-card{padding:11px 14px 8px!important}
+#programList .workout-entry .workout-actions{padding:2px 14px 11px!important}
+.program-title-tools{display:flex;align-items:center;gap:8px}
+.program-title-tools>span{font-size:10.5px;color:var(--faint)}
+.program-order-toggle{height:32px!important;padding:0 9px!important;font-size:10.5px!important}
+.program-order-list{display:flex;flex-direction:column;gap:8px}
+.program-order-item{display:grid;grid-template-columns:minmax(0,1fr) 48px;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:transform .12s ease,opacity .12s ease,border-color .12s ease}
+.program-order-copy{min-width:0;padding:12px 13px;display:flex;flex-direction:column;justify-content:center}
+.program-order-copy strong{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.program-order-copy small{margin-top:4px;color:var(--muted);font-size:10px}
+.program-order-handle{width:48px;min-height:56px;background:var(--surface-2);border-left:1px solid var(--line);color:var(--muted);font-size:21px;line-height:1;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.program-order-handle:active{cursor:grabbing}
+.program-order-item.is-dragging{opacity:.78;transform:scale(.99);border-color:var(--rp-accent);z-index:3}
+.program-view-meta{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;color:var(--muted);font-size:10.5px;line-height:1.4}
+.program-view-meta span{min-width:0}
+.program-view-meta b{color:var(--text);font-size:10px;font-weight:720;text-align:right;white-space:nowrap}
+
+/* Histórico individual: nenhuma superfície residual escura no tema claro. */
+html[data-theme="light"] #modal .exercise-detail-head .icon-btn,
+html[data-theme="light"] #modal .exercise-pr-card,
+html[data-theme="light"] #modal .history-summary-grid>div,
+html[data-theme="light"] #modal .history-chart-card,
+html[data-theme="light"] #modal .exercise-execution-card{background:#FFFFFF!important;border-color:#DCE3E9!important;color:#183246!important}
+html[data-theme="light"] #modal .execution-sets>span,
+html[data-theme="light"] #modal .series-chip,
+html[data-theme="light"] #modal .exercise-point-detail{background:#F0F4F7!important;border-color:#D4DEE6!important;color:#183246!important}
+html[data-theme="light"] #modal .execution-sets>span b,
+html[data-theme="light"] #modal .series-chip b{color:#102A3D!important}
+html[data-theme="light"] #modal .exercise-record-badge{background:#EAF3F7!important;color:#0A427E!important}
+html[data-theme="light"] #modal .chart-point circle:not(.chart-point-hit){fill:#FFFFFF!important}
+html[data-theme="light"] .program-order-item{background:#fff!important;border-color:#DCE3E9!important}
+html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;border-color:#D4DEE6!important;color:#667481!important}
+
+@media(max-width:390px){
+  .program-view-meta{gap:8px}.program-view-meta b{white-space:normal;max-width:46%}
+}
+</style>
+<script id="oct01-final-detail-js">
+(function(){
+  'use strict';
+
+  function finalFold(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();}
+  function periodLabelFinal(period){return ({'7d':'7 dias','30d':'30 dias','90d':'3 meses','180d':'6 meses','365d':'1 ano','all':'Tudo'})[period]||period;}
+  function openEvolutionPeriodPickerFinal(studentId){
+    const periods=[['7d','7 dias'],['30d','30 dias'],['90d','3 meses'],['180d','6 meses'],['365d','1 ano'],['all','Tudo']],selected=state.evolutionPeriod||'90d';
+    openModal(`<h2>Período</h2><div class="choice-list">${periods.map(([value,label])=>{const active=value===selected;return `<button class="choice evo-period-choice ${active?'is-selected':''}" type="button" data-evo-period-final="${value}"><div class="row-main"><strong>${label}</strong></div><span class="evo-period-choice-state">${active?icons.check:chev()}</span></button>`;}).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="evoPeriodFinalCancel" type="button">Cancelar</button></div>`);
+    $$('[data-evo-period-final]',$('#modal')).forEach(btn=>btn.onclick=()=>{state.evolutionPeriod=btn.dataset.evoPeriodFinal;state.evolutionProgramId=null;closeModal();renderEvolutionDetail($('#main'),studentId);});
+    $('#evoPeriodFinalCancel').onclick=closeModal;
+  }
+  function oneDecimal(value){return Number(value||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});}
+  function logicalSetReps(set){
+    const type=String(set?.seriesType||'normal');
+    if(type!=='normal'&&Array.isArray(set?.blocks)&&set.blocks.length)return set.blocks.reduce((sum,b)=>sum+parseInteger(b.reps),0);
+    return parseInteger(set?.reps);
+  }
+
+  /* Pesquisa de um único exercício segue a mesma lógica limpa do seletor múltiplo. */
+  openExercisePicker=function(onPick,onCancel=null){
+    let query='';
+    const renderPicker=()=>{
+      const list=db.exercises.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+      openModal(`<div class="builder-head"><button class="icon-btn" id="pickerBack" type="button" aria-label="Voltar">${icons.back}</button><h2>Selecionar exercício</h2></div><div class="keyboard-safe-body keyboard-safe-picker-body search-only-picker"><div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="pickerSearch" placeholder="Buscar exercício" value="${esc(query)}" autocomplete="off" autocapitalize="none"></div></div><div id="pickerList" class="exercise-search-suggestions picker-list-scroll"></div></div>`,{fullscreen:true});
+      $('#modal')?.classList.add('keyboard-safe-modal');
+      const paint=()=>{
+        query=$('#pickerSearch')?.value||'';const q=finalFold(query);
+        if(!q){$('#pickerList').innerHTML='<div class="picker-search-hint">Digite o nome do exercício para buscar.</div>';return;}
+        const arr=list.filter(ex=>finalFold(ex.name).startsWith(q));
+        $('#pickerList').innerHTML=arr.length?arr.map(ex=>`<button class="exercise-search-suggestion" type="button" data-picker-id="${esc(ex.id)}"><strong>${esc(ex.name)}</strong><span class="exercise-search-state"></span></button>`).join(''):`<div class="picker-search-hint">Nenhum exercício começa com “${esc(query.trim())}”.</div><button class="picker-create-inline" id="pickerNew" type="button">+ Criar exercício</button>`;
+        $$('[data-picker-id]',$('#pickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.pickerId;closeModal();onPick(id);});
+        $('#pickerNew')?.addEventListener('click',()=>{closeModal();setTimeout(()=>openExerciseForm(null,id=>onPick(id),()=>{if(onCancel)onCancel();}),40);});
+      };
+      paint();$('#pickerSearch').oninput=paint;
+      $('#pickerBack').onclick=()=>{closeModal();if(onCancel)setTimeout(onCancel,0);};
+      setTimeout(()=>$('#pickerSearch')?.focus({preventScroll:true}),100);
+    };
+    renderPicker();
+  };
+
+  /* Cartão inicial da ficha: sem datas. */
+  programCardHtml=function(program){
+    const items=(program.exercises||[]).map(pe=>({pe,ex:exerciseById(pe.exerciseId)})).filter(x=>x.ex),sets=(program.exercises||[]).reduce((sum,pe)=>sum+parseInteger(pe.sets),0);
+    return `<div class="workout-entry"><button class="workout-card workout-view-card" type="button" data-program-view="${esc(program.id)}" aria-label="Ver treino ${esc(program.name)}"><div class="workout-summary-toggle"><div><strong>${esc(program.name)}</strong><div class="workout-meta">${items.length} exercícios · ${sets} séries</div></div></div><p class="workout-exercise-preview">${esc(items.map(item=>item.ex.name).join(', '))}</p></button><div class="workout-actions"><button class="btn btn-secondary btn-sm" type="button" data-program-edit="${esc(program.id)}">Editar</button><button class="btn btn-primary btn-sm" type="button" data-program-start="${esc(program.id)}">Iniciar treino</button></div></div>`;
+  };
+
+  /* Ao abrir a ficha, as datas continuam disponíveis, agora alinhadas ao resumo. */
+  openProgramView=function(programId){
+    const p=programById(programId);if(!p)return;const st=studentById(p.studentId),dates=[];
+    if(p.startDate)dates.push(fmtDate(p.startDate));if(p.endDate)dates.push(fmtDate(p.endDate));
+    openModal(`<div class="builder-head"><button class="icon-btn" id="viewClose" aria-label="Voltar">${icons.back}</button><h2>${esc(p.name)}</h2></div><div class="builder-body"><div class="program-view-meta"><span>${esc(st?.name||'')} · ${p.exercises.length} exercícios</span>${dates.length?`<b>${esc(dates.join(' — '))}</b>`:''}</div>${p.exercises.map((pe,i)=>{const ex=exerciseById(pe.exerciseId),prev=getLastExercisePerformance(p.studentId,pe.exerciseId);const setChips=prev?completedSets(prev).map((set,j)=>`<span class="series-chip"><b>${j+1}</b><span>${logicalSetReps(set)} reps · ${bestLoad({sets:[set]})} kg</span></span>`).join(''):'<span class="series-chip">Sem registro</span>';return `<div class="view-exercise"><small>${String(i+1).padStart(2,'0')}</small><h3>${esc(ex?.name||'Exercício indisponível')}</h3><p>${pe.sets} séries · ${esc(pe.targetReps||'—')} reps · ${fmtRest(pe.restSec)}</p>${pe.referenceWeight!=null?`<p><strong>${parseDecimal(pe.referenceWeight)} kg</strong></p>`:''}${pe.note?`<div class="previous-note">${esc(pe.note)}</div>`:''}${previousExerciseHtml(lastProgramExercise(p.studentId,p.id,pe,i),pe)}<div class="series-inline">${setChips}</div></div>`;}).join('')}</div><div class="builder-foot"><div class="program-view-actions"><button class="btn btn-secondary" id="viewEdit" type="button">Editar treino</button><button class="btn btn-primary" id="viewCopy" type="button">Copiar para aluno</button><button class="btn btn-danger program-delete-action" id="viewDelete" type="button">Excluir treino</button></div></div>`,{fullscreen:true});
+    $('#viewClose').onclick=closeModal;$('#viewEdit').onclick=()=>{closeModal();setTimeout(()=>openProgramBuilder(p.studentId,p.id),50);};$('#viewCopy').onclick=()=>openProgramCopy(programId);$('#viewDelete').onclick=()=>{closeModal();setTimeout(()=>confirmDeleteProgram(programId),50);};
+  };
+
+  function programOrderCardHtml(program){
+    const items=(program.exercises||[]).filter(pe=>exerciseById(pe.exerciseId)),sets=(program.exercises||[]).reduce((sum,pe)=>sum+parseInteger(pe.sets),0);
+    return `<div class="program-order-item" data-program-order-id="${esc(program.id)}"><div class="program-order-copy"><strong>${esc(program.name)}</strong><small>${items.length} exercícios · ${sets} séries</small></div><button class="program-order-handle" type="button" aria-label="Arrastar ${esc(program.name)} para reorganizar">≡</button></div>`;
+  }
+  function persistProgramOrder(studentId,ids){
+    const ordered=ids.map(programById).filter(Boolean);let i=0;
+    db.programs=db.programs.map(program=>program.studentId===studentId?(ordered[i++]||program):program);
+    persist();
+  }
+  function bindProgramOrdering(studentId){
+    const host=$('#programList');if(!host)return;
+    $$('.program-order-handle',host).forEach(handle=>{
+      let item=null,pointerId=null,moved=false;
+      const finish=()=>{
+        if(!item)return;
+        item.classList.remove('is-dragging');
+        const ids=$$('.program-order-item',host).map(el=>el.dataset.programOrderId);
+        persistProgramOrder(studentId,ids);
+        if(moved)toast('Ordem dos treinos atualizada.');
+        item=null;pointerId=null;moved=false;
+      };
+      handle.onpointerdown=e=>{
+        e.preventDefault();item=handle.closest('.program-order-item');pointerId=e.pointerId;moved=false;item?.classList.add('is-dragging');
+        try{handle.setPointerCapture(pointerId);}catch{}
+      };
+      handle.onpointermove=e=>{
+        if(!item||e.pointerId!==pointerId)return;e.preventDefault();moved=true;
+        const others=$$('.program-order-item',host).filter(el=>el!==item);
+        let before=null;
+        for(const candidate of others){const r=candidate.getBoundingClientRect();if(e.clientY<r.top+r.height/2){before=candidate;break;}}
+        if(before)host.insertBefore(item,before);else host.appendChild(item);
+      };
+      handle.onpointerup=e=>{if(e.pointerId===pointerId)finish();};
+      handle.onpointercancel=e=>{if(e.pointerId===pointerId)finish();};
+    });
+  }
+
+  renderStudentProfile=function(main,studentId){
+    const st=studentById(studentId);if(!st)return navigate('students');
+    const programs=programsForStudent(st.id),sessions=sessionsForStudent(st.id,'all').slice().reverse().slice(0,3),totalSessions=sessionsForStudent(st.id,'all').length,ordering=state.programOrderMode===st.id;
+    setHeader({eyebrow:'ALUNO',title:st.name,back:()=>{state.programOrderMode=null;navigate('students');},action:'more',actionFn:()=>openStudentActions(st.id)});
+    main.innerHTML=`<section class="screen"><div class="profile-head">${avatarHtml(st)}<div class="row-main"><strong>${esc(st.name)}</strong><small>${esc(st.modality||'Presencial')}${st.paired?' · Dupla':''}${st.goal?` · ${esc(st.goal)}`:''} · ${totalSessions} ${totalSessions===1?'sessão':'sessões'}</small></div></div>${st.notes?`<div class="profile-note"><small>Observações</small><p>${esc(st.notes)}</p></div>`:''}<div class="profile-actions"><button class="btn btn-secondary" id="pairWorkoutBtn" type="button">Treino em dupla</button><button class="btn btn-primary" id="newProgramBtn" type="button">+ Criar treino</button></div><div class="section" style="margin-top:0"><div class="section-title"><h2>Treinos</h2><div class="program-title-tools"><span>${programs.length}</span>${programs.length>1?`<button class="btn btn-ghost btn-sm program-order-toggle" id="programOrderToggle" type="button">${ordering?'Concluir':'Organizar'}</button>`:''}</div></div><div id="programList" class="${ordering?'program-order-list':''}">${programs.length?(ordering?programs.map(programOrderCardHtml).join(''):programs.map(programCardHtml).join('')):emptyHtml('Nenhum treino montado.','Crie o primeiro treino deste aluno.')}</div></div><div class="section"><div class="section-title"><h2>Histórico recente</h2><button class="btn btn-ghost btn-sm" id="fullHistoryBtn" type="button">Ver tudo</button></div>${sessions.length?sessions.map(s=>historySessionHtml(s,st.id,false)).join(''):emptyHtml('Sem histórico ainda.','Conclua um treino para começar a acompanhar a evolução.')}</div></section>`;
+    $('#newProgramBtn').onclick=()=>openProgramBuilder(st.id);$('#pairWorkoutBtn').onclick=()=>openPairSetup(st.id);$('#fullHistoryBtn').onclick=()=>navigate('student-history',{historyStudentId:st.id});
+    $('#programOrderToggle')?.addEventListener('click',()=>{state.programOrderMode=ordering?null:st.id;renderStudentProfile(main,st.id);});
+    if(ordering){bindProgramOrdering(st.id);return;}
+    $$('[data-program-start]',main).forEach(btn=>btn.onclick=()=>prepareWorkout([{studentId:st.id,programId:btn.dataset.programStart}]));
+    $$('[data-program-edit]',main).forEach(btn=>btn.onclick=()=>openProgramActions(btn.dataset.programEdit));
+    $$('[data-program-view]',main).forEach(btn=>btn.onclick=()=>openProgramView(btn.dataset.programView));
+  };
+
+  function recordEventsForPeriod(studentId,period){
+    const cutoff=cutoffFromPeriod(period),bestSeen=new Map(),events=[];
+    sessionsForStudent(studentId,'all').forEach(session=>{
+      const participant=participantForStudent(session,studentId);if(!participant)return;const ts=sessionTimestamp(session);
+      (participant.exercises||[]).forEach(ex=>{
+        if(!completedSets(ex).length)return;const current=bestLoad(ex);if(current<=0)return;const previous=bestSeen.get(ex.exerciseId)||0;
+        if(previous>0&&current>previous&&(!cutoff||ts>=cutoff))events.push({exerciseId:ex.exerciseId,name:ex.name||exerciseById(ex.exerciseId)?.name||'Exercício',previous,current,ts,programName:participant.programName||'Treino'});
+        if(current>previous)bestSeen.set(ex.exerciseId,current);
+      });
+    });
+    return events;
+  }
+  function evolutionExtraStats(studentId,period,participants,changes){
+    const logicalSets=[];participants.forEach(row=>(row.p?.exercises||[]).forEach(ex=>completedSets(ex).forEach(set=>logicalSets.push(set))));
+    const reps=logicalSets.reduce((sum,set)=>sum+logicalSetReps(set),0),rpes=logicalSets.map(set=>Number(set.rpe)).filter(n=>Number.isFinite(n)&&n>0);
+    return {
+      avgReps:logicalSets.length?reps/logicalSets.length:null,
+      loadPct:changes.length?changes.reduce((sum,row)=>sum+Number(row.pct||0),0)/changes.length:null,
+      records:recordEventsForPeriod(studentId,period),
+      avgRpe:rpes.length?rpes.reduce((a,b)=>a+b,0)/rpes.length:null,
+      compared:changes.length,
+      logicalSets:logicalSets.length
+    };
+  }
+
+  explainEvolutionMetric=function(kind,ctx){
+    const {period,sessions,sets,uniqueExercises,topGain,extra}=ctx,label=periodLabelFinal(period);
+    if(kind==='records'){
+      const rows=(extra.records||[]).slice().reverse();
+      openModal(`<h2>Novos recordes</h2><p class="modal-sub">Recordes de maior carga que superaram um registro anterior dentro de ${esc(label)}.</p><div class="metric-explain">${rows.length?rows.slice(0,12).map(row=>`<div class="metric-explain-row"><small>${fmtDate(row.ts)} · ${esc(row.programName)}</small><strong>${esc(row.name)} · ${row.previous} kg → ${row.current} kg</strong></div>`).join(''):emptyHtml('Nenhum novo recorde no período.','A primeira execução de um exercício cria a referência e não entra como recorde.')}</div><div class="modal-actions"><button class="btn btn-primary" id="metricExplainClose">Fechar</button></div>`);
+      $('#metricExplainClose').onclick=closeModal;return;
+    }
+    const rows={
+      sessions:['Treinos',`${sessions.length} sessões`,'Quantidade de sessões registradas no período selecionado.'],
+      sets:['Séries',`${sets} séries`,'Soma das séries lógicas concluídas no período. Drop set, cluster e pirâmide continuam contando como uma série.'],
+      exercises:['Exercícios',`${uniqueExercises} exercícios`,'Quantidade de exercícios diferentes com séries registradas no período.'],
+      gain:['Maior evolução',topGain?`${topGain.firstKg} kg → ${topGain.lastKg} kg (${topGain.deltaKg>0?'+':''}${round(topGain.deltaKg)} kg)`:'Sem comparação','Maior ganho absoluto de carga entre o primeiro e o último registro comparável do mesmo exercício.'],
+      avgReps:['Média de repetições',extra.avgReps==null?'—':`${oneDecimal(extra.avgReps)} reps por série`,'Soma todas as repetições realizadas e divide pelas séries lógicas concluídas. Em séries especiais, as repetições de todos os blocos entram na média.'],
+      loadPct:['Evolução de carga',extra.loadPct==null?'—':`${extra.loadPct>=0?'+':''}${oneDecimal(extra.loadPct)}%`,'Média da variação percentual entre o primeiro e o último registro de cada exercício comparável. Cada exercício tem o mesmo peso na média.'],
+      avgRpe:['RPE médio',extra.avgRpe==null?'—':oneDecimal(extra.avgRpe),'Média dos RPEs preenchidos nas séries concluídas do período. Séries sem RPE não entram no cálculo.']
+    }[kind];
+    if(!rows)return;
+    openModal(`<h2>${rows[0]}</h2><div class="metric-explain"><div class="metric-explain-row"><small>VALOR</small><strong>${esc(rows[1])}</strong></div><div class="metric-explain-row"><small>PERÍODO</small><strong>${esc(label)}</strong></div><div class="metric-explain-row"><small>CÁLCULO</small><strong>${esc(rows[2])}</strong></div></div><div class="modal-actions"><button class="btn btn-primary" id="metricExplainClose">Fechar</button></div>`);
+    $('#metricExplainClose').onclick=closeModal;
+  };
+
+  renderEvolutionDetail=function(main,studentId){
+    const st=studentById(studentId);if(!st)return navigate('evolution');
+    setHeader({eyebrow:'EVOLUÇÃO',title:st.name,back:()=>navigate('evolution'),action:null});
+    const period=state.evolutionPeriod||'90d',sessions=sessionsForStudent(st.id,period),participants=sessions.map(s=>({session:s,p:participantForStudent(s,st.id)})),sets=participants.reduce((a,x)=>a+participantSetCount(x.p),0),uniqueExercises=new Set(participants.flatMap(x=>(x.p?.exercises||[]).map(ex=>ex.exerciseId))).size,changes=exerciseChanges(st.id,period),gains=changes.filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct),muscles=muscleDistribution(st.id,period),comparable=changes.slice().sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct)),programs=programsForStudent(st.id);
+    if(!state.evolutionProgramId)state.evolutionProgramId=typeof recentEvolutionProgramId==='function'?recentEvolutionProgramId(st.id,period):null;
+    if(state.evolutionProgramId&&!programs.some(p=>p.id===state.evolutionProgramId))state.evolutionProgramId=typeof recentEvolutionProgramId==='function'?recentEvolutionProgramId(st.id,period):null;
+    const selectedProgram=state.evolutionProgramId?programById(state.evolutionProgramId):null,programParticipants=selectedProgram?participants.filter(x=>x.p?.programId===selectedProgram.id):[],topGain=gains[0]||null,extra=evolutionExtraStats(st.id,period,participants,changes),ctx={period,sessions,sets,uniqueExercises,topGain,extra};
+    const avgRepsValue=extra.avgReps==null?'—':oneDecimal(extra.avgReps),loadPctValue=extra.loadPct==null?'—':`${extra.loadPct>=0?'+':''}${oneDecimal(extra.loadPct)}%`,rpeValue=extra.avgRpe==null?'—':oneDecimal(extra.avgRpe);
+    main.innerHTML=`<section class="screen"><div class="evo-person-head">${avatarHtml(st)}<div><small>EVOLUÇÃO INDIVIDUAL</small><h1>${esc(st.name)}</h1></div></div><div class="evo-period-wrap"><button class="evo-period-select" id="evoPeriodSelect" type="button"><span>Período</span><strong>${esc(periodLabelFinal(period))}</strong>${chev()}</button></div><div class="section evolution-summary" style="margin-top:0"><div class="grid-2"><button class="metric-card evo-metric-link" data-evo-metric="sessions"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></button><button class="metric-card evo-metric-link" data-evo-metric="sets"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></button><button class="metric-card evo-metric-link" data-evo-metric="exercises"><div><small>Exercícios</small><strong>${uniqueExercises}</strong></div><p>com registro</p></button><button class="metric-card highlight evo-metric-link" data-evo-metric="gain"><div><small>Maior evolução</small><strong>${topGain?`+${round(topGain.deltaKg)} kg`:'—'}</strong></div><p>${topGain?esc(topGain.exerciseName):'sem comparação'}</p></button><button class="metric-card evo-metric-link" data-evo-metric="avgReps"><div><small>Média de reps</small><strong>${avgRepsValue}</strong></div><p>por série</p></button><button class="metric-card evo-metric-link" data-evo-metric="loadPct"><div><small>Evolução de carga</small><strong>${loadPctValue}</strong></div><p>${extra.compared} comparável${extra.compared===1?'':'eis'}</p></button><button class="metric-card evo-metric-link" data-evo-metric="records"><div><small>Novos recordes</small><strong>${extra.records.length}</strong></div><p>maior carga</p></button><button class="metric-card evo-metric-link" data-evo-metric="avgRpe"><div><small>RPE médio</small><strong>${rpeValue}</strong></div><p>séries preenchidas</p></button></div></div>${volumeChartHtml(programParticipants,selectedProgram,programs.length)}<div class="chart-card muscle-volume-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.')}</div><div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.')}</div></div></section>`;
+    $('#evoPeriodSelect')?.addEventListener('click',()=>openEvolutionPeriodPickerFinal(st.id));
+    $('#evoProgramSelect')?.addEventListener('click',()=>openEvolutionProgramPicker(st.id));
+    $$('[data-evo-metric]',main).forEach(btn=>btn.onclick=()=>explainEvolutionMetric(btn.dataset.evoMetric,ctx));
+    $$('[data-chart-point]',main).forEach(pt=>{const fire=()=>{const card=pt.closest('[data-chart-points]'),arr=JSON.parse(card?.dataset.chartPoints||'[]'),row=arr[+pt.dataset.chartPoint];if(row)toast(`${row.fullDate} · ${kgText(row.value)}`);};pt.onclick=fire;pt.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire();}};});
+    requestAnimationFrame(()=>{const scroll=main.querySelector('.program-volume-card .chart-scroll');if(scroll&&scroll.scrollWidth>scroll.clientWidth)scroll.scrollLeft=scroll.scrollWidth;});
+  };
+
+  requestAnimationFrame(()=>{try{render();}catch(err){console.error(err);}});
+})();
+</script>
 </body>
 </html>
