@@ -3537,9 +3537,9 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
     const commit=()=>{addSelectedToDraft();selected.clear();syncDraft?.();renderBuilder();};
     const picker=()=>{
       const list=db.exercises.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
-      openModal(`<div class="builder-head"><button class="icon-btn" id="multiPickerBack" type="button" aria-label="Voltar">${icons.back}</button><h2>Adicionar exercícios</h2></div><div class="keyboard-safe-body keyboard-safe-picker-body search-only-picker"><div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="multiPickerSearch" placeholder="Buscar exercício" value="${esc(query)}" autocomplete="off" autocapitalize="none"></div></div><div id="multiPickerList" class="exercise-search-suggestions picker-list-scroll"></div><div class="search-picker-footer"><span class="picker-selected-count" id="multiPickerCount">Nenhum selecionado</span><button class="btn btn-primary" id="multiPickerDone" type="button">Adicionar</button></div></div>`,{fullscreen:true});
+      openModal(`<div class="builder-head multi-picker-head"><button class="icon-btn" id="multiPickerBack" type="button" aria-label="Voltar">${icons.back}</button><div class="multi-picker-title"><h2>Adicionar exercícios</h2><small class="picker-selected-count" id="multiPickerCount">Nenhum selecionado</small></div></div><div class="keyboard-safe-body keyboard-safe-picker-body search-only-picker"><div class="toolbar picker-toolbar"><div class="search-field">${icons.search}<input id="multiPickerSearch" placeholder="Buscar exercício" value="${esc(query)}" autocomplete="off" autocapitalize="none"></div></div><div id="multiPickerList" class="exercise-search-suggestions picker-list-scroll"></div></div>`,{fullscreen:true});
       markKeyboardSafe();
-      const updateCount=()=>{const n=selected.size;$('#multiPickerCount').textContent=n?`${n} selecionado${n===1?'':'s'}`:'Nenhum selecionado';$('#multiPickerDone').disabled=n===0;};
+      const updateCount=()=>{const n=selected.size;$('#multiPickerCount').textContent=n?`${n} selecionado${n===1?'':'s'}`:'Nenhum selecionado';};
       const openQuickCreate=()=>{
         addSelectedToDraft();selected.clear();syncDraft?.();closeModal();
         setTimeout(()=>openExerciseForm(null,id=>{if(!existingIds.has(id)){draft.exercises.push({exerciseId:id,sets:draft.defaultSets,restSec:draft.defaultRestSec,targetReps:draft.defaultTargetReps,note:'',referenceWeight:null});existingIds.add(id);}syncDraft?.();renderBuilder();},renderBuilder),40);
@@ -3556,7 +3556,6 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
       paint();updateCount();
       $('#multiPickerSearch').oninput=paint;
       $('#multiPickerBack').onclick=commit;
-      $('#multiPickerDone').onclick=commit;
     };
     picker();
   }
@@ -4634,7 +4633,7 @@ function reportExerciseData(ex){const sets=completedSets(ex),rpes=sets.map(s=>Nu
 function reportExerciseCardHtml(ex){
   const d=reportExerciseData(ex);if(!d.sets.length)return '';
   const chips=d.sets.map((set,i)=>`<span class="series-chip"><b>${i+1}</b><span>${esc(reportSetText(set))}</span></span>`).join('');
-  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${d.sets.length}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong><small class="report-rpe-label">RPE médio</small><strong class="report-rpe-value">${d.avgRpe==null?'—':rpeLabel(d.avgRpe)}</strong></div></div><div class="performance-series">${chips}</div></div>`;
+  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${d.sets.length}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small><div class="performance-series report-series-inline">${chips}</div></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong><small class="report-rpe-label">RPE médio</small><strong class="report-rpe-value">${d.avgRpe==null?'—':rpeLabel(d.avgRpe)}</strong></div></div></div>`;
 }
 function reportParticipantStats(p){const sets=participantSetCount(p),vol=participantVolume(p),rpes=(p.exercises||[]).flatMap(ex=>completedSets(ex).map(s=>Number(s.rpe)).filter(n=>Number.isFinite(n)&&n>0));return{sets,vol,avg:rpes.length?rpes.reduce((a,b)=>a+b,0)/rpes.length:null};}
 function reportParticipantCardHtml(session,p){const st=studentById(p.studentId),stats=reportParticipantStats(p),done=(p.exercises||[]).filter(ex=>completedSets(ex).length);return `<div class="finish-card"><div class="session-summary-head">${avatarHtml(st)}<div class="session-summary-title"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(session.endedAt||session.startedAt)}</small></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${stats.sets}</strong></div><div><small>VOLUME</small><strong>${kgText(stats.vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${stats.avg==null?'—':rpeLabel(stats.avg)}</strong></div></div><div class="section-title" style="margin:18px 0 8px"><h2>Exercícios</h2><span>${done.length}</span></div><div class="performance-exercises">${done.length?done.map(reportExerciseCardHtml).join(''):'<div class="session-summary-empty">Sem séries concluídas.</div>'}</div></div>`;}
@@ -4670,11 +4669,21 @@ window.openSessionSummary=function(sessionId,studentId=''){
 function reportColors(){const dark=currentTheme()==='dark';return dark?{card:'#10161C',surface:'#182129',surface2:'#202B34',text:'#F6F8FA',muted:'#9EABB6',faint:'#71808C',blue:'#148BD6'}:{card:'#FFFFFF',surface:'#F1F4F6',surface2:'#E9EEF2',text:'#102A3D',muted:'#657683',faint:'#8A98A3',blue:'#0A6FB6'};}
 function svgLineWrap(text,maxChars=38){const words=String(text||'').split(/\s+/),lines=[];let line='';words.forEach(word=>{const next=line?`${line} ${word}`:word;if(next.length>maxChars&&line){lines.push(line);line=word;}else line=next;});if(line)lines.push(line);return lines.length?lines:[''];}
 function svgTspans(lines,x,step=28){return lines.map((line,i)=>`<tspan x="${x}" dy="${i?step:0}">${xmlEsc(line)}</tspan>`).join('');}
-function shareSetPill(set,index,x,y,C){const label=reportSetText(set),w=Math.max(150,Math.min(365,46+label.length*7.2));return{w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="36" rx="11" fill="${C.surface}"/><text x="14" y="24" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="850" fill="${C.blue}">${index+1}</text><text x="34" y="24" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};}
+function shareSetPill(set,index,x,y,C){
+  const label=reportSetText(set);
+  const w=Math.max(104,Math.min(310,40+label.length*6.05));
+  return{w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="34" rx="10" fill="${C.surface}"/><text x="12" y="23" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" fill="${C.blue}">${index+1}</text><text x="31" y="23" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13.5" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};
+}
 function buildExerciseSvg(ex,startY,C){
-  const d=reportExerciseData(ex),lines=svgLineWrap(`${d.sets.length}× ${ex.name||'Exercício'}`,40),titleExtra=(lines.length-1)*27;let px=106,py=startY+Math.max(118,82+titleExtra),pills='';
-  d.sets.forEach((set,i)=>{let pill=shareSetPill(set,i,px,py,C);if(px+pill.w>970){px=106;py+=43;pill=shareSetPill(set,i,px,py,C);}pills+=pill.markup;px+=pill.w+8;});
-  const h=Math.max(164+titleExtra,py-startY+52),avg=d.avgRpe==null?'—':rpeLabel(d.avgRpe);
+  const d=reportExerciseData(ex),lines=svgLineWrap(`${d.sets.length}× ${ex.name||'Exercício'}`,40),titleExtra=(lines.length-1)*27;
+  let px=106,py=startY+82+titleExtra,pills='',row=0;
+  d.sets.forEach((set,i)=>{
+    let pill=shareSetPill(set,i,px,py,C);
+    const rowLimit=row===0?720:970;
+    if(px+pill.w>rowLimit){row+=1;px=106;py+=41;pill=shareSetPill(set,i,px,py,C);}
+    pills+=pill.markup;px+=pill.w+7;
+  });
+  const h=Math.max(148+titleExtra,py-startY+48),avg=d.avgRpe==null?'—':rpeLabel(d.avgRpe);
   return{height:h,markup:`<g><rect x="84" y="${startY}" width="912" height="${h}" rx="24" fill="${C.surface2}"/><text x="106" y="${startY+34}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="23" font-weight="820" fill="${C.text}">${svgTspans(lines,106,27)}</text><text x="106" y="${startY+58+titleExtra}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.muted}">${xmlEsc(`${kgText(d.volume)} · ${d.totalReps} reps`)}</text><text x="965" y="${startY+29}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" font-weight="800" fill="${C.faint}">MAIOR CARGA</text><text x="965" y="${startY+53}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="850" fill="${C.blue}">${xmlEsc(d.maxLoad?`${d.maxLoad} kg`:'—')}</text><text x="965" y="${startY+78}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" font-weight="800" fill="${C.faint}">RPE MÉDIO</text><text x="965" y="${startY+102}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="850" fill="${C.blue}">${xmlEsc(avg)}</text>${pills}</g>`};
 }
 function topMetricSvg(items,C,y=260){return `<g transform="translate(84 ${y})">${items.map((item,i)=>`<g transform="translate(${i*306} 0)"><rect width="286" height="104" rx="24" fill="${C.surface}"/><text x="20" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="1" fill="${C.faint}">${item[0]}</text><text x="20" y="75" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="820" fill="${C.text}">${xmlEsc(item[1])}</text></g>`).join('')}</g>`;}
@@ -4706,6 +4715,26 @@ saveWorkoutSummaryImage=async function(index){if(!live)return;const participant=
 requestAnimationFrame(()=>{try{if(state.route==='workout'&&live)render();}catch(err){console.error(err);}});
 })();
 </script>
+
+<style id="duo-refino-perfect-css">
+/* Seletor múltiplo: sem rodapé fixo; contagem fica no cabeçalho e a lista ganha toda a altura útil. */
+.multi-picker-head{align-items:center!important}
+.multi-picker-title{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.multi-picker-title h2{margin:0!important;padding:0!important}
+.multi-picker-title .picker-selected-count{margin:0!important;color:var(--faint)!important;font-size:9.5px!important;line-height:1.2!important;font-weight:650!important}
+.search-only-picker{padding-bottom:0!important}
+.search-only-picker .exercise-search-suggestions{padding-bottom:calc(10px + var(--safe-bottom))!important}
+.search-picker-footer{display:none!important}
+
+/* Relatório: séries ocupam o espaço à esquerda enquanto Maior carga/RPE ficam na coluna da direita. */
+.performance-exercise-top{grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important}
+.performance-exercise-title{min-width:0!important}
+.performance-exercise-title .report-series-inline{margin-top:10px!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:5px!important}
+.performance-exercise-title .report-series-inline .series-chip{width:auto!important;max-width:100%!important;flex:0 0 auto!important;padding:3px 6px!important;min-height:23px!important}
+.performance-exercise-title .report-series-inline .series-chip>span{width:auto!important;white-space:nowrap!important}
+.performance-max{align-self:start!important}
+@media(max-width:360px){.performance-exercise-top{gap:8px!important}.performance-exercise-title .report-series-inline{gap:4px!important}.performance-exercise-title .report-series-inline .series-chip{padding-left:5px!important;padding-right:5px!important}}
+</style>
 
 </body>
 </html>

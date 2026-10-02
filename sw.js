@@ -1,4 +1,4 @@
-const CACHE = 'treino-dupla-relatorio-v4';
+const CACHE = 'treino-dupla-refino-v5';
 const ASSETS = [
   './',
   './index.html',
