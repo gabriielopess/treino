@@ -3547,12 +3547,8 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
       const paint=()=>{
         query=$('#multiPickerSearch')?.value||'';
         const q=foldText(query);
-        if(!q){
-          $('#multiPickerList').innerHTML='<div class="picker-search-hint">Digite o nome do exercício para buscar.</div>';
-          updateCount();return;
-        }
-        const arr=list.filter(ex=>foldText(ex.name).startsWith(q));
-        $('#multiPickerList').innerHTML=arr.length?arr.map(ex=>{const exists=existingIds.has(ex.id),on=selected.has(ex.id);return `<button class="exercise-search-suggestion ${on?'is-selected':''} ${exists?'is-existing':''}" type="button" data-multi-id="${esc(ex.id)}" ${exists?'disabled':''}><strong>${esc(ex.name)}</strong><span class="exercise-search-state">${exists?'Adicionado':on?'✓':''}</span></button>`;}).join(''):`<div class="picker-search-hint">Nenhum exercício começa com “${esc(query.trim())}”.</div><button class="picker-create-inline" id="multiPickerNew" type="button">+ Criar exercício</button>`;
+        const arr=q?list.filter(ex=>foldText(ex.name).includes(q)):list;
+        $('#multiPickerList').innerHTML=arr.length?arr.map(ex=>{const exists=existingIds.has(ex.id),on=selected.has(ex.id);return `<button class="exercise-search-suggestion ${on?'is-selected':''} ${exists?'is-existing':''}" type="button" data-multi-id="${esc(ex.id)}" ${exists?'disabled':''}><strong>${esc(ex.name)}</strong><span class="exercise-search-state">${exists?'Adicionado':on?'✓':''}</span></button>`;}).join(''):(q?`<div class="picker-search-hint">Nenhum exercício encontrado para “${esc(query.trim())}”.</div><button class="picker-create-inline" id="multiPickerNew" type="button">+ Criar exercício</button>`:'<div class="picker-search-hint">Biblioteca vazia. Crie o primeiro exercício.</div><button class="picker-create-inline" id="multiPickerNew" type="button">+ Criar exercício</button>');
         $$('[data-multi-id]',$('#multiPickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.multiId;if(selected.has(id))selected.delete(id);else selected.add(id);paint();});
         $('#multiPickerNew')?.addEventListener('click',openQuickCreate);
         updateCount();
@@ -3561,7 +3557,6 @@ html[data-theme="light"] .set-sub-index{background:#F0F4F7!important;color:#6674
       $('#multiPickerSearch').oninput=paint;
       $('#multiPickerBack').onclick=commit;
       $('#multiPickerDone').onclick=commit;
-      setTimeout(()=>$('#multiPickerSearch')?.focus({preventScroll:true}),100);
     };
     picker();
   }
@@ -3902,15 +3897,13 @@ html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;bord
       $('#modal')?.classList.add('keyboard-safe-modal');
       const paint=()=>{
         query=$('#pickerSearch')?.value||'';const q=finalFold(query);
-        if(!q){$('#pickerList').innerHTML='<div class="picker-search-hint">Digite o nome do exercício para buscar.</div>';return;}
-        const arr=list.filter(ex=>finalFold(ex.name).startsWith(q));
-        $('#pickerList').innerHTML=arr.length?arr.map(ex=>`<button class="exercise-search-suggestion" type="button" data-picker-id="${esc(ex.id)}"><strong>${esc(ex.name)}</strong><span class="exercise-search-state"></span></button>`).join(''):`<div class="picker-search-hint">Nenhum exercício começa com “${esc(query.trim())}”.</div><button class="picker-create-inline" id="pickerNew" type="button">+ Criar exercício</button>`;
+        const arr=q?list.filter(ex=>finalFold(ex.name).includes(q)):list;
+        $('#pickerList').innerHTML=arr.length?arr.map(ex=>`<button class="exercise-search-suggestion" type="button" data-picker-id="${esc(ex.id)}"><strong>${esc(ex.name)}</strong><span class="exercise-search-state"></span></button>`).join(''):(q?`<div class="picker-search-hint">Nenhum exercício encontrado para “${esc(query.trim())}”.</div><button class="picker-create-inline" id="pickerNew" type="button">+ Criar exercício</button>`:'<div class="picker-search-hint">Biblioteca vazia. Crie o primeiro exercício.</div><button class="picker-create-inline" id="pickerNew" type="button">+ Criar exercício</button>');
         $$('[data-picker-id]',$('#pickerList')).forEach(btn=>btn.onclick=()=>{const id=btn.dataset.pickerId;closeModal();onPick(id);});
         $('#pickerNew')?.addEventListener('click',()=>{closeModal();setTimeout(()=>openExerciseForm(null,id=>onPick(id),()=>{if(onCancel)onCancel();}),40);});
       };
       paint();$('#pickerSearch').oninput=paint;
       $('#pickerBack').onclick=()=>{closeModal();if(onCancel)setTimeout(onCancel,0);};
-      setTimeout(()=>$('#pickerSearch')?.focus({preventScroll:true}),100);
     };
     renderPicker();
   };
@@ -4070,7 +4063,7 @@ html[data-theme="light"] .program-order-handle{background:#F0F4F7!important;bord
     const period=state.evolutionPeriod||'90d',sessions=sessionsForStudent(st.id,period),participants=sessions.map(s=>({session:s,p:participantForStudent(s,st.id)})),sets=participants.reduce((a,x)=>a+participantSetCount(x.p),0),uniqueExercises=new Set(participants.flatMap(x=>(x.p?.exercises||[]).map(ex=>ex.exerciseId))).size,changes=exerciseChanges(st.id,period),gains=changes.filter(x=>x.deltaKg>0).sort((a,b)=>b.pct-a.pct),muscles=muscleDistribution(st.id,period),comparable=changes.slice().sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct)),programs=programsForStudent(st.id);
     if(!state.evolutionProgramId)state.evolutionProgramId=typeof recentEvolutionProgramId==='function'?recentEvolutionProgramId(st.id,period):null;
     if(state.evolutionProgramId&&!programs.some(p=>p.id===state.evolutionProgramId))state.evolutionProgramId=typeof recentEvolutionProgramId==='function'?recentEvolutionProgramId(st.id,period):null;
-    const selectedProgram=state.evolutionProgramId?programById(state.evolutionProgramId):null,programParticipants=selectedProgram?participants.filter(x=>x.p?.programId===selectedProgram.id):[],topGain=gains[0]||null,extra=evolutionExtraStats(st.id,period,participants,changes),ctx={period,sessions,sets,uniqueExercises,topGain,extra};
+    const selectedProgram=state.evolutionProgramId?programById(state.evolutionProgramId):null,programParticipants=selectedProgram?participants.filter(x=>x.p?.programId===selectedProgram.id):[],topGain=gains[0]||null,extra=evolutionExtraStats(st.id,period,participants,changes),ctx={studentId:st.id,period,sessions,participants,sets,uniqueExercises,topGain,extra};
     const avgRepsValue=extra.avgReps==null?'—':oneDecimal(extra.avgReps),loadPctValue=extra.loadPct==null?'—':`${extra.loadPct>=0?'+':''}${oneDecimal(extra.loadPct)}%`,rpeValue=extra.avgRpe==null?'—':oneDecimal(extra.avgRpe);
     main.innerHTML=`<section class="screen"><div class="evo-person-head">${avatarHtml(st)}<div><small>EVOLUÇÃO INDIVIDUAL</small><h1>${esc(st.name)}</h1></div></div><div class="evo-period-wrap"><button class="evo-period-select" id="evoPeriodSelect" type="button"><span>Período</span><strong>${esc(periodLabelFinal(period))}</strong>${chev()}</button></div><div class="section evolution-summary" style="margin-top:0"><div class="grid-2"><button class="metric-card evo-metric-link" data-evo-metric="sessions"><div><small>Treinos</small><strong>${sessions.length}</strong></div><p>no período</p></button><button class="metric-card evo-metric-link" data-evo-metric="sets"><div><small>Séries</small><strong>${sets}</strong></div><p>concluídas</p></button><button class="metric-card evo-metric-link" data-evo-metric="exercises"><div><small>Exercícios</small><strong>${uniqueExercises}</strong></div><p>com registro</p></button><button class="metric-card highlight evo-metric-link" data-evo-metric="gain"><div><small>Maior evolução</small><strong>${topGain?`+${round(topGain.deltaKg)} kg`:'—'}</strong></div><p>${topGain?esc(topGain.exerciseName):'sem comparação'}</p></button><button class="metric-card evo-metric-link" data-evo-metric="avgReps"><div><small>Média de reps</small><strong>${avgRepsValue}</strong></div><p>por série</p></button><button class="metric-card evo-metric-link" data-evo-metric="loadPct"><div><small>Evolução de carga</small><strong>${loadPctValue}</strong></div><p>${extra.compared} comparável${extra.compared===1?'':'eis'}</p></button><button class="metric-card evo-metric-link" data-evo-metric="records"><div><small>Novos recordes</small><strong>${extra.records.length}</strong></div><p>maior carga</p></button><button class="metric-card evo-metric-link" data-evo-metric="avgRpe"><div><small>RPE médio</small><strong>${rpeValue}</strong></div><p>séries preenchidas</p></button></div></div>${volumeChartHtml(programParticipants,selectedProgram,programs.length)}<div class="chart-card muscle-volume-card"><div class="chart-card-head"><div><strong>Volume por grupamento</strong></div></div>${muscles.length?muscles.map(muscleRowHtml).join(''):emptyHtml('Sem dados de grupamentos.')}</div><div class="chart-card"><div class="chart-card-head"><div><strong>Evolução por exercício</strong></div><span class="chart-hint">${comparable.length} comparáveis</span></div><div class="change-list">${comparable.length?comparable.slice(0,10).map(x=>changeRowHtml(x,x.deltaKg<0,st.id)).join(''):emptyHtml('Sem comparação suficiente.')}</div></div></section>`;
     $('#evoPeriodSelect')?.addEventListener('click',()=>openEvolutionPeriodPickerFinal(st.id));
@@ -4274,6 +4267,202 @@ html[data-theme="light"] .rpe-range::-webkit-slider-runnable-track{
 
   if(state?.route==='students')renderStudents($('#main'));
   if(state?.route==='workout'&&live?.startedAt)renderActiveWorkout($('#main'));
+})();
+</script>
+
+
+<!-- CORRECOES-FINAIS-2026-10-01: descrição, builder, histórico, métricas e RPE ativo. -->
+<style id="final-user-corrections-oct01-css">
+/* Descrição do treino: mesma escala tipográfica do editor e foco desenhado para dentro. */
+.program-description-input{
+  box-sizing:border-box!important;width:100%!important;
+  min-height:64px!important;max-height:96px!important;
+  padding:9px 10px!important;resize:none!important;
+  font-size:12px!important;font-weight:400!important;line-height:1.42!important;
+  outline:0!important;box-shadow:none!important;background-clip:padding-box!important;
+}
+.program-description-input:focus,.program-description-input:focus-visible{
+  outline:0!important;border-color:var(--rp-accent)!important;
+  box-shadow:inset 0 0 0 1px var(--rp-accent)!important;
+}
+.program-view-description{
+  margin:0 0 11px!important;padding:8px 10px!important;
+  font-size:10px!important;line-height:1.42!important;font-weight:400!important;
+}
+
+/* Exercícios no builder: séries/faixa/descanso sobem e deixam de "afundar" no cartão. */
+.builder-exercise{padding-top:8px!important;padding-bottom:9px!important}
+.builder-exercise-head{min-height:30px!important;margin-bottom:2px!important}
+.builder-exercise .builder-tags{margin:2px 0 3px!important}
+.builder-exercise .builder-controls{margin-top:2px!important;align-items:end!important;gap:7px!important}
+.builder-exercise .builder-controls .control-label{
+  min-height:13px!important;margin:0 0 3px!important;padding:0!important;
+  align-items:center!important;justify-content:center!important;
+  font-size:8.8px!important;line-height:1.1!important;
+}
+.builder-exercise .builder-controls>div{padding-top:0!important;margin-top:0!important}
+
+/* Histórico no tema claro: o conteúdo interno das pílulas nunca volta a ficar preto. */
+html[data-theme="light"] #modal .series-chip,
+html[data-theme="light"] #modal .execution-sets>span,
+html[data-theme="light"] #modal .performance-series .series-chip{
+  background:#F0F4F7!important;border-color:#D4DEE6!important;color:#314B5E!important;
+}
+html[data-theme="light"] #modal .series-chip>span,
+html[data-theme="light"] #modal .series-chip>b,
+html[data-theme="light"] #modal .execution-sets>span>span,
+html[data-theme="light"] #modal .execution-sets>span>b,
+html[data-theme="light"] #modal .performance-series .series-chip>span,
+html[data-theme="light"] #modal .performance-series .series-chip>b{
+  background:transparent!important;border:0!important;color:#183246!important;box-shadow:none!important;
+}
+html[data-theme="light"] #modal .history-exercise,
+html[data-theme="light"] #modal .history-exercise>div,
+html[data-theme="light"] #modal .history-exercise small{
+  background:transparent!important;color:#516576!important;
+}
+html[data-theme="light"] #modal .history-exercise strong{color:#183246!important}
+
+/* Métricas: visual de leitura rápida, com distribuição e menos blocos explicativos. */
+:root{
+  --metric-c1:#0A427E;--metric-c2:#3194B9;--metric-c3:#55AFC9;--metric-c4:#6B8EAE;
+  --metric-c5:#7CC3D4;--metric-c6:#4D7296;--metric-c7:#9AB8C8;--metric-c8:#7D9CB5;
+}
+.metric-insight{display:flex;flex-direction:column;gap:14px}
+.metric-insight-head{padding:2px 2px 0}
+.metric-insight-head small{display:block;color:var(--faint);font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.metric-insight-head strong{display:block;margin-top:4px;font-size:34px;line-height:1;font-weight:900;letter-spacing:-1px;color:var(--text)}
+.metric-insight-head span{display:block;margin-top:6px;color:var(--muted);font-size:10.5px;line-height:1.4}
+.metric-insight-chart{display:grid;grid-template-columns:126px minmax(0,1fr);gap:15px;align-items:center;padding:12px;border-radius:17px;background:var(--surface);border:1px solid var(--line)}
+.metric-donut{width:116px;height:116px;border-radius:50%;display:grid;place-items:center;margin:auto;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line-strong) 45%,transparent)}
+.metric-donut-center{width:70px;height:70px;border-radius:50%;display:grid;place-content:center;text-align:center;background:var(--bg-elev);border:1px solid var(--line)}
+.metric-donut-center strong{font-size:19px;line-height:1;font-weight:900;color:var(--text)}
+.metric-donut-center small{margin-top:4px;color:var(--faint);font-size:7.5px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+.metric-chart-copy strong{display:block;font-size:12px;color:var(--text)}
+.metric-chart-copy small{display:block;margin-top:4px;color:var(--muted);font-size:9.5px;line-height:1.4}
+.metric-breakdown{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.metric-breakdown-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line)}
+.metric-breakdown-dot{width:7px;height:7px;border-radius:50%;background:var(--metric-color)}
+.metric-breakdown-copy{min-width:0}.metric-breakdown-copy strong{display:block;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-breakdown-copy small{display:block;margin-top:2px;color:var(--faint);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric-breakdown-value{text-align:right}.metric-breakdown-value strong{display:block;font-size:11px}.metric-breakdown-value small{display:block;margin-top:2px;color:var(--faint);font-size:8px}
+.metric-insight-note{margin:0;padding:10px 11px;border-radius:12px;background:var(--surface-2);color:var(--muted);font-size:9.5px;line-height:1.45}
+html[data-theme="light"] #modal .metric-insight-chart{background:#fff!important;border-color:#DCE3E9!important}
+html[data-theme="light"] #modal .metric-donut-center{background:#fff!important;border-color:#DCE3E9!important}
+html[data-theme="light"] #modal .metric-insight-note{background:#F0F4F7!important;color:#516576!important}
+@media(max-width:380px){.metric-insight-chart{grid-template-columns:104px minmax(0,1fr);gap:11px}.metric-donut{width:98px;height:98px}.metric-donut-center{width:60px;height:60px}}
+
+/* RPE que realmente está em uso (#effortSlider): trilho mais encorpado + marca a cada 0,5. */
+.effort-slider-wrap{position:relative!important;width:100%!important;height:42px!important;margin:1px 0 0!important}
+#effortSlider{
+  position:absolute!important;inset:0!important;z-index:2!important;
+  width:100%!important;height:42px!important;margin:0!important;padding:0!important;
+  -webkit-appearance:none!important;appearance:none!important;background:transparent!important;
+}
+#effortSlider::-webkit-slider-runnable-track{
+  height:7px!important;border-radius:999px!important;
+  background:linear-gradient(to right,var(--rp-navy) 0,var(--rp-navy) var(--effort-pos,60%),var(--line-strong) var(--effort-pos,60%),var(--line-strong) 100%)!important;
+}
+#effortSlider::-webkit-slider-thumb{
+  -webkit-appearance:none!important;appearance:none!important;
+  width:23px!important;height:23px!important;border-radius:50%!important;
+  margin-top:-8px!important;background:var(--rp-navy)!important;
+  border:3px solid var(--bg-elev)!important;box-shadow:0 1px 7px rgba(0,0,0,.24)!important;
+  transition:transform .12s cubic-bezier(.2,.85,.25,1),box-shadow .12s ease!important;
+}
+#effortSlider:active::-webkit-slider-thumb{transform:scale(1.14)!important;box-shadow:0 2px 13px rgba(10,66,126,.38)!important}
+#effortSlider::-moz-range-track{height:7px!important;border-radius:999px!important;background:var(--line-strong)!important}
+#effortSlider::-moz-range-progress{height:7px!important;border-radius:999px!important;background:var(--rp-navy)!important}
+#effortSlider::-moz-range-thumb{width:20px!important;height:20px!important;border-radius:50%!important;background:var(--rp-navy)!important;border:3px solid var(--bg-elev)!important;box-shadow:0 1px 7px rgba(0,0,0,.24)!important;transition:transform .12s ease!important}
+#effortSlider:active::-moz-range-thumb{transform:scale(1.14)!important}
+.effort-ticks{position:absolute;z-index:3;pointer-events:none;left:11.5px;right:11.5px;top:50%;transform:translateY(-50%);display:grid;grid-template-columns:repeat(11,1fr);align-items:center}
+.effort-tick{justify-self:center;width:4px;height:4px;border-radius:50%;background:var(--bg-elev);box-shadow:0 0 0 1px color-mix(in srgb,var(--text) 24%,transparent);transition:transform .12s ease,background .12s ease,box-shadow .12s ease}
+.effort-tick.is-passed{background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+.effort-tick.is-active{transform:scale(1.65);background:var(--rp-accent);box-shadow:0 0 0 2px var(--bg-elev)}
+.effort-rpe-value{transition:transform .14s cubic-bezier(.2,.85,.25,1),border-color .14s ease!important}
+.effort-rpe-value.is-bumping{transform:scale(1.07)!important;border-color:var(--rp-accent)!important}
+html[data-theme="light"] #effortSlider::-webkit-slider-thumb,html[data-theme="light"] #effortSlider::-moz-range-thumb{border-color:#fff!important}
+html[data-theme="light"] .effort-tick{background:#fff;box-shadow:0 0 0 1px rgba(10,66,126,.28)}
+html[data-theme="light"] .effort-tick.is-passed{background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+@media(prefers-reduced-motion:reduce){.effort-tick,.effort-rpe-value,#effortSlider::-webkit-slider-thumb{transition:none!important}}
+</style>
+<script id="final-user-corrections-oct01-js">
+(function(){
+  'use strict';
+
+  const metricPalette=['var(--metric-c1)','var(--metric-c2)','var(--metric-c3)','var(--metric-c4)','var(--metric-c5)','var(--metric-c6)','var(--metric-c7)','var(--metric-c8)'];
+  const periodText=p=>({'7d':'7 dias','30d':'30 dias','90d':'3 meses','180d':'6 meses','365d':'1 ano','all':'todo o histórico'})[p]||p;
+  const pct=(value,total)=>total>0?Math.round((value/total)*100):0;
+  function compactRows(rows,max=8){
+    if(rows.length<=max)return rows;
+    const keep=rows.slice(0,max-1),rest=rows.slice(max-1),value=rest.reduce((sum,row)=>sum+row.value,0);
+    return keep.concat([{label:'Outros treinos',sub:`${rest.length} registros anteriores`,value}]);
+  }
+  function donutGradient(rows){
+    const total=rows.reduce((sum,row)=>sum+row.value,0);if(!total)return 'conic-gradient(var(--line-strong) 0 100%)';
+    let at=0;const parts=rows.map((row,index)=>{const start=at;at+=row.value/total*100;return `${metricPalette[index%metricPalette.length]} ${start.toFixed(3)}% ${at.toFixed(3)}%`;});
+    return `conic-gradient(${parts.join(',')})`;
+  }
+  function breakdownHtml(rows,total,unit){
+    return rows.map((row,index)=>`<div class="metric-breakdown-row"><i class="metric-breakdown-dot" style="--metric-color:${metricPalette[index%metricPalette.length]}"></i><div class="metric-breakdown-copy"><strong>${esc(row.label)}</strong><small>${esc(row.sub||'')}</small></div><div class="metric-breakdown-value"><strong>${row.value} ${unit}</strong><small>${pct(row.value,total)}%</small></div></div>`).join('');
+  }
+  function sessionRows(ctx){
+    const sid=ctx.studentId;return (ctx.sessions||[]).slice().reverse().map(session=>{const p=sid?participantForStudent(session,sid):session.participants?.[0];return {label:fmtDate(session.endedAt),sub:p?.programName||'Treino',value:p?participantSetCount(p):0};}).filter(row=>row.value>0);
+  }
+  function exerciseRows(ctx){
+    const map=new Map();(ctx.participants||[]).forEach(row=>(row.p?.exercises||[]).forEach(ex=>{const n=completedSets(ex).length;if(!n)return;const key=ex.exerciseId||ex.name;const prev=map.get(key)||{label:ex.name||exerciseById(ex.exerciseId)?.name||'Exercício',sub:'séries concluídas',value:0};prev.value+=n;map.set(key,prev);}));
+    return [...map.values()].sort((a,b)=>b.value-a.value);
+  }
+  function insightModal({title,value,subtitle,rows=[],unit='séries',chartTitle='Distribuição por treino',chartSubtitle='',note=''}){
+    const compact=compactRows(rows),total=rows.reduce((sum,row)=>sum+row.value,0),hasChart=compact.length&&total>0;
+    openModal(`<div class="metric-insight"><div class="metric-insight-head"><small>${esc(title)}</small><strong>${esc(value)}</strong><span>${esc(subtitle)}</span></div>${hasChart?`<div class="metric-insight-chart"><div class="metric-donut" style="background:${donutGradient(compact)}"><div class="metric-donut-center"><strong>${total}</strong><small>${esc(unit)}</small></div></div><div class="metric-chart-copy"><strong>${esc(chartTitle)}</strong><small>${esc(chartSubtitle)}</small></div></div><div class="metric-breakdown">${breakdownHtml(compact,total,unit)}</div>`:''}${note?`<p class="metric-insight-note">${esc(note)}</p>`:''}<div class="modal-actions"><button class="btn btn-primary" id="metricInsightClose" type="button">Fechar</button></div></div>`);
+    $('#metricInsightClose').onclick=closeModal;
+  }
+
+  /* Substitui o pop-up excessivamente explicativo por uma leitura visual do dado. */
+  explainEvolutionMetric=function(kind,ctx){
+    const label=periodText(ctx.period),rows=sessionRows(ctx);
+    if(kind==='sets'){
+      insightModal({title:'Séries',value:`${ctx.sets}`,subtitle:`séries concluídas em ${label}`,rows,unit:'séries',chartTitle:'Como as séries se dividiram entre os treinos',chartSubtitle:'Cada cor representa uma sessão do período.',note:'Drop set, cluster e pirâmide continuam contando como uma série lógica.'});return;
+    }
+    if(kind==='sessions'){
+      insightModal({title:'Treinos',value:`${ctx.sessions.length}`,subtitle:`sessões registradas em ${label}`,rows,unit:'séries',chartTitle:'Séries por treino',chartSubtitle:'Ajuda a enxergar quais sessões concentraram mais trabalho.',note:'A quantidade principal acima conta sessões; o gráfico distribui as séries realizadas dentro delas.'});return;
+    }
+    if(kind==='exercises'){
+      const exRows=exerciseRows(ctx);insightModal({title:'Exercícios',value:`${ctx.uniqueExercises}`,subtitle:`exercícios diferentes com registro em ${label}`,rows:exRows,unit:'séries',chartTitle:'Participação por exercício',chartSubtitle:'A divisão usa o número de séries concluídas de cada exercício.',note:'O valor principal conta exercícios distintos; o gráfico mostra onde as séries se concentraram.'});return;
+    }
+    if(kind==='records'){
+      const records=(ctx.extra?.records||[]).slice().reverse();
+      openModal(`<div class="metric-insight"><div class="metric-insight-head"><small>Novos recordes</small><strong>${records.length}</strong><span>maiores cargas novas em ${esc(label)}</span></div><div class="metric-breakdown">${records.length?records.slice(0,12).map((row,index)=>`<div class="metric-breakdown-row"><i class="metric-breakdown-dot" style="--metric-color:${metricPalette[index%metricPalette.length]}"></i><div class="metric-breakdown-copy"><strong>${esc(row.name)}</strong><small>${fmtDate(row.ts)} · ${esc(row.programName)}</small></div><div class="metric-breakdown-value"><strong>${row.current} kg</strong><small>${row.previous} → ${row.current}</small></div></div>`).join(''):emptyHtml('Nenhum novo recorde no período.','A primeira execução cria a referência e não entra como recorde.')}</div><p class="metric-insight-note">Um recorde entra aqui quando a maior carga do exercício supera uma marca anterior.</p><div class="modal-actions"><button class="btn btn-primary" id="metricInsightClose" type="button">Fechar</button></div></div>`);$('#metricInsightClose').onclick=closeModal;return;
+    }
+    const top=ctx.topGain,extra=ctx.extra||{};
+    const data={
+      gain:['Maior evolução',top?`${top.deltaKg>0?'+':''}${round(top.deltaKg)} kg`:'—',top?`${top.exerciseName} · ${top.firstKg} kg → ${top.lastKg} kg`:`Sem comparação suficiente em ${label}`,'Compara a maior carga do primeiro e do último registro do mesmo exercício no período.'],
+      avgReps:['Média de repetições',extra.avgReps==null?'—':`${Number(extra.avgReps).toLocaleString('pt-BR',{maximumFractionDigits:1})}`,`reps por série em ${label}`,'Em séries especiais, as repetições de todos os blocos entram na média.'],
+      loadPct:['Evolução de carga',extra.loadPct==null?'—':`${extra.loadPct>=0?'+':''}${Number(extra.loadPct).toLocaleString('pt-BR',{maximumFractionDigits:1})}%`,`${extra.compared||0} exercício${extra.compared===1?'':'s'} comparável${extra.compared===1?'':'eis'}`,'Média da variação percentual entre o primeiro e o último registro de cada exercício comparável.'],
+      avgRpe:['RPE médio',extra.avgRpe==null?'—':Number(extra.avgRpe).toLocaleString('pt-BR',{maximumFractionDigits:1}),`séries preenchidas em ${label}`,'Séries sem RPE não entram no cálculo.']
+    }[kind];
+    if(!data)return;
+    openModal(`<div class="metric-insight"><div class="metric-insight-head"><small>${esc(data[0])}</small><strong>${esc(data[1])}</strong><span>${esc(data[2])}</span></div><p class="metric-insight-note">${esc(data[3])}</p><div class="modal-actions"><button class="btn btn-primary" id="metricInsightClose" type="button">Fechar</button></div></div>`);$('#metricInsightClose').onclick=closeModal;
+  };
+
+  /* RPE ativo: ticks de 0,5, trilho maior e microfeedback ao mover. */
+  openRpePicker=function(path){
+    const set=liveSetAt(path);if(!set)return;
+    const initial=set.rpe===''||set.rpe==null?8:Number(set.rpe);
+    const marks=Array.from({length:11},(_,i)=>5+i*.5);
+    openModal(`<div class="effort-slider-content"><div id="effortValue" class="effort-rpe-value" aria-live="polite">${rpeLabel(initial)}</div><p id="effortDefinition" class="effort-rpe-definition"></p><div class="effort-slider-wrap"><input id="effortSlider" type="range" min="5" max="10" step="0.5" value="${initial}" aria-label="RPE"><div class="effort-ticks" aria-hidden="true">${marks.map(v=>`<span class="effort-tick" data-effort-tick="${v}"></span>`).join('')}</div></div><div class="effort-scale"><span>5 · Leve</span><span>10 · Máximo</span></div><div class="effort-rpe-actions"><button type="button" id="effortBack" class="btn btn-secondary">Voltar ao treino</button><button type="button" id="effortDone" class="btn btn-primary">Concluir</button></div></div>`);
+    const modal=$('#modal');modal.classList.add('effort-slider-sheet');modal.querySelector('.sheet-close-btn')?.remove();
+    const slider=$('#effortSlider'),valueEl=$('#effortValue'),definition=$('#effortDefinition');let last=initial;
+    const definitionFor=n=>n>=10?'Esforço máximo; nenhuma repetição em reserva.':n>=9.5?'Talvez conseguisse mais 1 repetição.':n>=9?'Mais 1 repetição com certeza.':n>=8.5?'Mais 1 a 2 repetições.':n>=8?'Mais 2 repetições com certeza.':n>=7?'Mais 3 repetições.':'Aquecimento / carga leve.';
+    const paint=()=>{
+      const n=Number(slider.value),pos=((n-5)/5)*100;slider.style.setProperty('--effort-pos',`${pos}%`);valueEl.textContent=rpeLabel(n);definition.textContent=definitionFor(n);slider.setAttribute('aria-valuetext',`RPE ${rpeLabel(n)} - ${definitionFor(n)}`);
+      $$('[data-effort-tick]',$('#modal')).forEach(tick=>{const v=Number(tick.dataset.effortTick);tick.classList.toggle('is-passed',v<=n);tick.classList.toggle('is-active',v===n);});
+      if(n!==last){valueEl.classList.remove('is-bumping');void valueEl.offsetWidth;valueEl.classList.add('is-bumping');setTimeout(()=>valueEl.classList.remove('is-bumping'),150);last=n;}
+    };
+    paint();slider.oninput=paint;slider.onchange=paint;requestAnimationFrame(()=>slider.blur());
+    $('#effortBack').onclick=closeModal;
+    $('#effortDone').onclick=()=>{if(!set.done){$(`[data-set-check="${path}"]`)?.click();if(!set.done)return;}set.rpe=Number(slider.value);persistDraft();const trigger=$(`[data-set-rpe-trigger="${path}"]`);if(trigger){trigger.textContent=rpeLabel(set.rpe);trigger.classList.add('has-value');}closeModal();};
+  };
 })();
 </script>
 
