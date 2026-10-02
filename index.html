@@ -4466,5 +4466,246 @@ html[data-theme="light"] .effort-tick.is-passed{background:#fff;box-shadow:0 0 0
 })();
 </script>
 
+
+<!-- TREINO EM DUPLA + RELATÓRIO SOCIAL — 2026-10-02 -->
+<style id="duo-workout-report-polish">
+/* RPE: os 11 marcadores agora ocupam exatamente os mesmos extremos do thumb. */
+.effort-ticks{display:block!important;grid-template-columns:none!important;left:11.5px!important;right:11.5px!important;top:50%!important;transform:translateY(-50%)!important}
+.effort-tick{position:absolute!important;top:50%!important;width:4px!important;height:4px!important;transform:translate(-50%,-50%)!important}
+.effort-tick.is-active{transform:translate(-50%,-50%) scale(1.65)!important}
+
+/* Prévia em dupla. */
+.pair-preview-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.pair-preview-block{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px}
+.pair-preview-kicker{display:block;color:var(--faint);font-size:8px;font-weight:900;letter-spacing:.10em;margin-bottom:8px}
+.pair-preview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pair-preview-exercise{min-width:0;padding:10px;border-radius:13px;background:var(--surface-2);border:1px solid var(--line)}
+.pair-preview-exercise.is-solo{grid-column:1/-1}
+.pair-preview-exercise small{display:block;color:var(--faint);font-size:8.5px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pair-preview-exercise strong{display:block;color:var(--text);font-size:12px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pair-preview-exercise span{display:block;color:var(--muted);font-size:9px;margin-top:4px}
+
+/* Sessão em dupla: um bloco por posição da ficha, séries intercaladas A1/B1/A2/B2... */
+.pair-live-card{margin:0 16px 12px;padding:13px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.pair-block-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.pair-block-title small{display:block;color:var(--faint);font-size:7.5px;font-weight:900;letter-spacing:.12em}
+.pair-block-title strong{display:block;color:var(--text);font-size:14px;margin-top:3px;letter-spacing:-.2px}
+.pair-block-actions{display:flex;gap:6px;flex:0 0 auto}
+.pair-block-action{width:32px;height:32px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);display:grid;place-items:center;padding:0;font-size:20px;line-height:1}
+.pair-block-action svg{width:16px;height:16px}
+.pair-exercise-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.pair-exercise-pane{min-width:0;padding:10px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line)}
+.pair-exercise-pane.is-solo{grid-column:1/-1}
+.pair-exercise-person{display:flex;align-items:center;gap:7px;margin-bottom:5px;min-width:0}
+.pair-exercise-person .avatar{width:24px!important;height:24px!important;flex-basis:24px!important;font-size:7.5px!important}
+.pair-exercise-person span{min-width:0;color:var(--faint);font-size:8.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pair-exercise-pane strong{display:block;color:var(--text);font-size:12px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+.pair-exercise-tools{display:flex;align-items:center;gap:6px;margin-top:7px}
+.pair-exercise-tools button{height:27px;padding:0 8px;border-radius:9px;background:transparent;border:1px solid var(--line-strong);color:var(--muted);font-size:8.5px;font-weight:750;display:inline-flex;align-items:center;gap:4px}
+.pair-exercise-tools svg{width:12px;height:12px}
+.pair-note{width:100%;height:31px;margin-top:7px;padding:0 8px;border-radius:9px;border:1px solid var(--line);background:var(--bg-elev);color:var(--muted);font-size:10px;outline:0}
+.pair-note:focus{border-color:var(--rp-accent);box-shadow:inset 0 0 0 1px var(--rp-accent)}
+.pair-flow-head{margin-top:1px}
+.pair-turn-entry{padding:7px 0 8px;border-top:1px solid var(--line)}
+.pair-turn-entry:first-of-type{border-top:0}
+.pair-turn-label{display:flex;align-items:center;gap:6px;min-width:0;margin:0 2px 5px;color:var(--faint);font-size:8.5px;font-weight:800}
+.pair-turn-label i{width:7px;height:7px;border-radius:50%;background:var(--rp-accent);flex:0 0 7px}
+.pair-turn-entry[data-pair-person="1"] .pair-turn-label i{background:#6BA7C5}
+.pair-turn-label strong{color:var(--muted);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pair-turn-label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pair-turn-entry .special-set-group{margin:0}
+.pair-turn-entry .set-row{margin-bottom:3px!important}
+.pair-add-exercises{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 16px 24px}
+.pair-add-exercises .add-dashed{margin:0;min-width:0;padding:0 8px}
+.pair-choice-exercise{display:block!important;color:var(--faint)!important;font-size:9px!important;margin-top:2px!important}
+
+/* Relatório final: RPE médio sai das séries e fica sob Maior carga. */
+.performance-max .report-rpe-label{margin-top:8px!important}
+.performance-max .report-rpe-value{color:var(--blue-2)!important;font-size:14px!important;margin-top:3px!important}
+.duo-report-card{padding:16px!important}
+.duo-report-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid var(--line)}
+.duo-report-head small{display:block;color:var(--rp-accent);font-size:8px;font-weight:900;letter-spacing:.12em}
+.duo-report-head strong{display:block;color:var(--text);font-size:20px;line-height:1.15;letter-spacing:-.45px;margin-top:5px}
+.duo-report-head span{display:block;color:var(--muted);font-size:9.5px;margin-top:5px}
+.duo-person-report{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.duo-person-report:first-of-type{border-top:0;padding-top:4px}
+.duo-person-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.duo-person-head .avatar{width:36px!important;height:36px!important;flex-basis:36px!important}
+.duo-person-head .row-main strong{font-size:14px!important}
+.duo-person-head .row-side{font-size:9px!important;color:var(--muted)!important}
+.finish-image-choice .choice{min-height:64px}
+.finish-image-choice .action-icon{width:38px;height:38px;flex-basis:38px}
+.finish-image-choice .action-icon svg{width:18px;height:18px}
+
+html[data-theme="light"] .pair-live-card,html[data-theme="light"] .pair-preview-block,html[data-theme="light"] .pair-exercise-pane{background:#fff!important;border-color:#DCE3E9!important}
+html[data-theme="light"] .pair-exercise-pane{background:#F0F4F7!important}
+html[data-theme="light"] .pair-note{background:#fff!important;border-color:#D4DEE6!important}
+
+@media(max-width:390px){
+  .pair-live-card{margin-left:12px;margin-right:12px;padding:11px}
+  .pair-exercise-grid{gap:6px}.pair-exercise-pane{padding:8px}
+  .pair-exercise-pane strong{font-size:11px}.pair-exercise-person span{font-size:8px}
+  .pair-add-exercises{margin-left:12px;margin-right:12px;gap:6px}
+}
+@media(max-width:340px){.pair-exercise-grid,.pair-preview-grid,.pair-add-exercises{grid-template-columns:1fr}.pair-exercise-pane.is-solo,.pair-preview-exercise.is-solo{grid-column:auto}}
+</style>
+<script id="duo-workout-report-polish-js">
+(function(){
+'use strict';
+
+const __singleRenderWorkoutPreview=renderWorkoutPreview;
+const __singleRenderActiveWorkout=renderActiveWorkout;
+const __previousSessionSummary=window.openSessionSummary;
+const __alignedRpePickerBase=openRpePicker;
+openRpePicker=function(path){__alignedRpePickerBase(path);requestAnimationFrame(()=>{$$('[data-effort-tick]',$('#modal')).forEach(tick=>{const v=Number(tick.dataset.effortTick);tick.style.left=`${((v-5)/5)*100}%`;});});};
+
+function personName(p){return studentById(p?.studentId)?.name||'Aluno';}
+function joinedNames(participants){
+  const names=(participants||[]).map(personName).filter(Boolean);
+  if(names.length<=1)return names[0]||'Aluno';
+  if(names.length===2)return `${names[0]} e ${names[1]}`;
+  return `${names.slice(0,-1).join(', ')} e ${names.at(-1)}`;
+}
+function pairEntries(blockIndex){
+  return (live?.participants||[]).map((participant,pi)=>({participant,pi,ei:blockIndex,ex:participant.exercises?.[blockIndex]||null,student:studentById(participant.studentId)})).filter(row=>row.ex);
+}
+function pairBlockCount(){return Math.max(0,...(live?.participants||[]).map(p=>p.exercises?.length||0));}
+function pairPreviewBlockHtml(index){
+  const rows=pairEntries(index);
+  return `<div class="pair-preview-block"><small class="pair-preview-kicker">BLOCO ${String(index+1).padStart(2,'0')}</small><div class="pair-preview-grid">${rows.map(row=>`<div class="pair-preview-exercise ${rows.length===1?'is-solo':''}"><small>${esc(row.student?.name||'Aluno')}</small><strong>${esc(row.ex.name||'Exercício')}</strong><span>${row.ex.sets.length} série${row.ex.sets.length===1?'':'s'} · ${fmtRest(row.ex.restSec||0)}</span></div>`).join('')}</div></div>`;
+}
+
+renderWorkoutPreview=function(main){
+  if(!live||live.participants.length<2)return __singleRenderWorkoutPreview(main);
+  const count=pairBlockCount();
+  setHeader({eyebrow:'TREINO PRONTO',title:'Treino em dupla',back:()=>{confirmModal('Cancelar preparação?','O treino ainda não começou.','Cancelar treino',()=>{live=null;persistDraft();navigate('home');});},action:null});
+  main.innerHTML=`<section class="screen"><div class="preview-wrap"><div class="preview-title"><small>DUPLA</small><h1>${esc(joinedNames(live.participants))}</h1><p>${count} bloco${count===1?'':'s'} com os exercícios intercalados na ordem das duas fichas.</p></div><div class="pair-preview-list">${Array.from({length:count},(_,i)=>pairPreviewBlockHtml(i)).join('')}</div><button id="beginWorkoutBtn" class="btn btn-primary btn-block" style="margin-top:18px">Iniciar treino</button></div></section>`;
+  $('#beginWorkoutBtn').onclick=()=>{unlockAudio();live.startedAt=Date.now();persistDraft();render();};
+};
+
+function pairExercisePaneHtml(row,solo=false){
+  const path=`${row.pi}:${row.ei}`;
+  return `<div class="pair-exercise-pane ${solo?'is-solo':''}"><div class="pair-exercise-person">${avatarHtml(row.student)}<span>${esc(row.student?.name||'Aluno')}</span></div><strong>${esc(row.ex.name||'Exercício')}</strong><div class="pair-exercise-tools"><button type="button" data-exercise-rest="${path}">${typeof tinyClock!=='undefined'?tinyClock:'⏱'}<span>${fmtRest(row.ex.restSec||0)}</span></button></div><input class="pair-note" data-live-note="${path}" value="${esc(row.ex.note||'')}" placeholder="Observação"></div>`;
+}
+function pairTurnHtml(row,set,si){
+  return `<div class="pair-turn-entry" data-pair-person="${row.pi}"><div class="pair-turn-label"><i></i><strong>${esc(row.student?.name||'Aluno')}</strong><span>· ${esc(row.ex.name||'Exercício')} · série ${si+1}</span></div>${liveSetHtml(row.pi,row.ei,set,si,row.ex)}</div>`;
+}
+function pairBlockHtml(index){
+  const rows=pairEntries(index),maxSets=Math.max(0,...rows.map(row=>row.ex.sets.length));let flow='';
+  for(let si=0;si<maxSets;si++)rows.forEach(row=>{const set=row.ex.sets[si];if(set)flow+=pairTurnHtml(row,set,si);});
+  return `<div class="pair-live-card" data-pair-block="${index}"><div class="pair-block-head"><div class="pair-block-title"><small>BLOCO ${String(index+1).padStart(2,'0')}</small><strong>${rows.map(row=>esc(row.ex.name||'Exercício')).join(' + ')}</strong></div><div class="pair-block-actions"><button class="pair-block-action" type="button" data-pair-history="${index}" aria-label="Histórico">${icons.history}</button><button class="pair-block-action" type="button" data-pair-settings="${index}" aria-label="Ações">⋯</button></div></div><div class="pair-exercise-grid">${rows.map(row=>pairExercisePaneHtml(row,rows.length===1)).join('')}</div><div class="set-head pair-flow-head"><span>Série</span><span>kg</span><span>Reps</span><span>RPE</span><span></span></div><div class="pair-series-flow">${flow}</div></div>`;
+}
+function openPairTargetChoice(blockIndex,mode){
+  const rows=pairEntries(blockIndex);if(!rows.length)return;
+  const action=row=>{closeModal();setTimeout(()=>{if(mode==='history')openExerciseHistory(row.participant.studentId,row.ex.exerciseId);else openLiveExerciseSettings(`${row.pi}:${row.ei}`);},35);};
+  if(rows.length===1)return action(rows[0]);
+  openModal(`<h2>${mode==='history'?'Histórico de qual aluno?':'Ajustar qual aluno?'}</h2><div class="choice-list">${rows.map(row=>`<button class="choice" type="button" data-pair-target="${row.pi}">${avatarHtml(row.student)}<div class="row-main"><strong>${esc(row.student?.name||'Aluno')}</strong><small class="pair-choice-exercise">${esc(row.ex.name||'Exercício')}</small></div>${chev()}</button>`).join('')}</div><div class="modal-actions"><button class="btn btn-secondary" id="pairTargetCancel" type="button">Cancelar</button></div>`);
+  $('#pairTargetCancel').onclick=closeModal;
+  $$('[data-pair-target]',$('#modal')).forEach(btn=>btn.onclick=()=>{const row=rows.find(x=>x.pi===Number(btn.dataset.pairTarget));if(row)action(row);});
+}
+function bindPairBlockActions(){
+  $$('[data-pair-history]').forEach(btn=>btn.onclick=()=>openPairTargetChoice(+btn.dataset.pairHistory,'history'));
+  $$('[data-pair-settings]').forEach(btn=>btn.onclick=()=>openPairTargetChoice(+btn.dataset.pairSettings,'settings'));
+}
+function addExerciseToPairParticipant(pi){
+  const session=live,participant=session?.participants?.[pi];if(!participant)return;
+  openExercisePicker(id=>{if(live!==session)return;const ex=exerciseById(id);if(!ex)return;const st=studentById(participant.studentId),sets=clamp(parseInteger(st?.defaultSets)||3,1,50),restSec=clamp(parseInteger(st?.defaultRestSec)||90,60,180),targetReps=String(st?.defaultTargetReps||'8–12');participant.exercises.push({exerciseId:id,sourceExerciseId:id,programIndex:null,name:ex.name,muscleGroups:normalizeGroups(ex.muscleGroups),sets:Array.from({length:sets},()=>({weight:'',reps:'',rpe:'',done:false,autoWeight:true,autoReps:true,seriesType:'normal'})),restSec,targetReps,note:'',referenceWeight:null,adjustmentSummary:'Exercício adicionado nesta sessão'});persistDraft();closeModal();render();toast('Exercício adicionado somente nesta sessão por enquanto.');});
+}
+function installPairTopActions(){
+  const action=$('#topActionBtn');if(action){action.classList.remove('is-hidden');action.innerHTML=icons.trash;action.setAttribute('aria-label','Descartar treino');action.title='Descartar treino';action.onclick=discardLiveWorkout;}
+  const actions=$('.topbar-actions');if(!actions)return;actions.querySelector('.live-top-finish')?.remove();const btn=document.createElement('button');btn.className='live-top-finish';btn.type='button';btn.textContent='Concluir';btn.onclick=openFinishWorkout;actions.insertBefore(btn,action||null);
+}
+renderActiveWorkout=function(main){
+  if(!live||live.participants.length<2)return __singleRenderActiveWorkout(main);
+  setHeader({eyebrow:'TREINO EM DUPLA',title:joinedNames(live.participants),back:()=>navigate('home'),action:null});
+  const totalSets=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.length,0),0),done=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).length,0),0),vol=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).reduce((z,s)=>z+setVolume(s),0),0),0),count=pairBlockCount();
+  main.innerHTML=`<section class="screen"><div class="live-header"><div class="live-stat-grid"><div class="live-stat"><small>Duração</small><strong class="accent" id="liveDuration">${fmtClock((Date.now()-live.startedAt)/1000)}</strong></div><div class="live-stat"><small>Volume</small><strong id="liveVolume">${kgText(vol)}</strong></div><div class="live-stat"><small>Séries</small><strong id="liveSets">${done} / ${totalSets}</strong></div></div></div>${Array.from({length:count},(_,i)=>pairBlockHtml(i)).join('')}<div class="pair-add-exercises">${live.participants.map((p,i)=>`<button type="button" class="add-dashed" data-pair-add-exercise="${i}">${icons.plus}<span>${esc(personName(p))}</span></button>`).join('')}</div></section>`;
+  bindLiveHandlers();bindPairBlockActions();$$('[data-pair-add-exercise]',main).forEach(btn=>btn.onclick=()=>addExerciseToPairParticipant(+btn.dataset.pairAddExercise));
+  const rest=$('#restTimer');if(rest)rest.onclick=e=>{if(e.target.closest('button'))return;};
+  installPairTopActions();updateGlobalClocks();
+};
+
+/* ---------------------- relatório final ---------------------- */
+function reportBlocks(set){return Array.isArray(set?.blocks)&&set.blocks.length?set.blocks:[{weight:set?.weight,reps:set?.reps}];}
+function reportSetText(set){const blocks=reportBlocks(set).filter(b=>parseInteger(b.reps)>0||parseDecimal(b.weight)>0);if(!blocks.length)return '—';if(blocks.length===1)return `${parseInteger(blocks[0].reps)} reps · ${parseDecimal(blocks[0].weight)} kg`;return blocks.map(b=>`${parseInteger(b.reps)}×${parseDecimal(b.weight)}kg`).join(' + ');}
+function reportSetReps(set){return reportBlocks(set).reduce((sum,b)=>sum+parseInteger(b.reps),0);}
+function reportSetMax(set){return Math.max(0,...reportBlocks(set).map(b=>parseDecimal(b.weight)));}
+function reportExerciseData(ex){const sets=completedSets(ex),rpes=sets.map(s=>Number(s.rpe)).filter(n=>Number.isFinite(n)&&n>0);return{sets,maxLoad:sets.reduce((m,s)=>Math.max(m,reportSetMax(s)),0),volume:sets.reduce((sum,s)=>sum+setVolume(s),0),totalReps:sets.reduce((sum,s)=>sum+reportSetReps(s),0),avgRpe:rpes.length?rpes.reduce((a,b)=>a+b,0)/rpes.length:null};}
+function reportExerciseCardHtml(ex){
+  const d=reportExerciseData(ex);if(!d.sets.length)return '';
+  const chips=d.sets.map((set,i)=>`<span class="series-chip"><b>${i+1}</b><span>${esc(reportSetText(set))}</span></span>`).join('');
+  return `<div class="performance-exercise-card"><div class="performance-exercise-top"><div class="performance-exercise-title"><strong>${d.sets.length}× ${esc(ex.name||'Exercício')}</strong><small>${kgText(d.volume)} · ${d.totalReps} reps</small></div><div class="performance-max"><small>Maior carga</small><strong>${d.maxLoad?`${d.maxLoad} kg`:'—'}</strong><small class="report-rpe-label">RPE médio</small><strong class="report-rpe-value">${d.avgRpe==null?'—':rpeLabel(d.avgRpe)}</strong></div></div><div class="performance-series">${chips}</div></div>`;
+}
+function reportParticipantStats(p){const sets=participantSetCount(p),vol=participantVolume(p),rpes=(p.exercises||[]).flatMap(ex=>completedSets(ex).map(s=>Number(s.rpe)).filter(n=>Number.isFinite(n)&&n>0));return{sets,vol,avg:rpes.length?rpes.reduce((a,b)=>a+b,0)/rpes.length:null};}
+function reportParticipantCardHtml(session,p){const st=studentById(p.studentId),stats=reportParticipantStats(p),done=(p.exercises||[]).filter(ex=>completedSets(ex).length);return `<div class="finish-card"><div class="session-summary-head">${avatarHtml(st)}<div class="session-summary-title"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')} · ${fmtDate(session.endedAt||session.startedAt)}</small></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${stats.sets}</strong></div><div><small>VOLUME</small><strong>${kgText(stats.vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${stats.avg==null?'—':rpeLabel(stats.avg)}</strong></div></div><div class="section-title" style="margin:18px 0 8px"><h2>Exercícios</h2><span>${done.length}</span></div><div class="performance-exercises">${done.length?done.map(reportExerciseCardHtml).join(''):'<div class="session-summary-empty">Sem séries concluídas.</div>'}</div></div>`;}
+function duoReportHtml(session,participants){
+  const all=participants||[],sets=all.reduce((s,p)=>s+participantSetCount(p),0),vol=all.reduce((s,p)=>s+participantVolume(p),0),rpes=all.flatMap(p=>(p.exercises||[]).flatMap(ex=>completedSets(ex).map(set=>Number(set.rpe)).filter(n=>Number.isFinite(n)&&n>0))),avg=rpes.length?rpes.reduce((a,b)=>a+b,0)/rpes.length:null;
+  return `<div class="finish-card duo-report-card"><div class="duo-report-head"><div><small>TREINO EM DUPLA</small><strong>${esc(joinedNames(all))}</strong><span>${fmtDate(session.endedAt||session.startedAt)}</span></div><span class="finish-duration-pill">${formatDurationShort(session.durationSec||0)}</span></div><div class="finish-stats"><div><small>SÉRIES</small><strong>${sets}</strong></div><div><small>VOLUME</small><strong>${kgText(vol)}</strong></div><div><small>RPE MÉDIO</small><strong>${avg==null?'—':rpeLabel(avg)}</strong></div></div>${all.map(p=>{const st=studentById(p.studentId),s=reportParticipantStats(p),done=(p.exercises||[]).filter(ex=>completedSets(ex).length);return `<section class="duo-person-report"><div class="duo-person-head">${avatarHtml(st)}<div class="row-main"><strong>${esc(st?.name||'Aluno')}</strong><small>${esc(p.programName||'Treino')}</small></div><div class="row-side">${s.sets} séries · ${kgText(s.vol)}</div></div><div class="performance-exercises">${done.length?done.map(reportExerciseCardHtml).join(''):'<div class="session-summary-empty">Sem séries concluídas.</div>'}</div></section>`;}).join('')}</div>`;
+}
+
+function openFinishImageChoice(session){
+  const snapshot=live;if(!snapshot)return;
+  openModal(`<h2>Salvar resumo</h2><div class="action-list finish-image-choice"><button class="action-item" type="button" data-report-export="solid"><span class="action-icon">${icons.download}</span><div class="row-main"><strong>Imagem com fundo</strong><small>Mesmo estilo visual do relatório</small></div>${chev()}</button><button class="action-item" type="button" data-report-export="transparent"><span class="action-icon">${icons.download}</span><div class="row-main"><strong>PNG transparente</strong><small>Sem o fundo externo para usar em redes sociais</small></div>${chev()}</button></div><div class="modal-actions"><button class="btn btn-secondary" id="reportExportBack" type="button">Voltar</button></div>`);
+  $('#reportExportBack').onclick=()=>{if(live===snapshot)openFinishWorkout();else closeModal();};
+  $$('[data-report-export]',$('#modal')).forEach(btn=>btn.onclick=async()=>{const transparent=btn.dataset.reportExport==='transparent';await saveCurrentWorkoutReport(transparent);if(live===snapshot)openFinishWorkout();});
+}
+
+openFinishWorkout=function(){
+  if(!live)return;const completed=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.filter(s=>s.done).length,0),0);if(!completed)return toast('Marque pelo menos uma série como concluída.');
+  const planned=live.participants.reduce((a,p)=>a+p.exercises.reduce((x,e)=>x+e.sets.length,0),0),pending=Math.max(0,planned-completed),now=Date.now(),session={endedAt:now,startedAt:live.startedAt||now,durationSec:Math.max(0,Math.round((now-(live.startedAt||now))/1000))},duo=live.participants.length>1;
+  const body=duo?duoReportHtml(session,live.participants):reportParticipantCardHtml(session,live.participants[0]);
+  openModal(`<div class="finish-celebration"><small>${duo?'TREINO EM DUPLA CONCLUÍDO':'TREINO CONCLUÍDO'}</small><h2>${duo?esc(joinedNames(live.participants)):'Parabéns!'}</h2></div>${body}${pending?`<div class="finish-pending-note">${pending} série${pending===1?' não realizada será ignorada':'s não realizadas serão ignoradas'} ao salvar.</div>`:''}<div class="modal-actions finish-modal-actions"><button class="btn btn-secondary" id="finishCancel" type="button">Voltar</button><button class="btn btn-secondary" id="finishImage" type="button">Salvar imagem</button><button class="btn btn-primary" id="finishSave" type="button">Salvar treino</button></div>`,{fullscreen:true});
+  $('#finishCancel').onclick=closeModal;$('#finishImage').onclick=()=>openFinishImageChoice(session);$('#finishSave').onclick=saveFinishedWorkout;
+};
+
+/* Se a sessão histórica é aberta sem filtrar um aluno e foi em dupla, apresenta um único relatório. */
+window.openSessionSummary=function(sessionId,studentId=''){
+  const session=db.sessions.find(s=>s.id===sessionId);if(!session)return toast('Sessão não encontrada.');
+  if(studentId||session.participants.length<2){if(typeof __previousSessionSummary==='function')return __previousSessionSummary(sessionId,studentId);}
+  openModal(`<div class="builder-head"><button class="icon-btn" id="duoSummaryClose" aria-label="Fechar">${icons.back}</button><h2>Resumo da dupla</h2></div><div class="builder-body">${duoReportHtml(session,session.participants)}</div>`,{fullscreen:true});
+  $('#duoSummaryClose').onclick=closeModal;
+};
+
+/* ---------------------- PNG em alta qualidade ---------------------- */
+function reportColors(){const dark=currentTheme()==='dark';return dark?{card:'#10161C',surface:'#182129',surface2:'#202B34',text:'#F6F8FA',muted:'#9EABB6',faint:'#71808C',blue:'#148BD6'}:{card:'#FFFFFF',surface:'#F1F4F6',surface2:'#E9EEF2',text:'#102A3D',muted:'#657683',faint:'#8A98A3',blue:'#0A6FB6'};}
+function svgLineWrap(text,maxChars=38){const words=String(text||'').split(/\s+/),lines=[];let line='';words.forEach(word=>{const next=line?`${line} ${word}`:word;if(next.length>maxChars&&line){lines.push(line);line=word;}else line=next;});if(line)lines.push(line);return lines.length?lines:[''];}
+function svgTspans(lines,x,step=28){return lines.map((line,i)=>`<tspan x="${x}" dy="${i?step:0}">${xmlEsc(line)}</tspan>`).join('');}
+function shareSetPill(set,index,x,y,C){const label=reportSetText(set),w=Math.max(150,Math.min(365,46+label.length*7.2));return{w,markup:`<g transform="translate(${x} ${y})"><rect width="${w}" height="36" rx="11" fill="${C.surface}"/><text x="14" y="24" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="850" fill="${C.blue}">${index+1}</text><text x="34" y="24" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.text}">${xmlEsc(label)}</text></g>`};}
+function buildExerciseSvg(ex,startY,C){
+  const d=reportExerciseData(ex),lines=svgLineWrap(`${d.sets.length}× ${ex.name||'Exercício'}`,40),titleExtra=(lines.length-1)*27;let px=106,py=startY+Math.max(118,82+titleExtra),pills='';
+  d.sets.forEach((set,i)=>{let pill=shareSetPill(set,i,px,py,C);if(px+pill.w>970){px=106;py+=43;pill=shareSetPill(set,i,px,py,C);}pills+=pill.markup;px+=pill.w+8;});
+  const h=Math.max(164+titleExtra,py-startY+52),avg=d.avgRpe==null?'—':rpeLabel(d.avgRpe);
+  return{height:h,markup:`<g><rect x="84" y="${startY}" width="912" height="${h}" rx="24" fill="${C.surface2}"/><text x="106" y="${startY+34}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="23" font-weight="820" fill="${C.text}">${svgTspans(lines,106,27)}</text><text x="106" y="${startY+58+titleExtra}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="650" fill="${C.muted}">${xmlEsc(`${kgText(d.volume)} · ${d.totalReps} reps`)}</text><text x="965" y="${startY+29}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" font-weight="800" fill="${C.faint}">MAIOR CARGA</text><text x="965" y="${startY+53}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="850" fill="${C.blue}">${xmlEsc(d.maxLoad?`${d.maxLoad} kg`:'—')}</text><text x="965" y="${startY+78}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" font-weight="800" fill="${C.faint}">RPE MÉDIO</text><text x="965" y="${startY+102}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="18" font-weight="850" fill="${C.blue}">${xmlEsc(avg)}</text>${pills}</g>`};
+}
+function topMetricSvg(items,C,y=260){return `<g transform="translate(84 ${y})">${items.map((item,i)=>`<g transform="translate(${i*306} 0)"><rect width="286" height="104" rx="24" fill="${C.surface}"/><text x="20" y="34" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="850" letter-spacing="1" fill="${C.faint}">${item[0]}</text><text x="20" y="75" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="820" fill="${C.text}">${xmlEsc(item[1])}</text></g>`).join('')}</g>`;}
+function buildSingleReportSvg(participant,transparent=false){
+  const st=studentById(participant.studentId),C=reportColors(),stats=reportParticipantStats(participant),done=(participant.exercises||[]).filter(ex=>completedSets(ex).length),duration=formatDurationShort((Date.now()-(live?.startedAt||Date.now()))/1000);let y=430,markup='';
+  done.forEach(ex=>{const built=buildExerciseSvg(ex,y,C);markup+=built.markup;y+=built.height+14;});
+  const height=Math.max(820,y+74),outer=transparent?'':`<rect x="24" y="24" width="1032" height="${height-48}" rx="72" fill="${C.card}"/>`;
+  return{height,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}">${outer}<text x="84" y="102" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="850" letter-spacing="3" fill="${C.blue}">TREINO CONCLUÍDO</text><text x="84" y="174" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="50" font-weight="820" fill="${C.text}">${xmlEsc(st?.name||'Aluno')}</text><g transform="translate(812 126)"><rect width="178" height="58" rx="29" fill="${C.surface}"/><text x="89" y="37" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="800" fill="${C.blue}">${xmlEsc(duration)}</text></g><text x="84" y="216" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="600" fill="${C.muted}">${xmlEsc(participant.programName||'Treino')} · ${xmlEsc(fmtDate(Date.now()))}</text>${topMetricSvg([['SÉRIES',stats.sets],['VOLUME',kgText(stats.vol)],['RPE MÉDIO',stats.avg==null?'—':rpeLabel(stats.avg)]],C)}<text x="84" y="404" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="29" font-weight="820" fill="${C.text}">Exercícios</text>${markup}</svg>`};
+}
+function buildDuoReportSvg(participants,transparent=false){
+  const C=reportColors(),names=joinedNames(participants),nameLines=svgLineWrap(names,30),nameExtra=(nameLines.length-1)*48,duration=formatDurationShort((Date.now()-(live?.startedAt||Date.now()))/1000),sets=participants.reduce((s,p)=>s+participantSetCount(p),0),vol=participants.reduce((s,p)=>s+participantVolume(p),0),rpes=participants.flatMap(p=>(p.exercises||[]).flatMap(ex=>completedSets(ex).map(set=>Number(set.rpe)).filter(n=>Number.isFinite(n)&&n>0))),avg=rpes.length?rpeLabel(rpes.reduce((a,b)=>a+b,0)/rpes.length):'—';
+  let y=430+nameExtra,markup='';
+  participants.forEach((p,pi)=>{const st=studentById(p.studentId),ps=reportParticipantStats(p),done=(p.exercises||[]).filter(ex=>completedSets(ex).length);markup+=`<g><rect x="84" y="${y}" width="912" height="72" rx="22" fill="${C.surface}"/><text x="106" y="${y+31}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="840" fill="${C.text}">${xmlEsc(st?.name||'Aluno')}</text><text x="106" y="${y+53}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13" font-weight="650" fill="${C.muted}">${xmlEsc(p.programName||'Treino')}</text><text x="965" y="${y+31}" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="780" fill="${C.blue}">${xmlEsc(`${ps.sets} séries · ${kgText(ps.vol)}`)}</text></g>`;y+=86;done.forEach(ex=>{const built=buildExerciseSvg(ex,y,C);markup+=built.markup;y+=built.height+14;});y+=16;});
+  const height=Math.max(980,y+68),outer=transparent?'':`<rect x="24" y="24" width="1032" height="${height-48}" rx="72" fill="${C.card}"/>`,metricsY=260+nameExtra;
+  return{height,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}">${outer}<text x="84" y="102" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="850" letter-spacing="3" fill="${C.blue}">TREINO EM DUPLA</text><text x="84" y="174" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="46" font-weight="820" fill="${C.text}">${svgTspans(nameLines,84,48)}</text><g transform="translate(812 ${126+nameExtra})"><rect width="178" height="58" rx="29" fill="${C.surface}"/><text x="89" y="37" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="20" font-weight="800" fill="${C.blue}">${xmlEsc(duration)}</text></g><text x="84" y="${216+nameExtra}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="600" fill="${C.muted}">${xmlEsc(fmtDate(Date.now()))}</text>${topMetricSvg([['SÉRIES',sets],['VOLUME',kgText(vol)],['RPE MÉDIO',avg]],C,metricsY)}<text x="84" y="${404+nameExtra}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="29" font-weight="820" fill="${C.text}">Alunos e exercícios</text>${markup}</svg>`};
+}
+async function pngWithDpi(blob,dpi=300){
+  const bytes=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);view.setUint32(0,9);chunk.set([112,72,89,115],4);const ppm=Math.round(dpi/0.0254);view.setUint32(8,ppm);view.setUint32(12,ppm);chunk[16]=1;let crc=0xffffffff;for(const byte of chunk.slice(4,17)){crc^=byte;for(let k=0;k<8;k++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}view.setUint32(17,(crc^0xffffffff)>>>0);const parts=[bytes.slice(0,8)];let offset=8,inserted=false;while(offset<bytes.length){const len=new DataView(bytes.buffer,bytes.byteOffset+offset,4).getUint32(0),end=offset+12+len,type=String.fromCharCode(...bytes.slice(offset+4,offset+8));if(type!=='pHYs')parts.push(bytes.slice(offset,end));if(type==='IHDR'&&!inserted){parts.push(chunk);inserted=true;}offset=end;}return new Blob(parts,{type:'image/png'});
+}
+function slug(value){return String(value||'treino').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'treino';}
+async function saveCurrentWorkoutReport(transparent=false){
+  if(!live)return;try{const duo=live.participants.length>1,built=duo?buildDuoReportSvg(live.participants,transparent):buildSingleReportSvg(live.participants[0],transparent),svgBlob=new Blob([built.svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(svgBlob),img=new Image();await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});const canvas=document.createElement('canvas'),scale=4;canvas.width=1080*scale;canvas.height=Math.round(built.height*scale);const ctx=canvas.getContext('2d',{alpha:true});ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);const raw=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!raw)throw new Error('PNG');const png=await pngWithDpi(raw,300),names=joinedNames(live.participants),filename=`treino-${slug(names)}-${localDateISO()}${transparent?'-transparente':''}.png`,file=new File([png],filename,{type:'image/png'});if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:`Resumo do treino — ${names}`});}else{const out=URL.createObjectURL(png),a=document.createElement('a');a.href=out;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(out),1200);toast('Imagem salva.');}}catch(err){if(err?.name!=='AbortError'){console.warn(err);toast('Não foi possível gerar a imagem neste navegador.');}}
+}
+
+/* Mantém compatibilidade com qualquer chamada antiga de salvar imagem individual. */
+saveWorkoutSummaryImage=async function(index){if(!live)return;const participant=live.participants[index];if(!participant)return;if(live.participants.length>1)return saveCurrentWorkoutReport(false);const original=live.participants;try{live.participants=[participant];await saveCurrentWorkoutReport(false);}finally{live.participants=original;persistDraft();}};
+
+/* Reaplica a tela atual para que uma dupla já preparada assuma o novo layout. */
+requestAnimationFrame(()=>{try{if(state.route==='workout'&&live)render();}catch(err){console.error(err);}});
+})();
+</script>
+
 </body>
 </html>

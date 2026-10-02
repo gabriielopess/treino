@@ -1,4 +1,4 @@
-const CACHE = 'treino-local-fixes-v3';
+const CACHE = 'treino-dupla-relatorio-v4';
 const ASSETS = [
   './',
   './index.html',
