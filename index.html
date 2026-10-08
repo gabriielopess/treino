@@ -4736,5 +4736,76 @@ requestAnimationFrame(()=>{try{if(state.route==='workout'&&live)render();}catch(
 @media(max-width:360px){.performance-exercise-top{gap:8px!important}.performance-exercise-title .report-series-inline{gap:4px!important}.performance-exercise-title .report-series-inline .series-chip{padding-left:5px!important;padding-right:5px!important}}
 </style>
 
+<style id="exercise-completion-fold-css">
+.pair-add-exercises .add-dashed{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;height:auto;padding:10px 8px}
+.pair-add-exercises .add-dashed svg{width:18px;height:18px;flex:0 0 18px}
+.pair-add-exercises .add-dashed span{min-width:0;overflow-wrap:anywhere}
+.exercise-fold-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin:8px 0 0;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;font-weight:650;text-align:left;cursor:pointer}
+.exercise-fold-toggle svg{width:16px;height:16px;flex:0 0 16px;transition:transform .15s}
+.exercise-fold-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+[data-exercise-fold-hidden]{display:none!important}
+</style>
+<script id="exercise-completion-fold-js">
+(()=>{
+  // UI state belongs to each exercise instance, including each person in a duo.
+  const folds=new WeakMap();
+  function foldState(ex){
+    const complete=!!ex.sets?.length&&ex.sets.every(set=>set.done);
+    let fold=folds.get(ex);
+    if(!fold){fold={complete,collapsed:complete};folds.set(ex,fold);}
+    else if(fold.complete!==complete){fold.complete=complete;fold.collapsed=complete;}
+    return fold;
+  }
+  function rememberCompletion(){
+    (live?.participants||[]).forEach(p=>(p.exercises||[]).forEach(foldState));
+  }
+  function conceal(el,hidden){el.toggleAttribute('data-exercise-fold-hidden',hidden);}
+  function enhance(main){
+    if(!live||!main)return;
+    const entries=[];
+    main.querySelectorAll('[data-live-exercise],.pair-exercise-pane').forEach(card=>{
+      const pair=card.classList.contains('pair-exercise-pane');
+      const path=pair?card.querySelector('[data-live-note]')?.dataset.liveNote:card.dataset.liveExercise;
+      if(!path)return;
+      const [pi,ei]=path.split(':').map(Number),ex=live.participants[pi]?.exercises[ei];
+      if(!ex)return;
+      const fold=foldState(ex);
+      const details=pair?[...card.querySelectorAll('.pair-exercise-tools,.pair-note'),...card.closest('[data-pair-block]').querySelectorAll(`[data-pair-person="${pi}"]`)]:[...card.children].filter(el=>!el.classList.contains('live-exercise-head'));
+      const toggle=document.createElement('button');
+      toggle.type='button';toggle.className='exercise-fold-toggle';
+      toggle.innerHTML='<span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+      const ids=details.map((el,i)=>{el.id=el.id||`exercise-fold-${pi}-${ei}-${i}`;return el.id;});
+      toggle.setAttribute('aria-controls',ids.join(' '));
+      if(pair)card.append(toggle);else card.querySelector('.live-exercise-head').after(toggle);
+      entries.push({ex,fold,details,toggle});
+      toggle.onclick=()=>{fold.collapsed=!fold.collapsed;refresh();};
+    });
+    function refresh(){
+      entries.forEach(({ex,details,toggle})=>{
+        const fold=foldState(ex),closed=fold.complete&&fold.collapsed;
+        conceal(toggle,!fold.complete);
+        toggle.setAttribute('aria-expanded',String(!closed));
+        toggle.setAttribute('aria-label',`${closed?'Expandir':'Recolher'} séries de ${ex.name||'exercício'}`);
+        toggle.querySelector('span').textContent=closed?'Concluído · Ver séries':'Concluído · Recolher';
+        details.forEach(el=>conceal(el,closed));
+      });
+      main.querySelectorAll('[data-pair-block]').forEach(card=>{
+        const turns=[...card.querySelectorAll('.pair-turn-entry')];
+        const closed=turns.length>0&&turns.every(el=>el.hasAttribute('data-exercise-fold-hidden'));
+        const head=card.querySelector('.pair-flow-head'),flow=card.querySelector('.pair-series-flow');
+        if(head)conceal(head,closed);if(flow)conceal(flow,closed);
+      });
+    }
+    refresh();
+  }
+  // Observe incomplete transitions too (including special-set edits) so a new
+  // completion collapses again, while manual expansion survives ordinary renders.
+  const saveDraft=persistDraft;
+  persistDraft=function(...args){rememberCompletion();return saveDraft.apply(this,args);};
+  const renderWorkout=renderActiveWorkout;
+  renderActiveWorkout=function(main){const result=renderWorkout.apply(this,arguments);enhance(main);return result;};
+})();
+</script>
+
 </body>
 </html>
